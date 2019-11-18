@@ -1,3 +1,8 @@
+// Copyright (c) 2019 The Pybind Development Team. All rights reserved.
+//
+// All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+//
 // Type conversion utilities for pybind11 and absl data structures.
 //
 // Usage: Just include this file in the .cc file with your bindings and add the
@@ -14,7 +19,8 @@
 //
 // For details, see the README.md.
 //
-// Author: Ken Oslund (kenoslund@)
+// Author: Ken Oslund
+
 #ifndef THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_CASTERS_H_
 #define THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_CASTERS_H_
 
