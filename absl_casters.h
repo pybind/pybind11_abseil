@@ -182,7 +182,8 @@ struct type_caster<absl::Span<const T>> {
 //
 // pybind11 supports std::string_view, and absl::string_view is meant to be a
 // drop-in replacement for std::string_view, so we can just use the built in
-// implementation.
+// implementation. This is only needed until absl::string_view becomes an alias
+// for std::string_view.
 #ifndef ABSL_USES_STD_STRING_VIEW
 template <>
 struct type_caster<absl::string_view> : string_caster<absl::string_view, true> {
@@ -203,6 +204,13 @@ struct type_caster<absl::nullopt_t> : public void_caster<absl::nullopt_t> {};
 #endif
 
 }  // namespace detail
+
+// Convert an std::string_view into an absl::string_view. This is only needed
+// until absl::string_view becomes an alias for std::string_view.
+inline absl::string_view std_to_absl(std::string_view in) {
+  return absl::string_view(in.data(), in.length());
+}
+
 }  // namespace pybind11
 
 #endif  // THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_CASTERS_H_
