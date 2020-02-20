@@ -50,7 +50,7 @@ class VectorContainer {
   std::vector<int32> values_;
 };
 
-bool CheckStringView(absl::string_view view, const string& values) {
+bool CheckStringView(absl::string_view view, const std::string& values) {
   return view == values;
 }
 
@@ -58,13 +58,13 @@ bool CheckStringView(absl::string_view view, const string& values) {
 // them and persist beyond the function that constructs the span for testing.
 class StringContainer {
  public:
-  absl::string_view MakeStringView(const string& values) {
+  absl::string_view MakeStringView(const std::string& values) {
     values_ = values;
     return values_;
   }
 
  private:
-  string values_;
+  std::string values_;
 };
 
 bool CheckOptional(const absl::optional<int> optional, bool given, int value) {
