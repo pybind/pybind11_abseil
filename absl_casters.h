@@ -35,6 +35,7 @@
 #include <type_traits>
 #include <typeinfo>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/civil_time.h"
 #include "absl/time/time.h"
@@ -152,8 +153,8 @@ struct type_caster<absl::Span<const T>> {
   // no advantage to moving and 2) the span cannot exist without the caster,
   // so moving leaves an implicit dependency (while a reference or pointer
   // make that dependency explicit).
-  operator absl::Span<const T>*() { return &value_; }
-  operator absl::Span<const T>&() { return value_; }
+  operator absl::Span<const T> *() { return &value_; }
+  operator absl::Span<const T> &() { return value_; }
   template <typename T_>
   using cast_op_type = cast_op_type<T_>;
 
@@ -177,6 +178,13 @@ struct type_caster<absl::Span<const T>> {
   VectorConverter vector_converter_;
   absl::Span<const T> value_;
 };
+
+// Convert between absl::flat_hash_map and python dict.
+template <typename Key, typename Value, typename Hash, typename Equal,
+          typename Alloc>
+struct type_caster<absl::flat_hash_map<Key, Value, Hash, Equal, Alloc>>
+    : map_caster<absl::flat_hash_map<Key, Value, Hash, Equal, Alloc>, Key,
+                 Value> {};
 
 // Convert between absl::string_view and python.
 //
