@@ -5,6 +5,8 @@
 
 #include <pybind11/pybind11.h>
 
+#include <vector>
+
 #include "absl/strings/string_view.h"
 #include "absl/time/time.h"
 #include "absl/types/optional.h"
@@ -76,6 +78,31 @@ bool CheckOptional(const absl::optional<int> optional, bool given, int value) {
 absl::optional<int> MakeOptional() { return absl::nullopt; }
 absl::optional<int> MakeOptional(int value) { return value; }
 
+
+absl::flat_hash_map<int, int> MakeMap(
+    const std::vector<std::pair<int, int>>& keys_and_values) {
+  absl::flat_hash_map<int, int> map;
+  for (const auto& kvp : keys_and_values) {
+    map.insert(kvp);
+  }
+  return map;
+}
+
+bool CheckMap(
+    const absl::flat_hash_map<int, int>& map,
+    const std::vector<std::pair<int, int>>& keys_and_values) {
+  for (const auto& kvp : keys_and_values) {
+    auto found = map.find(kvp.first);
+    if (found == map.end()) {
+      return false;
+    }
+    if (found->second != kvp.second) {
+      return false;
+    }
+  }
+  return true;
+}
+
 PYBIND11_MODULE(absl_example, m) {
   // absl::Time/Duration bindings.
   m.def("make_duration", &MakeDuration, arg("secs"));
@@ -101,6 +128,10 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("make_optional", (absl::optional<int>(*)()) & MakeOptional);
   m.def("make_optional", (absl::optional<int>(*)(int)) & MakeOptional,
         arg("value"));
+
+  // absl::flat_hash_map bindings
+  m.def("make_map", &MakeMap, arg("keys_and_values"));
+  m.def("check_map", &CheckMap, arg("map"), arg("keys_and_values"));
 }
 
 }  // namespace test

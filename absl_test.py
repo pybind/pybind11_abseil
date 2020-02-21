@@ -85,6 +85,18 @@ class AbslStringViewTest(googletest.TestCase):
         absl_example.check_string_view(self.TEST_STRING, self.TEST_STRING))
 
 
+class AbslFlatHashMapTest(googletest.TestCase):
+
+  def test_return_map(self):
+    keys_and_values = [(1, 2), (3, 4), (5, 6)]
+    expected = dict(keys_and_values)
+    self.assertEqual(expected, absl_example.make_map(keys_and_values))
+
+  def test_pass_map(self):
+    expected = [(10, 20), (30, 40)]
+    self.assertTrue(absl_example.check_map(dict(expected), expected))
+
+
 class AbslOptionalTest(googletest.TestCase):
 
   def test_pass_default_nullopt(self):
