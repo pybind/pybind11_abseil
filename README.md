@@ -26,18 +26,13 @@ Python date objects effectively truncate the time to 0 (ie, midnight).
 Python time objects are not supported because `absl::Time` would implicitly
 assume a year, which could be confusing.
 
-### Time zones
-Python `datetime` objects include timezone information, while
-`absl::Time` does not. When converting from Python to C++, if a timezone is
-specified then it will be used to determine the `absl::Time` instant. If no
-timezone is specified by the Python `datetime` object, the local timezone is
-assumed.
-
-When converting back from C++ to Python, the resultant time will be presented in
-the local timezone and the `tzinfo` property set on the `datetime` object to
-reflect that. This means that the caller may receive a datetime formatted
-in a different timezone to the one they passed in. To handle this safely, the
-caller should take care to check the `tzinfo` of any returned `datetime`s.
+Python datetime objects include timezone information, while
+`absl::Time` does not. Therefore, it would be possible to adjust for the
+timezone when going from python->C, but it would not be possible to reverse
+that adjustment when going the other way, since the desired timezone is
+unknown. This could easily result in unexpected behavior- eg, passing in a
+Pacific time zone time and getting back a UTC time. To make this conversion
+symetric, this class ignores the python timezone information.
 
 ## absl::Span
 
