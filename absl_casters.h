@@ -50,26 +50,6 @@ inline int64 GetInt64Attr(handle src, const char* name) {
   return src.attr(name).cast<int64>();
 }
 
-// Given a python date or datetime object, figure out an appropriate
-// absl::TimeZone with a fixed offset, or default to the local timezone.
-inline absl::TimeZone GetTimeZone(handle src) {
-  if (!hasattr(src, "tzinfo")) {
-    // datetime.date objects lack this property, so assume local.
-    return absl::LocalTimeZone();
-  }
-  object tzinfo = src.attr("tzinfo");
-  if (tzinfo.is_none()) {
-    // non-tz aware datetime, again assume local time.
-    return absl::LocalTimeZone();
-  }
-  object utc_offset = tzinfo.attr("utcoffset")(src);
-  if (utc_offset.is_none()) {
-    return absl::LocalTimeZone();
-  }
-  int_ offset_seconds = utc_offset.attr("total_seconds")();
-  return absl::FixedTimeZone(offset_seconds);
-}
-
 // Convert between absl::Duration and python datetime.timedelta.
 template <>
 struct type_caster<absl::Duration> {
@@ -123,9 +103,8 @@ struct type_caster<absl::Time> {
     absl::CivilSecond civil_sec(GetInt64Attr(src, "year"),
                                 GetInt64Attr(src, "month"),
                                 GetInt64Attr(src, "day"), hour, minute, second);
-    absl::TimeZone timezone = GetTimeZone(src);
-    value = absl::FromCivil(civil_sec, timezone) +
-        absl::Microseconds(microsecond);
+    value = absl::FromCivil(civil_sec, absl::LocalTimeZone()) +
+            absl::Microseconds(microsecond);
     return true;
   }
 
@@ -137,12 +116,9 @@ struct type_caster<absl::Time> {
     int64 micosecs = absl::ToInt64Microseconds(
         src - absl::FromCivil(civil_sec, absl::LocalTimeZone()));
     auto py_datetime_t = module::import("datetime").attr("datetime");
-    auto py_timedelta_t = module::import("datetime").attr("timedelta");
-    auto py_timezone_t = module::import("dateutil").attr("tz").attr("gettz");
-    auto py_timezone = py_timezone_t(absl::LocalTimeZone().name());
     auto py_datetime = py_datetime_t(
         civil_sec.year(), civil_sec.month(), civil_sec.day(), civil_sec.hour(),
-        civil_sec.minute(), civil_sec.second(), micosecs, py_timezone);
+        civil_sec.minute(), civil_sec.second(), micosecs);
     return py_datetime.release();
   }
 };
