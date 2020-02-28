@@ -9,6 +9,7 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
+from dateutil import tz
 import numpy as np
 
 from google3.testing.pybase import googletest
@@ -45,7 +46,22 @@ class AbslTimeTest(googletest.TestCase):
 
   def test_return_datetime(self):
     secs = self.TEST_DATETIME.timestamp()
-    self.assertEqual(self.TEST_DATETIME, absl_example.make_datetime(secs))
+    local_tz = tz.gettz()
+    # pylint: disable=g-tzinfo-datetime
+    # Warning about tzinfo applies to pytz, but we are using dateutil.tz
+    expected_datetime = datetime.datetime(
+        year=self.TEST_DATETIME.year,
+        month=self.TEST_DATETIME.month,
+        day=self.TEST_DATETIME.day,
+        hour=self.TEST_DATETIME.hour,
+        minute=self.TEST_DATETIME.minute,
+        second=self.TEST_DATETIME.second,
+        microsecond=self.TEST_DATETIME.microsecond,
+        tzinfo=local_tz)
+    # pylint: enable=g-tzinfo-datetime
+    # datetime handling code will set the local timezone on C++ times for want
+    # of a better alternative
+    self.assertEqual(expected_datetime, absl_example.make_datetime(secs))
 
   def test_pass_date(self):
     secs = datetime.datetime(self.TEST_DATE.year, self.TEST_DATE.month,
@@ -55,6 +71,16 @@ class AbslTimeTest(googletest.TestCase):
   def test_pass_datetime(self):
     secs = self.TEST_DATETIME.timestamp()
     self.assertTrue(absl_example.check_datetime(self.TEST_DATETIME, secs))
+
+  def test_pass_datetime_with_timezone(self):
+    pacific_tz = tz.gettz('America/Los_Angeles')
+    # pylint: disable=g-tzinfo-datetime
+    # Warning about tzinfo applies to pytz, but we are using dateutil.tz
+    dt_with_tz = datetime.datetime(
+        year=2020, month=2, day=1, hour=20, tzinfo=pacific_tz)
+    # pylint: enable=g-tzinfo-datetime
+    secs = dt_with_tz.timestamp()
+    self.assertTrue(absl_example.check_datetime(dt_with_tz, secs))
 
 
 class AbslSpanTest(parameterized.TestCase):
