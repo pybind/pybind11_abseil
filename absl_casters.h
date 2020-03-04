@@ -149,6 +149,61 @@ struct type_caster<absl::Time> {
   }
 };
 
+template <typename CivilTimeType>
+struct absl_civil_time_caster {
+ public:
+  PYBIND11_TYPE_CASTER(CivilTimeType, _<CivilTimeType>());
+
+  bool load(handle src, bool convert) {
+    if (!convert)
+      throw std::invalid_argument("datetime objects must be converted.");
+    int64 hour = 0, minute = 0, second = 0;
+    if (hasattr(src, "hour") && hasattr(src, "minute") &&
+        hasattr(src, "second")) {
+      hour = GetInt64Attr(src, "hour");
+      minute = GetInt64Attr(src, "minute");
+      second = GetInt64Attr(src, "second");
+    }
+    value = CivilTimeType(GetInt64Attr(src, "year"),
+                          GetInt64Attr(src, "month"),
+                          GetInt64Attr(src, "day"), hour, minute, second);
+    return true;
+  }
+
+  static handle cast(
+      const CivilTimeType& src, return_value_policy, handle) {
+    auto py_datetime_t = module::import("datetime").attr("datetime");
+    auto py_datetime = py_datetime_t(
+        src.year(), src.month(), src.day(),
+        src.hour(), src.minute(), src.second());
+    return py_datetime.release();
+  }
+};
+
+template<>
+struct type_caster<absl::CivilSecond>
+    : public absl_civil_time_caster<absl::CivilSecond> {};
+
+template<>
+struct type_caster<absl::CivilMinute>
+    : public absl_civil_time_caster<absl::CivilMinute> {};
+
+template<>
+struct type_caster<absl::CivilHour>
+    : public absl_civil_time_caster<absl::CivilHour> {};
+
+template<>
+struct type_caster<absl::CivilDay>
+    : public absl_civil_time_caster<absl::CivilDay> {};
+
+template<>
+struct type_caster<absl::CivilMonth>
+    : public absl_civil_time_caster<absl::CivilMonth> {};
+
+template<>
+struct type_caster<absl::CivilYear>
+    : public absl_civil_time_caster<absl::CivilYear> {};
+
 // Convert between absl::Span and python sequence types.
 //
 // TODO(kenoslund): It may be possible to avoid copies in some cases:

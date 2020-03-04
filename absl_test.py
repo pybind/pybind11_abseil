@@ -22,6 +22,10 @@ class AbslTimeTest(googletest.TestCase):
   POSITIVE_SECS = 3 * SECONDS_IN_DAY + 2.5
   NEGATIVE_SECS = -3 * SECONDS_IN_DAY + 2.5
   TEST_DATETIME = datetime.datetime(2000, 1, 2, 3, 4, 5, int(5e5))
+  # Linter error relevant for pytz only.
+  # pylint: disable=g-tzinfo-replace
+  TEST_DATETIME_UTC = TEST_DATETIME.replace(tzinfo=tz.tzutc())
+  # pylint: enable=g-tzinfo-replace
   TEST_DATE = datetime.date(2000, 1, 2)
 
   def test_return_positive_duration(self):
@@ -81,6 +85,88 @@ class AbslTimeTest(googletest.TestCase):
     # pylint: enable=g-tzinfo-datetime
     secs = dt_with_tz.timestamp()
     self.assertTrue(absl_example.check_datetime(dt_with_tz, secs))
+
+  def test_return_civilsecond(self):
+    # We need to use a timezone aware datetime here, otherwise
+    # datetime.timestamp converts to localtime. UTC is chosen as the convention
+    # in the test cases.
+    truncated = self.TEST_DATETIME.replace(microsecond=0)
+    self.assertEqual(
+        truncated, absl_example.make_civilsecond(
+            self.TEST_DATETIME_UTC.timestamp()))
+
+  def test_pass_datetime_as_civilsecond(self):
+    truncated = self.TEST_DATETIME_UTC.replace(microsecond=0)
+    self.assertTrue(
+        absl_example.check_civilsecond(self.TEST_DATETIME,
+                                       truncated.timestamp()))
+
+  def test_return_civilminute(self):
+    truncated = self.TEST_DATETIME.replace(
+        second=0, microsecond=0)
+    self.assertEqual(
+        truncated, absl_example.make_civilminute(
+            self.TEST_DATETIME_UTC.timestamp()))
+
+  def test_pass_datetime_as_civilminute(self):
+    truncated = self.TEST_DATETIME_UTC.replace(
+        second=0, microsecond=0)
+    self.assertTrue(
+        absl_example.check_civilminute(self.TEST_DATETIME,
+                                       truncated.timestamp()))
+
+  def test_return_civilhour(self):
+    truncated = self.TEST_DATETIME.replace(
+        minute=0, second=0, microsecond=0)
+    self.assertEqual(
+        truncated, absl_example.make_civilhour(
+            self.TEST_DATETIME_UTC.timestamp()))
+
+  def test_pass_datetime_as_civilhour(self):
+    truncated = self.TEST_DATETIME_UTC.replace(
+        minute=0, second=0, microsecond=0)
+    self.assertTrue(
+        absl_example.check_civilhour(self.TEST_DATETIME, truncated.timestamp()))
+
+  def test_return_civilday(self):
+    truncated = self.TEST_DATETIME.replace(
+        hour=0, minute=0, second=0, microsecond=0)
+    self.assertEqual(
+        truncated, absl_example.make_civilday(
+            self.TEST_DATETIME_UTC.timestamp()))
+
+  def test_pass_datetime_as_civilday(self):
+    truncated = self.TEST_DATETIME_UTC.replace(
+        hour=0, minute=0, second=0, microsecond=0)
+    self.assertTrue(
+        absl_example.check_civilday(self.TEST_DATETIME, truncated.timestamp()))
+
+  def test_return_civilmonth(self):
+    truncated = self.TEST_DATETIME.replace(
+        day=1, hour=0, minute=0, second=0, microsecond=0)
+    self.assertEqual(
+        truncated, absl_example.make_civilmonth(
+            self.TEST_DATETIME_UTC.timestamp()))
+
+  def test_pass_datetime_as_civilmonth(self):
+    truncated = self.TEST_DATETIME_UTC.replace(
+        day=1, hour=0, minute=0, second=0, microsecond=0)
+    self.assertTrue(
+        absl_example.check_civilmonth(self.TEST_DATETIME,
+                                      truncated.timestamp()))
+
+  def test_return_civilyear(self):
+    truncated = self.TEST_DATETIME.replace(
+        month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    self.assertEqual(
+        truncated, absl_example.make_civilyear(
+            self.TEST_DATETIME_UTC.timestamp()))
+
+  def test_pass_datetime_as_civilyear(self):
+    truncated = self.TEST_DATETIME_UTC.replace(
+        month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    self.assertTrue(
+        absl_example.check_civilyear(self.TEST_DATETIME, truncated.timestamp()))
 
 
 class AbslSpanTest(parameterized.TestCase):
