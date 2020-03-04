@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
+#include "absl/time/civil_time.h"
 #include "absl/time/time.h"
 #include "absl/types/optional.h"
 #include "pybind11_abseil/absl_casters.h"
@@ -37,6 +38,60 @@ bool CheckSpan(absl::Span<const int32> span, const std::vector<int32>& values) {
     if (span[i] != values[i]) return false;
   }
   return true;
+}
+
+absl::CivilSecond MakeCivilSecond(double secs) {
+  return absl::ToCivilSecond(
+      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+}
+
+absl::CivilMinute MakeCivilMinute(double secs) {
+  return absl::ToCivilMinute(
+      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+}
+
+absl::CivilHour MakeCivilHour(double secs) {
+  return absl::ToCivilHour(
+      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+}
+
+absl::CivilDay MakeCivilDay(double secs) {
+  return absl::ToCivilDay(
+      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+}
+
+absl::CivilMonth MakeCivilMonth(double secs) {
+  return absl::ToCivilMonth(
+      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+}
+
+absl::CivilYear MakeCivilYear(double secs) {
+  return absl::ToCivilYear(
+      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+}
+
+bool CheckCivilSecond(absl::CivilSecond datetime, double secs) {
+  return datetime == MakeCivilSecond(secs);
+}
+
+bool CheckCivilMinute(absl::CivilMinute datetime, double secs) {
+  return datetime == MakeCivilMinute(secs);
+}
+
+bool CheckCivilHour(absl::CivilHour datetime, double secs) {
+  return datetime == MakeCivilHour(secs);
+}
+
+bool CheckCivilDay(absl::CivilDay datetime, double secs) {
+  return datetime == MakeCivilDay(secs);
+}
+
+bool CheckCivilMonth(absl::CivilMonth datetime, double secs) {
+  return datetime == MakeCivilMonth(secs);
+}
+
+bool CheckCivilYear(absl::CivilYear datetime, double secs) {
+  return datetime == MakeCivilYear(secs);
 }
 
 // Since a span does not own its elements, we must create a class to own them
@@ -109,6 +164,20 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("check_duration", &CheckDuration, arg("duration"), arg("secs"));
   m.def("make_datetime", &MakeTime, arg("secs"));
   m.def("check_datetime", &CheckDatetime, arg("datetime"), arg("secs"));
+
+  // absl::CivilTime bindings
+  m.def("make_civilsecond", &MakeCivilSecond, arg("secs"));
+  m.def("check_civilsecond", &CheckCivilSecond, arg("datetime"), arg("secs"));
+  m.def("make_civilminute", &MakeCivilMinute, arg("secs"));
+  m.def("check_civilminute", &CheckCivilMinute, arg("datetime"), arg("secs"));
+  m.def("make_civilhour", &MakeCivilHour, arg("secs"));
+  m.def("check_civilhour", &CheckCivilHour, arg("datetime"), arg("secs"));
+  m.def("make_civilday", &MakeCivilDay, arg("secs"));
+  m.def("check_civilday", &CheckCivilDay, arg("datetime"), arg("secs"));
+  m.def("make_civilmonth", &MakeCivilMonth, arg("secs"));
+  m.def("check_civilmonth", &CheckCivilMonth, arg("datetime"), arg("secs"));
+  m.def("make_civilyear", &MakeCivilYear, arg("secs"));
+  m.def("check_civilyear", &CheckCivilYear, arg("datetime"), arg("secs"));
 
   // absl::Span bindings.
   m.def("check_span", &CheckSpan, arg("span"), arg("values"));

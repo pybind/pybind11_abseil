@@ -39,6 +39,11 @@ reflect that. This means that the caller may receive a datetime formatted
 in a different timezone to the one they passed in. To handle this safely, the
 caller should take care to check the `tzinfo` of any returned `datetime`s.
 
+## absl::CivilTime
+`absl::CivilTime` objects are converted to/from Python datetime.datetime
+objects. Fractional Python datetime components are truncated when converting to
+less granular C++ types, and time zone information is ignored.
+
 ## absl::Span
 
 Python sequences can be converted to/from an absl::Span. Currently, this
