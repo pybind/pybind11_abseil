@@ -11,11 +11,14 @@
 //
 // Supported types:
 // - absl::Duration- converted to/from python datetime.timedelta
+// - absl::CivilTime- converted to/from python datetime.datetime and from date.
 // - absl::Time- converted to/from python datetime.datetime and from date.
 // - absl::Span- const value types only.
 // - absl::string_view
 // - absl::optional- converts absl::nullopt to/from python None, otherwise
 //   converts the contained value.
+// - absl::flat_hash_map- converts to/from python dict.
+// - absl::flat_hash_set- converst to/from python set.
 //
 // For details, see the README.md.
 //
@@ -37,6 +40,7 @@
 #include <typeinfo>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/civil_time.h"
 #include "absl/time/time.h"
@@ -266,6 +270,11 @@ template <typename Key, typename Value, typename Hash, typename Equal,
 struct type_caster<absl::flat_hash_map<Key, Value, Hash, Equal, Alloc>>
     : map_caster<absl::flat_hash_map<Key, Value, Hash, Equal, Alloc>, Key,
                  Value> {};
+
+// Convert between absl::flat_hash_set and python set.
+template <typename Key, typename Hash, typename Equal, typename Alloc>
+struct type_caster<absl::flat_hash_set<Key, Hash, Equal, Alloc>>
+  : set_caster<absl::flat_hash_set<Key, Hash, Equal, Alloc>, Key> { };
 
 // Convert between absl::string_view and python.
 //
