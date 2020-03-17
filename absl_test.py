@@ -209,6 +209,18 @@ class AbslFlatHashMapTest(googletest.TestCase):
     self.assertTrue(absl_example.check_map(dict(expected), expected))
 
 
+class AbslFlatHashSetTest(googletest.TestCase):
+
+  def test_return_set(self):
+    values = [1, 3, 7, 5]
+    expected = set(values)
+    self.assertEqual(expected, absl_example.make_set(values))
+
+  def test_pass_set(self):
+    expected = [10, 20, 30, 40]
+    self.assertTrue(absl_example.check_set(set(expected), expected))
+
+
 class AbslOptionalTest(googletest.TestCase):
 
   def test_pass_default_nullopt(self):

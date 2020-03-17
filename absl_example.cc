@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/civil_time.h"
 #include "absl/time/time.h"
@@ -158,6 +159,17 @@ bool CheckMap(
   return true;
 }
 
+absl::flat_hash_set<int> MakeSet(const std::vector<int>& values) {
+  return absl::flat_hash_set<int>(values.begin(), values.end());
+}
+
+bool CheckSet(
+    const absl::flat_hash_set<int>& set,
+    const std::vector<int>& values) {
+  absl::flat_hash_set<int> check(values.begin(), values.end());
+  return set == check;
+}
+
 PYBIND11_MODULE(absl_example, m) {
   // absl::Time/Duration bindings.
   m.def("make_duration", &MakeDuration, arg("secs"));
@@ -201,6 +213,10 @@ PYBIND11_MODULE(absl_example, m) {
   // absl::flat_hash_map bindings
   m.def("make_map", &MakeMap, arg("keys_and_values"));
   m.def("check_map", &CheckMap, arg("map"), arg("keys_and_values"));
+
+  // absl::flat_hash_set bindings
+  m.def("make_set", &MakeSet, arg("values"));
+  m.def("check_set", &CheckSet, arg("set"), arg("values"));
 }
 
 }  // namespace test

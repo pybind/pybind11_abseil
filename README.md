@@ -65,3 +65,11 @@ Supported exactly the same way pybind11 supports `std::string_view`.
 ## absl::optional
 
 Supported exactly the same way pybind11 supports `std::optional`.
+
+## absl::flat_hash_map
+
+Supported exactly the same way pybind11 supports `std::map`.
+
+## absl::flat_hash_set
+
+Supported exactly the same way pybind11 supports `std::set`.
