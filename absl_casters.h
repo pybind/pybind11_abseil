@@ -86,8 +86,11 @@ struct type_caster<absl::Duration> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
-    if (!convert)
-      throw std::invalid_argument("datetime.timedelta must be converted.");
+    // Ensure that absl::Duration is converted from a Python datetime.timedelta.
+    if (!convert || !hasattr(src, "days") || !hasattr(src, "seconds") ||
+        !hasattr(src, "microseconds")) {
+      return false;
+    }
     value = absl::Hours(24 * GetInt64Attr(src, "days")) +
             absl::Seconds(GetInt64Attr(src, "seconds")) +
             absl::Microseconds(GetInt64Attr(src, "microseconds"));
@@ -116,8 +119,11 @@ struct type_caster<absl::Time> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
-    if (!convert)
-      throw std::invalid_argument("datetime objects must be converted.");
+    // Ensure that absl::Duration is converted from a Python datetime.date.
+    if (!convert || !hasattr(src, "year") || !hasattr(src, "month") ||
+        !hasattr(src, "day")) {
+      return false;
+    }
     int64 hour = 0, minute = 0, second = 0, microsecond = 0;
     if (hasattr(src, "hour") && hasattr(src, "minute") &&
         hasattr(src, "second") && hasattr(src, "microsecond")) {
@@ -159,8 +165,10 @@ struct absl_civil_time_caster {
   PYBIND11_TYPE_CASTER(CivilTimeType, _<CivilTimeType>());
 
   bool load(handle src, bool convert) {
-    if (!convert)
-      throw std::invalid_argument("datetime objects must be converted.");
+    if (!convert || !hasattr(src, "year") || !hasattr(src, "month") ||
+        !hasattr(src, "day")) {
+      return false;
+    }
     int64 hour = 0, minute = 0, second = 0;
     if (hasattr(src, "hour") && hasattr(src, "minute") &&
         hasattr(src, "second")) {
