@@ -8,11 +8,14 @@
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/civil_time.h"
 #include "absl/time/time.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "pybind11_abseil/absl_casters.h"
+#include "pybind11_abseil/absl_numpy_span_caster.h"
 
 namespace pybind11 {
 namespace test {
@@ -42,33 +45,33 @@ bool CheckSpan(absl::Span<const int32> span, const std::vector<int32>& values) {
 }
 
 absl::CivilSecond MakeCivilSecond(double secs) {
-  return absl::ToCivilSecond(
-      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+  return absl::ToCivilSecond(absl::FromUnixSeconds(static_cast<int64>(secs)),
+                             absl::UTCTimeZone());
 }
 
 absl::CivilMinute MakeCivilMinute(double secs) {
-  return absl::ToCivilMinute(
-      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+  return absl::ToCivilMinute(absl::FromUnixSeconds(static_cast<int64>(secs)),
+                             absl::UTCTimeZone());
 }
 
 absl::CivilHour MakeCivilHour(double secs) {
-  return absl::ToCivilHour(
-      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+  return absl::ToCivilHour(absl::FromUnixSeconds(static_cast<int64>(secs)),
+                           absl::UTCTimeZone());
 }
 
 absl::CivilDay MakeCivilDay(double secs) {
-  return absl::ToCivilDay(
-      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+  return absl::ToCivilDay(absl::FromUnixSeconds(static_cast<int64>(secs)),
+                          absl::UTCTimeZone());
 }
 
 absl::CivilMonth MakeCivilMonth(double secs) {
-  return absl::ToCivilMonth(
-      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+  return absl::ToCivilMonth(absl::FromUnixSeconds(static_cast<int64>(secs)),
+                            absl::UTCTimeZone());
 }
 
 absl::CivilYear MakeCivilYear(double secs) {
-  return absl::ToCivilYear(
-      absl::FromUnixSeconds(static_cast<int64>(secs)), absl::UTCTimeZone());
+  return absl::ToCivilYear(absl::FromUnixSeconds(static_cast<int64>(secs)),
+                           absl::UTCTimeZone());
 }
 
 bool CheckCivilSecond(absl::CivilSecond datetime, double secs) {
@@ -134,7 +137,6 @@ bool CheckOptional(const absl::optional<int> optional, bool given, int value) {
 absl::optional<int> MakeOptional() { return absl::nullopt; }
 absl::optional<int> MakeOptional(int value) { return value; }
 
-
 absl::flat_hash_map<int, int> MakeMap(
     const std::vector<std::pair<int, int>>& keys_and_values) {
   absl::flat_hash_map<int, int> map;
@@ -144,9 +146,8 @@ absl::flat_hash_map<int, int> MakeMap(
   return map;
 }
 
-bool CheckMap(
-    const absl::flat_hash_map<int, int>& map,
-    const std::vector<std::pair<int, int>>& keys_and_values) {
+bool CheckMap(const absl::flat_hash_map<int, int>& map,
+              const std::vector<std::pair<int, int>>& keys_and_values) {
   for (const auto& kvp : keys_and_values) {
     auto found = map.find(kvp.first);
     if (found == map.end()) {
@@ -163,11 +164,24 @@ absl::flat_hash_set<int> MakeSet(const std::vector<int>& values) {
   return absl::flat_hash_set<int>(values.begin(), values.end());
 }
 
-bool CheckSet(
-    const absl::flat_hash_set<int>& set,
-    const std::vector<int>& values) {
+bool CheckSet(const absl::flat_hash_set<int>& set,
+              const std::vector<int>& values) {
   absl::flat_hash_set<int> check(values.begin(), values.end());
   return set == check;
+}
+
+// Non-const Span.
+template <typename T>
+void FillNonConstSpan(T value, absl::Span<T> output_span) {
+  for (auto& i : output_span) {
+    i = value;
+  }
+}
+
+template <typename T>
+void DefineNonConstSpan(module* py_m, absl::string_view type_name) {
+  py_m->def(absl::StrCat("fill_non_const_span_", type_name).c_str(),
+            &FillNonConstSpan<T>, arg("value"), arg("output_span").noconvert());
 }
 
 PYBIND11_MODULE(absl_example, m) {
@@ -196,6 +210,17 @@ PYBIND11_MODULE(absl_example, m) {
   class_<VectorContainer>(m, "VectorContainer")
       .def(init())
       .def("make_span", &VectorContainer::MakeSpan, arg("values"));
+
+  // non-const absl::Span bindings.
+  DefineNonConstSpan<double>(&m, "double");
+  DefineNonConstSpan<int>(&m, "int");
+  // Wrap a const Span with a non-const Span lambda to avoid copying data.
+  m.def(
+      "check_span_no_copy",
+      [](absl::Span<int32> span, const std::vector<int32>& values) -> bool {
+        return CheckSpan(span, values);
+      },
+      arg("span"), arg("values"));
 
   // absl::string_view bindings.
   m.def("check_string_view", &CheckStringView, arg("view"), arg("values"));
