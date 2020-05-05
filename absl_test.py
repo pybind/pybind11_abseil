@@ -92,8 +92,8 @@ class AbslTimeTest(googletest.TestCase):
     # in the test cases.
     truncated = self.TEST_DATETIME.replace(microsecond=0)
     self.assertEqual(
-        truncated, absl_example.make_civilsecond(
-            self.TEST_DATETIME_UTC.timestamp()))
+        truncated,
+        absl_example.make_civilsecond(self.TEST_DATETIME_UTC.timestamp()))
 
   def test_pass_datetime_as_civilsecond(self):
     truncated = self.TEST_DATETIME_UTC.replace(microsecond=0)
@@ -102,25 +102,22 @@ class AbslTimeTest(googletest.TestCase):
                                        truncated.timestamp()))
 
   def test_return_civilminute(self):
-    truncated = self.TEST_DATETIME.replace(
-        second=0, microsecond=0)
+    truncated = self.TEST_DATETIME.replace(second=0, microsecond=0)
     self.assertEqual(
-        truncated, absl_example.make_civilminute(
-            self.TEST_DATETIME_UTC.timestamp()))
+        truncated,
+        absl_example.make_civilminute(self.TEST_DATETIME_UTC.timestamp()))
 
   def test_pass_datetime_as_civilminute(self):
-    truncated = self.TEST_DATETIME_UTC.replace(
-        second=0, microsecond=0)
+    truncated = self.TEST_DATETIME_UTC.replace(second=0, microsecond=0)
     self.assertTrue(
         absl_example.check_civilminute(self.TEST_DATETIME,
                                        truncated.timestamp()))
 
   def test_return_civilhour(self):
-    truncated = self.TEST_DATETIME.replace(
-        minute=0, second=0, microsecond=0)
+    truncated = self.TEST_DATETIME.replace(minute=0, second=0, microsecond=0)
     self.assertEqual(
-        truncated, absl_example.make_civilhour(
-            self.TEST_DATETIME_UTC.timestamp()))
+        truncated,
+        absl_example.make_civilhour(self.TEST_DATETIME_UTC.timestamp()))
 
   def test_pass_datetime_as_civilhour(self):
     truncated = self.TEST_DATETIME_UTC.replace(
@@ -132,8 +129,8 @@ class AbslTimeTest(googletest.TestCase):
     truncated = self.TEST_DATETIME.replace(
         hour=0, minute=0, second=0, microsecond=0)
     self.assertEqual(
-        truncated, absl_example.make_civilday(
-            self.TEST_DATETIME_UTC.timestamp()))
+        truncated,
+        absl_example.make_civilday(self.TEST_DATETIME_UTC.timestamp()))
 
   def test_pass_datetime_as_civilday(self):
     truncated = self.TEST_DATETIME_UTC.replace(
@@ -145,8 +142,8 @@ class AbslTimeTest(googletest.TestCase):
     truncated = self.TEST_DATETIME.replace(
         day=1, hour=0, minute=0, second=0, microsecond=0)
     self.assertEqual(
-        truncated, absl_example.make_civilmonth(
-            self.TEST_DATETIME_UTC.timestamp()))
+        truncated,
+        absl_example.make_civilmonth(self.TEST_DATETIME_UTC.timestamp()))
 
   def test_pass_datetime_as_civilmonth(self):
     truncated = self.TEST_DATETIME_UTC.replace(
@@ -159,8 +156,8 @@ class AbslTimeTest(googletest.TestCase):
     truncated = self.TEST_DATETIME.replace(
         month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     self.assertEqual(
-        truncated, absl_example.make_civilyear(
-            self.TEST_DATETIME_UTC.timestamp()))
+        truncated,
+        absl_example.make_civilyear(self.TEST_DATETIME_UTC.timestamp()))
 
   def test_pass_datetime_as_civilyear(self):
     truncated = self.TEST_DATETIME_UTC.replace(
@@ -182,6 +179,83 @@ class AbslSpanTest(parameterized.TestCase):
     # Pass values twice- one will be converted to a span, the other to a vector
     # (which is known to work), and then they will be compared.
     self.assertTrue(absl_example.check_span(values, values))
+
+
+class AbslNonConstSpanTest(parameterized.TestCase):
+  _VECTOR_SIZE = 5
+  _CHECKED_VALUE_DOUBLE = 3.14
+  _CHECKED_VALUE_INT = 43
+
+  @parameterized.named_parameters(
+      ('double', np.zeros(_VECTOR_SIZE, dtype=np.float),
+       'fill_non_const_span_double', _CHECKED_VALUE_DOUBLE),
+      ('int', np.zeros(_VECTOR_SIZE, dtype=np.int32),
+       'fill_non_const_span_int', _CHECKED_VALUE_INT))
+  def test_span_as_out_parameter(self, vector, function_name, value):
+    span_test_function = getattr(absl_example, function_name)
+    span_test_function(value, vector)
+    for e in vector:
+      self.assertEqual(e, value)
+
+  @parameterized.named_parameters(
+      ('double', np.zeros((_VECTOR_SIZE, _VECTOR_SIZE), dtype=np.float),
+       'fill_non_const_span_double', _CHECKED_VALUE_DOUBLE),
+      ('int', np.zeros(
+          (_VECTOR_SIZE, _VECTOR_SIZE),
+          dtype=np.int32), 'fill_non_const_span_int', _CHECKED_VALUE_INT))
+  def test_fails_for_wrong_numpy_dimensions(self, vector, function_name, value):
+    span_test_function = getattr(absl_example, function_name)
+    with self.assertRaises(TypeError):
+      span_test_function(value, vector)
+
+  @parameterized.named_parameters(
+      ('double', np.zeros(_VECTOR_SIZE, dtype=np.float),
+       'fill_non_const_span_double', _CHECKED_VALUE_DOUBLE),
+      ('int', np.zeros(_VECTOR_SIZE, dtype=np.int32),
+       'fill_non_const_span_int', _CHECKED_VALUE_INT))
+  def test_fails_for_non_writable_numpy_vector(self, vector, function_name,
+                                               value):
+    span_test_function = getattr(absl_example, function_name)
+    vector.flags.writeable = False
+    with self.assertRaises(TypeError):
+      span_test_function(value, vector)
+
+  @parameterized.named_parameters(
+      ('double', [0.0] * _VECTOR_SIZE, 'fill_non_const_span_double',
+       _CHECKED_VALUE_DOUBLE), ('int', [0] * _VECTOR_SIZE,
+                                'fill_non_const_span_int', _CHECKED_VALUE_INT))
+  def test_fails_for_non_numpy_vector(self, vector, function_name, value):
+    span_test_function = getattr(absl_example, function_name)
+    with self.assertRaises(TypeError):
+      span_test_function(value, vector)
+
+  @parameterized.named_parameters(
+      ('double', np.zeros(_VECTOR_SIZE, dtype=np.float),
+       'fill_non_const_span_double', _CHECKED_VALUE_DOUBLE),
+      ('int', np.zeros(_VECTOR_SIZE, dtype=np.int32),
+       'fill_non_const_span_int', _CHECKED_VALUE_INT))
+  def test_fails_for_non_contiguous_numpy_vector(self, vector, function_name,
+                                                 value):
+    span_test_function = getattr(absl_example, function_name)
+    # View with step > 1 is a way to get non-contiguous memory.
+    v_strided = vector[::2]
+    with self.assertRaises(TypeError):
+      span_test_function(value, v_strided)
+
+  def test_fails_for_not_supported_type(self):
+    # Checking only the floating version of the function as there is a type
+    # mismatch in any case.
+    vector = np.zeros(AbslNonConstSpanTest._VECTOR_SIZE, dtype=np.unicode_)
+    with self.assertRaises(TypeError):
+      absl_example.fill_non_const_span_double(
+          AbslNonConstSpanTest._CHECKED_VALUE_DOUBLE, vector)
+
+  def test_const_span_wrapper(self):
+    # Test that we can use non-const Span as wrapper for const Span to avoid
+    # copying data.
+    values = [1, 2, 3, 4]
+    vector = np.array(values, dtype=np.int32)
+    self.assertTrue(absl_example.check_span_no_copy(vector, values))
 
 
 class AbslStringViewTest(googletest.TestCase):
