@@ -4,9 +4,8 @@
 #include <type_traits>
 
 #include "absl/types/span.h"
-#include "third_party/py/numpy/core/include/numpy/ndarrayobject.h"
-#include "third_party/py/numpy/core/include/numpy/ndarraytypes.h"
 #include "pybind11/cast.h"
+#include "pybind11/numpy.h"
 
 // Support for conversion from NumPy array to template specializations of
 // absl::Span. Note that no data is copied, the `Span`ned memory is owned by the
@@ -37,39 +36,6 @@
 //  # RGB data can now be read from the buffer.
 
 namespace pybind11::detail {
-namespace py_span_internal {
-template <typename T>
-struct NumpyType;
-
-#ifdef ABSL_NUMPY_MAKE_TYPE_TRAIT
-#error "Redefinition of NumPy type trait partial specialization macro"
-#endif
-
-#define ABSL_NUMPY_MAKE_TYPE_TRAIT(cxx_type, npy_const) \
-  template <>                                           \
-  struct NumpyType<cxx_type> {                          \
-    static constexpr NPY_TYPES value = npy_const;       \
-  }
-
-ABSL_NUMPY_MAKE_TYPE_TRAIT(bool, NPY_BOOL);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(signed char, NPY_BYTE);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(unsigned char, NPY_UBYTE);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(short, NPY_SHORT);            // NOLINT(runtime/int)
-ABSL_NUMPY_MAKE_TYPE_TRAIT(unsigned short, NPY_USHORT);  // NOLINT(runtime/int)
-ABSL_NUMPY_MAKE_TYPE_TRAIT(int, NPY_INT);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(unsigned int, NPY_UINT);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(long int, NPY_LONG);          // NOLINT(runtime/int)
-ABSL_NUMPY_MAKE_TYPE_TRAIT(unsigned long int, NPY_ULONG  // NOLINT(runtime/int)
-);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(long long int, NPY_LONGLONG);  // NOLINT(runtime/int)
-ABSL_NUMPY_MAKE_TYPE_TRAIT(unsigned long long int,        // NOLINT(runtime/int)
-                           NPY_ULONGLONG);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(float, NPY_FLOAT);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(double, NPY_DOUBLE);
-ABSL_NUMPY_MAKE_TYPE_TRAIT(long double, NPY_LONGDOUBLE);
-
-#undef ABSL_NUMPY_MAKE_TYPE_TRAIT
-}  // namespace py_span_internal
 
 // Conversion of non-const Span.
 // Note that there are two template specialisations for `absl::Span`: the one in
@@ -107,36 +73,15 @@ class type_caster<absl::Span<T>, std::enable_if_t<std::is_arithmetic_v<T> &&
   // Conversion Python->C++: convert a NumPy array into a Span.
   bool load(handle src, bool /* convert */) {
     // Extract PyObject from handle.
-    PyObject* source = src.ptr();
-    if (!PyArray_Check(source)) {
-      // This is not a NumPy array.
+    if (!pybind11::isinstance<pybind11::array_t<T>>(src)) {
       return false;
     }
-
-    auto* npy = reinterpret_cast<PyArrayObject*>(source);
-    const int num_dimensions = PyArray_NDIM(npy);
-    if (num_dimensions != 1) {
-      // We support only 1-dimensional NumPy array dimension.
+    auto array = src.cast<pybind11::array_t<T>>();
+    if (!array || array.ndim() != 1 || array.strides()[0] != sizeof(T) ||
+        !array.writeable()) {
       return false;
     }
-    if (!PyArray_ISCONTIGUOUS(npy)) {
-      // Non contiguous NumPy array not supported.
-      return false;
-    }
-    if (!(PyArray_FLAGS(npy) & NPY_ARRAY_WRITEABLE)) {
-      // Non writable NumPy array not supported.
-      return false;
-    }
-
-    const int numpy_type = PyArray_TYPE(npy);
-    if (py_span_internal::NumpyType<T>::value != numpy_type) {
-      // NumPy element type does not match Span element type.
-      return false;
-    }
-    npy_intp* dimensions = PyArray_DIMS(npy);
-    std::size_t size = *dimensions;
-    T* numpy_data = reinterpret_cast<T*>(PyArray_DATA(npy));
-    value_ = absl::Span<T>(numpy_data, size);
+    value_ = absl::Span<T>(static_cast<T*>(array.mutable_data()), array.size());
     return true;
   }
 
