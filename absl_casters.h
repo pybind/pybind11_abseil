@@ -24,8 +24,8 @@
 //
 // Author: Ken Oslund
 
-#ifndef THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_CASTERS_H_
-#define THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_CASTERS_H_
+#ifndef PYBIND11_ABSEIL_ABSL_CASTERS_H_
+#define PYBIND11_ABSEIL_ABSL_CASTERS_H_
 
 #include <pybind11/cast.h>
 #include <pybind11/pybind11.h>
@@ -319,4 +319,4 @@ inline absl::string_view std_to_absl(std::string_view in) {
 
 }  // namespace pybind11
 
-#endif  // THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_CASTERS_H_
+#endif  // PYBIND11_ABSEIL_ABSL_CASTERS_H_

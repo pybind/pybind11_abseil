@@ -1,5 +1,5 @@
-#ifndef THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_NUMPY_SPAN_CASTER_H_
-#define THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_NUMPY_SPAN_CASTER_H_
+#ifndef PYBIND11_ABSEIL_ABSL_NUMPY_SPAN_CASTER_H_
+#define PYBIND11_ABSEIL_ABSL_NUMPY_SPAN_CASTER_H_
 
 #include <type_traits>
 
@@ -90,4 +90,4 @@ class type_caster<absl::Span<T>, std::enable_if_t<std::is_arithmetic_v<T> &&
 };
 }  // namespace pybind11::detail
 
-#endif  // THIRD_PARTY_PYBIND11_GOOGLE3_UTILS_ABSL_NUMPY_SPAN_CASTER_H_
+#endif  // PYBIND11_ABSEIL_ABSL_NUMPY_SPAN_CASTER_H_
