@@ -150,7 +150,7 @@ struct type_caster<absl::Time> {
         src - absl::FromCivil(civil_sec, absl::LocalTimeZone()));
     auto py_datetime_t = module::import("datetime").attr("datetime");
     auto py_timedelta_t = module::import("datetime").attr("timedelta");
-    auto py_timezone_t = module::import("dateutil").attr("tz").attr("gettz");
+    auto py_timezone_t = module::import("dateutil.tz").attr("gettz");
     auto py_timezone = py_timezone_t(absl::LocalTimeZone().name());
     auto py_datetime = py_datetime_t(
         civil_sec.year(), civil_sec.month(), civil_sec.day(), civil_sec.hour(),
