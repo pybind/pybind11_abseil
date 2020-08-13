@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 
+#include "absl/status/statusor.h"
 #include "pybind11/detail/common.h"
 #include "pybind11_abseil/status_casters.h"
 #include "util/task/status.h"
@@ -24,7 +25,7 @@ class TestClass {
     return util::Status(code, text);
   }
 
-  util::StatusOr<int> MakeFailureStatusOr(absl::StatusCode code,
+  absl::StatusOr<int> MakeFailureStatusOr(absl::StatusCode code,
                                           const std::string& text = "") {
     return util::Status(code, text);
   }
@@ -57,7 +58,7 @@ const util::Status* ReturnStatusPtr(absl::StatusCode code,
   return &static_status;
 }
 
-util::StatusOr<int> ReturnFailureStatusOr(absl::StatusCode code,
+absl::StatusOr<int> ReturnFailureStatusOr(absl::StatusCode code,
                                           const std::string& text = "") {
   return util::Status(code, text);
 }
@@ -67,15 +68,15 @@ pybind11::object ReturnFailureStatusOrManualCast(absl::StatusCode code,
   return pybind11::cast(google::DoNotThrowStatus(util::Status(code, text)));
 }
 
-util::StatusOr<int> ReturnValueStatusOr(int value) { return value; }
+absl::StatusOr<int> ReturnValueStatusOr(int value) { return value; }
 
-util::StatusOr<const IntValue*> ReturnPtrStatusOr(int value) {
+absl::StatusOr<const IntValue*> ReturnPtrStatusOr(int value) {
   static IntValue static_object;
   static_object.value = value;
   return &static_object;
 }
 
-util::StatusOr<std::unique_ptr<IntValue>> ReturnUniquePtrStatusOr(int value) {
+absl::StatusOr<std::unique_ptr<IntValue>> ReturnUniquePtrStatusOr(int value) {
   return absl::make_unique<IntValue>(value);
 }
 
