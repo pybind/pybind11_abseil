@@ -111,7 +111,7 @@ PYBIND11_MODULE(status_example, m) {
         "Return a reference to a static status value without raising an error.",
         arg("code"), arg("text") = "", return_value_policy::reference);
 
-  // util::StatusOr bindings
+  // absl::StatusOr bindings
   m.def("return_value_status_or", &ReturnValueStatusOr, arg("value"));
   m.def("return_failure_status_or", &ReturnFailureStatusOr,
         "Raise an error with the given code.", arg("code"), arg("text") = "");

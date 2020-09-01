@@ -7,7 +7,7 @@
 // Supported types:
 // - util::Status- converts a non-ok return status into a python exception.
 //   Can be passed as an argument too if you import the status pybind module.
-// - util::StatusOr- converts a non-ok return status into a python exception,
+// - absl::StatusOr- converts a non-ok return status into a python exception,
 //   otherwise converts/returns the payload. Can only be used as a return value.
 //
 // For details, see the README.md.
@@ -31,7 +31,7 @@ namespace detail {
 
 // Convert NoThrowStatus by dispatching to a caster for StatusType with the
 // argument throw_exception = false. StatusType should be a util::Status
-// (rvalue, lvalue, reference, or pointer), or a util::StatusOr value.
+// (rvalue, lvalue, reference, or pointer), or a absl::StatusOr value.
 // Only return values trigger exceptions, so NoThrowStatus has no meaning for
 // input values. Therefore only C++->Python casting is supported.
 template <typename StatusType>
@@ -100,16 +100,16 @@ struct type_caster<util::Status> : public type_caster_base<util::Status> {
   }
 };
 
-// Convert a util::StatusOr.
+// Convert a absl::StatusOr.
 template <typename PayloadType>
-struct type_caster<util::StatusOr<PayloadType>> {
+struct type_caster<absl::StatusOr<PayloadType>> {
  public:
   using PayloadCaster = make_caster<PayloadType>;
   using StatusCaster = make_caster<util::Status>;
   static constexpr auto name = _("StatusOr[") + PayloadCaster::name + _("]");
 
   // Conversion part 2 (C++ -> Python).
-  static handle cast(util::StatusOr<PayloadType>&& src,
+  static handle cast(absl::StatusOr<PayloadType>&& src,
                      return_value_policy policy, handle parent,
                      bool throw_exception = true) {
     if (src.ok()) {
