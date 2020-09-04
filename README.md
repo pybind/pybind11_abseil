@@ -1,5 +1,9 @@
 # Pybind11 bindings for the Abseil C++ Common Libraries
 
+[TOC]
+
+## Overview
+
 These adapters make Abseil types work with Pybind11 bindings. For more
 information on using Pybind11, see
 g3doc/third_party/pybind11/google3_utils/README.md.
@@ -121,3 +125,105 @@ Supported exactly the same way pybind11 supports `std::map`.
 ## absl::flat_hash_set
 
 Supported exactly the same way pybind11 supports `std::set`.
+
+## absl::Status[Or]
+
+To use the Status[Or] casters:
+
+1. Include the header file `pybind11_abseil/status_casters.h`
+   in the .cc file with your bindings.
+1. Call `pybind11::google::ImportStatusModule();` in your `PYBIND11_MODULE`
+   definition.
+
+By default, an ok status will be converted into `None`, and a non-ok status will
+raise a `status.StatusNotOk` exception. This has a `status` attribute which can
+be used to access the status object and check the code/ message.
+
+To get a `status.Status` object rather than having an exception thrown,
+pass either the `Status` object or a `Status` returning function to
+`pybind11::google::DoNotThrowStatus` before casting or binding. This works with
+references and pointers to `absl::Status` objects too.
+
+See status_utils.cc in this directory for details about what methods are
+available in wrapped `absl::Status` objects.
+
+Example:
+
+```cpp
+#include "pybind11_abseil/status_casters.h"
+
+absl::Status StatusReturningFunction() {
+  return absl::Status(...);
+}
+
+pybind11::handle StatusHandlingFunction() {
+  return pybind11::cast(pybind11::google::DoNotThrowStatus(absl::Status(...)));
+}
+
+PYBIND11_MODULE(test_bindings, m) {
+  pybind11::google::ImportStatusModule();
+
+  m.def("return_status", &StatusReturningFunction,
+        "Return None if StatusCode is OK, otherwise raise an error.");
+  m.def("make_status", google::DoNotThrowStatus(&StatusReturningFunction),
+        "Return a wrapped status object without raising an error.");
+  m.def("status_handling_function", &StatusHandlingFunction,
+        "Same effect as make_status, but cast is done internally.");
+};
+```
+
+Python:
+
+```python
+from pybind11_abseil import status
+import test_bindings
+
+my_status = make_status()
+if my_status.code():
+  ...
+
+try:
+  return_status()
+except status.StatusNotOk as e:
+  print(e.status)
+```
+
+### absl::StatusOr
+
+`absl::StatusOr` objects behave exactly like `absl::Status` objects, except:
+
+- There is no support for passing StatusOr objects. You can only return them.
+- Instead of returning None or a wrapped status with OK, this casts and
+  returns the payload when there is no error.
+
+As with `absl::Status`, the default behavior is to throw an error when casting
+a non-ok status. You may pass a StatusOr object or StatusOr returning function
+to `pybind11::google::DoNotThrowStatus` in exactly the same way as with
+`absl::Status` to change this behavior.
+
+`absl::StatusOr` objects must be returned by value (not reference or pointer).
+Why? Because the implementation takes advantage of the fact that python is a
+dynamically typed language to cast and return the payload *or* the
+`absl::Status` object (or raise an exeception). Python has no concept of a
+`absl::StatusOr` object, so it's also impossible to apply the
+return_value_policy to a `absl::StatusOr`. Therefore returning a reference or
+pointer to a `absl::StatusOr` is meaningless.
+
+Pointers *can* be used as the payload type, and the return_value_policy will
+be applied to the payload if the status is OK. However, references cannot be
+used as the payload type, because that's a restriction on `absl::StatusOr` in
+general, not pybind11 (see https://yaqs/5903163345338368).
+
+This can handle any type of payload that pybind knows about. unique_ptrs
+(ie, `absl::StatusOr<std::unique_ptr<...>>`) to wrapped classes or
+structs (ie, any type which you created bindings for using
+`pybind11::class_<...>`) can be used, but unique_ptrs to converted types (eg,
+`int`, `string`, `absl::Time`, `absl::Duration`, etc) cannot be used.
+
+### Use Outside of Google3
+
+The path used for the status module may be changed by altering the value of
+`PYBIND11_ABSEIL_STATUS_MODULE_PATH` defined in `status_casters.h`. This uses
+the same mechanism as the proto module, so see [its documentation]
+(../pybind11_protobuf/README.md?cl=head#use-outside-of-google3)
+for details.
