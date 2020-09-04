@@ -81,6 +81,9 @@ absl::StatusOr<std::unique_ptr<IntValue>> ReturnUniquePtrStatusOr(int value) {
 }
 
 PYBIND11_MODULE(status_example, m) {
+  auto status_module = pybind11::google::ImportStatusModule();
+  m.attr("StatusNotOk") = status_module.attr("StatusNotOk");
+
   class_<IntValue>(m, "IntValue").def_readonly("value", &IntValue::value);
 
   class_<TestClass>(m, "TestClass")
