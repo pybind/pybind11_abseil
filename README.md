@@ -220,6 +220,32 @@ structs (ie, any type which you created bindings for using
 `pybind11::class_<...>`) can be used, but unique_ptrs to converted types (eg,
 `int`, `string`, `absl::Time`, `absl::Duration`, etc) cannot be used.
 
+### Aliasing parts of the status module
+
+The need to import the `status` module can be eliminated by aliasing the parts
+of the status module that are needed in your own module:
+
+```cpp
+PYBIND11_MODULE(test_bindings, m) {
+  auto status_module = pybind11::google::ImportStatusModule();
+  m.attr("StatusNotOk") = status_module.attr("StatusNotOk");
+
+  ...
+}
+```
+
+Python:
+
+```python
+import test_bindings
+
+try:
+  return_status()
+except test_bindings.StatusNotOk as e:
+  print(e.status)
+
+```
+
 ### Use Outside of Google3
 
 The path used for the status module may be changed by altering the value of

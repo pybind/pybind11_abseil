@@ -27,6 +27,13 @@ class StatusTest(googletest.TestCase):
     self.assertEqual(cm.exception.status.code(), status.StatusCode.CANCELLED)
     self.assertEqual(cm.exception.status.message(), 'test')
 
+  def test_return_not_ok_catch_with_alias(self):
+    # The return_status function should convert a non-ok status to an exception.
+    with self.assertRaises(status_example.StatusNotOk) as cm:
+      status_example.return_status(status.StatusCode.CANCELLED, 'test')
+    self.assertEqual(cm.exception.status.code(), status.StatusCode.CANCELLED)
+    self.assertEqual(cm.exception.status.message(), 'test')
+
   def test_make_ok(self):
     # The make_status function has been set up to return a status object
     # instead of raising an exception (this is done in status_example.cc).
