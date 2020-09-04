@@ -67,17 +67,6 @@ class StatusTest(googletest.TestCase):
     self.assertEqual(test_status.code(), status.StatusCode.ABORTED)
     self.assertEqual(test_status.message(), 'test')
 
-  def test_proto_conversions(self):
-    status_proto = status.make_status_proto()
-    status.save_status_to_proto(status.aborted_error('test'), status_proto)
-    self.assertEqual(status_proto.code, int(status.StatusCode.ABORTED))
-    self.assertEqual(status_proto.space, 'generic')
-    self.assertEqual(status_proto.message, 'test')
-
-    test_status = status.make_status_from_proto(status_proto)
-    self.assertEqual(test_status.code(), status.StatusCode.ABORTED)
-    self.assertEqual(test_status.message(), 'test')
-
   def test_member_method(self):
     test_status = status_example.TestClass().make_status(status.StatusCode.OK)
     self.assertEqual(test_status.code(), status.StatusCode.OK)

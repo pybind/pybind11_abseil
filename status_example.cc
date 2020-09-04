@@ -1,9 +1,9 @@
 #include <pybind11/pybind11.h>
 
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "pybind11/detail/common.h"
 #include "pybind11_abseil/status_casters.h"
-#include "util/task/status.h"
 
 namespace pybind11 {
 namespace test {
@@ -16,56 +16,56 @@ struct IntValue {
 
 class TestClass {
  public:
-  util::Status MakeStatus(absl::StatusCode code, const std::string& text = "") {
-    return util::Status(code, text);
+  absl::Status MakeStatus(absl::StatusCode code, const std::string& text = "") {
+    return absl::Status(code, text);
   }
 
-  util::Status MakeStatusConst(absl::StatusCode code,
+  absl::Status MakeStatusConst(absl::StatusCode code,
                                const std::string& text = "") const {
-    return util::Status(code, text);
+    return absl::Status(code, text);
   }
 
   absl::StatusOr<int> MakeFailureStatusOr(absl::StatusCode code,
                                           const std::string& text = "") {
-    return util::Status(code, text);
+    return absl::Status(code, text);
   }
 };
 
-bool CheckStatus(const util::Status& status, absl::StatusCode code) {
+bool CheckStatus(const absl::Status& status, absl::StatusCode code) {
   return status.code() == code;
 }
 
-util::Status ReturnStatus(absl::StatusCode code, const std::string& text = "") {
-  return util::Status(code, text);
+absl::Status ReturnStatus(absl::StatusCode code, const std::string& text = "") {
+  return absl::Status(code, text);
 }
 
 pybind11::object ReturnStatusManualCast(absl::StatusCode code,
                                         const std::string& text = "") {
-  return pybind11::cast(google::DoNotThrowStatus(util::Status(code, text)));
+  return pybind11::cast(google::DoNotThrowStatus(absl::Status(code, text)));
 }
 
-const util::Status& ReturnStatusRef(absl::StatusCode code,
+const absl::Status& ReturnStatusRef(absl::StatusCode code,
                                     const std::string& text = "") {
-  static util::Status static_status;
-  static_status = util::Status(code, text);
+  static absl::Status static_status;
+  static_status = absl::Status(code, text);
   return static_status;
 }
 
-const util::Status* ReturnStatusPtr(absl::StatusCode code,
+const absl::Status* ReturnStatusPtr(absl::StatusCode code,
                                     const std::string& text = "") {
-  static util::Status static_status;
-  static_status = util::Status(code, text);
+  static absl::Status static_status;
+  static_status = absl::Status(code, text);
   return &static_status;
 }
 
 absl::StatusOr<int> ReturnFailureStatusOr(absl::StatusCode code,
                                           const std::string& text = "") {
-  return util::Status(code, text);
+  return absl::Status(code, text);
 }
 
 pybind11::object ReturnFailureStatusOrManualCast(absl::StatusCode code,
                                                  const std::string& text = "") {
-  return pybind11::cast(google::DoNotThrowStatus(util::Status(code, text)));
+  return pybind11::cast(google::DoNotThrowStatus(absl::Status(code, text)));
 }
 
 absl::StatusOr<int> ReturnValueStatusOr(int value) { return value; }
@@ -94,7 +94,7 @@ PYBIND11_MODULE(status_example, m) {
            google::DoNotThrowStatus(&TestClass::MakeFailureStatusOr),
            arg("code"), arg("text") = "");
 
-  // util::Status bindings
+  // absl::Status bindings
   m.def("check_status", &CheckStatus, arg("status"), arg("code"));
   m.def("return_status", &ReturnStatus, "Raise an error if code is not OK.",
         arg("code"), arg("text") = "");
