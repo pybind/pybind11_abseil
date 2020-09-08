@@ -55,8 +55,8 @@ inline module ImportStatusModule() {
 namespace detail {
 
 // Convert NoThrowStatus by dispatching to a caster for StatusType with the
-// argument throw_exception = false. StatusType should be a absl::Status
-// (rvalue, lvalue, reference, or pointer), or a absl::StatusOr value.
+// argument throw_exception = false. StatusType should be an absl::Status
+// (rvalue, lvalue, reference, or pointer), or an absl::StatusOr value.
 // Only return values trigger exceptions, so NoThrowStatus has no meaning for
 // input values. Therefore only C++->Python casting is supported.
 template <typename StatusType>
@@ -125,7 +125,7 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
   }
 };
 
-// Convert a absl::StatusOr.
+// Convert an absl::StatusOr.
 template <typename PayloadType>
 struct type_caster<absl::StatusOr<PayloadType>> {
  public:
