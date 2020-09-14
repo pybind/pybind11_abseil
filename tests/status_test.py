@@ -4,12 +4,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from google3.testing.pybase import googletest
+import unittest
 from pybind11_abseil import status
-from pybind11_abseil import status_example
+from pybind11_abseil.tests import status_example
 
 
-class StatusTest(googletest.TestCase):
+class StatusTest(unittest.TestCase):
 
   def test_pass_status(self):
     test_status = status.Status(status.StatusCode.CANCELLED, 'test')
@@ -28,11 +28,16 @@ class StatusTest(googletest.TestCase):
     self.assertEqual(cm.exception.status.message(), 'test')
 
   def test_return_not_ok_catch_with_alias(self):
-    # The return_status function should convert a non-ok status to an exception.
+    # Catch as status_example.StatusNotOk, an alias of status.StatusNotOk.
     with self.assertRaises(status_example.StatusNotOk) as cm:
       status_example.return_status(status.StatusCode.CANCELLED, 'test')
     self.assertEqual(cm.exception.status.code(), status.StatusCode.CANCELLED)
     self.assertEqual(cm.exception.status.message(), 'test')
+
+  def test_return_not_ok_catch_as_generic_exception(self):
+    # Catch as a generic Exception, the base type of StatusNotOk.
+    with self.assertRaises(Exception):
+      status_example.return_status(status.StatusCode.CANCELLED, 'test')
 
   def test_make_ok(self):
     # The make_status function has been set up to return a status object
@@ -88,7 +93,7 @@ class StatusTest(googletest.TestCase):
     self.assertFalse(status.is_ok(failure_status))
 
 
-class StatusOrTest(googletest.TestCase):
+class StatusOrTest(unittest.TestCase):
 
   def test_return_value(self):
     self.assertEqual(status_example.return_value_status_or(5), 5)
@@ -135,4 +140,4 @@ class StatusOrTest(googletest.TestCase):
 
 
 if __name__ == '__main__':
-  googletest.main()
+  unittest.main()
