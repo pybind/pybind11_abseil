@@ -12,12 +12,12 @@ import datetime
 from dateutil import tz
 import numpy as np
 
-from google3.testing.pybase import googletest
-from google3.testing.pybase import parameterized
-from pybind11_abseil import absl_example
+import unittest
+import parameterized
+from pybind11_abseil.tests import absl_example
 
 
-class AbslTimeTest(googletest.TestCase):
+class AbslTimeTest(unittest.TestCase):
   SECONDS_IN_DAY = 24 * 60 * 60
   POSITIVE_SECS = 3 * SECONDS_IN_DAY + 2.5
   NEGATIVE_SECS = -3 * SECONDS_IN_DAY + 2.5
@@ -258,7 +258,7 @@ class AbslNonConstSpanTest(parameterized.TestCase):
     self.assertTrue(absl_example.check_span_no_copy(vector, values))
 
 
-class AbslStringViewTest(googletest.TestCase):
+class AbslStringViewTest(unittest.TestCase):
   TEST_STRING = 'test string!'
 
   def test_return_view(self):
@@ -271,7 +271,7 @@ class AbslStringViewTest(googletest.TestCase):
         absl_example.check_string_view(self.TEST_STRING, self.TEST_STRING))
 
 
-class AbslFlatHashMapTest(googletest.TestCase):
+class AbslFlatHashMapTest(unittest.TestCase):
 
   def test_return_map(self):
     keys_and_values = [(1, 2), (3, 4), (5, 6)]
@@ -283,7 +283,7 @@ class AbslFlatHashMapTest(googletest.TestCase):
     self.assertTrue(absl_example.check_map(dict(expected), expected))
 
 
-class AbslFlatHashSetTest(googletest.TestCase):
+class AbslFlatHashSetTest(unittest.TestCase):
 
   def test_return_set(self):
     values = [1, 3, 7, 5]
@@ -295,7 +295,7 @@ class AbslFlatHashSetTest(googletest.TestCase):
     self.assertTrue(absl_example.check_set(set(expected), expected))
 
 
-class AbslOptionalTest(googletest.TestCase):
+class AbslOptionalTest(unittest.TestCase):
 
   def test_pass_default_nullopt(self):
     self.assertTrue(absl_example.check_optional())
@@ -314,4 +314,4 @@ class AbslOptionalTest(googletest.TestCase):
 
 
 if __name__ == '__main__':
-  googletest.main()
+  unittest.main()
