@@ -43,11 +43,15 @@ namespace google {
 // can be called from any number of different modules; everything after the
 // first will be a no-op.
 inline module ImportStatusModule() {
+#if PY_MAJOR_VERSION >= 3
   auto m = reinterpret_borrow<module>(PyImport_AddModule(
       PYBIND11_TOSTRING(PYBIND11_ABSEIL_STATUS_MODULE_PATH)));
   if (!detail::get_type_info(typeid(absl::Status))) RegisterStatusBindings(m);
   // else no-op because bindings are already loaded.
   return m;
+#else
+  return module::import(PYBIND11_TOSTRING(PYBIND11_ABSEIL_STATUS_MODULE_PATH));
+#endif
 }
 
 }  // namespace google
