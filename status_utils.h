@@ -49,7 +49,7 @@ std::function<NoThrowStatus<StatusType>(Args...)> DoNotThrowStatus(
 template <typename StatusType, typename Class, typename... Args>
 std::function<NoThrowStatus<StatusType>(Class*, Args...)> DoNotThrowStatus(
     StatusType (Class::*f)(Args...)) {
-  return [f](Class *c, Args... args) {
+  return [f](Class* c, Args... args) {
     return NoThrowStatus<StatusType>(
         std::forward<StatusType>((c->*f)(std::forward<Args>(args)...)));
   };
@@ -81,6 +81,26 @@ class StatusNotOk : public std::exception {
 // Registers the bindings for the status types in the given module. Can only
 // be called once; subsequent calls will fail due to duplicate registrations.
 void RegisterStatusBindings(module m);
+
+// If modifying the functions below, see
+// g3doc/pybind11_abseil/README.md#importing-the-status-module
+
+// Returns true if the status module has been imported.
+inline bool IsStatusModuleImported() {
+  return detail::get_type_info(typeid(absl::Status));
+}
+
+// In debug mode, throws a type error if the proto module is not imported.
+// No-opt if NDEBUG is defined, and inlined so the compiler can optimize it out.
+inline void CheckStatusModuleImported() {
+#ifndef NDEBUG
+  if (!IsStatusModuleImported())
+    throw type_error(
+        "Status module has not been imported. Did you call ::pybind11::google"
+        "::ImportStatusModule() in your PYBIND11_MODULE definition?");
+#endif
+}
+
 
 }  // namespace google
 }  // namespace pybind11
