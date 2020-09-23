@@ -139,12 +139,12 @@ By default, an ok status will be converted into `None`, and a non-ok status will
 raise a `status.StatusNotOk` exception. This has a `status` attribute which can
 be used to access the status object and check the code/ message.
 
-To get a `status.Status` object rather than having an exception thrown,
-pass either the `Status` object or a `Status` returning function to
+To get a `status.Status` object rather than having an exception thrown, pass
+either the `Status` object or a function returning a `Status` to
 `pybind11::google::DoNotThrowStatus` before casting or binding. This works with
 references and pointers to `absl::Status` objects too.
 
-See status_utils.cc in this directory for details about what methods are
+See `status_utils.cc` in this directory for details about what methods are
 available in wrapped `absl::Status` objects.
 
 Example:
@@ -156,8 +156,8 @@ absl::Status StatusReturningFunction() {
   return absl::Status(...);
 }
 
-pybind11::handle StatusHandlingFunction() {
-  return pybind11::cast(pybind11::google::DoNotThrowStatus(absl::Status(...)));
+pybind11::object StatusHandlingFunction() {
+  return pybind11::cast(pybind11::google::DoNotThrowStatus(StatusReturningFunction()));
 }
 
 PYBIND11_MODULE(test_bindings, m) {
