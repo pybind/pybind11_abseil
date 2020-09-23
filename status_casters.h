@@ -2,7 +2,7 @@
 //
 // Usage:
 // 1) Include this file in the .cc file with your bindings.
-// 2) Call `pbyind11::google::ImportStatusModule()` in your PYBIND11_MODULE
+// 2) Call `pybind11::google::ImportStatusModule()` in your PYBIND11_MODULE
 //    definition.
 //
 // Supported types:
@@ -39,14 +39,14 @@ namespace google {
   pybind11_abseil.status
 #endif
 
-// Imports the bindings for the status types. Like regular imports, this
-// can be called from any number of different modules; everything after the
-// first will be a no-op.
+// Imports the bindings for the status types. This not thread safe and should
+// only be called from a PYBIND11_MODULE definition. If modifying this,
+// see g3doc/pybind11_abseil/README.md#importing-the-status-module
 inline module ImportStatusModule() {
 #if PY_MAJOR_VERSION >= 3
   auto m = reinterpret_borrow<module>(PyImport_AddModule(
       PYBIND11_TOSTRING(PYBIND11_ABSEIL_STATUS_MODULE_PATH)));
-  if (!detail::get_type_info(typeid(absl::Status))) RegisterStatusBindings(m);
+  if (!IsStatusModuleImported()) RegisterStatusBindings(m);
   // else no-op because bindings are already loaded.
   return m;
 #else
@@ -85,13 +85,7 @@ struct type_caster<google::NoThrowStatus<StatusType>> {
 template <>
 struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
  public:
-  // Conversion part 1 (Python->C++) handled by built in caster.
-  bool load(handle src, bool convert) {
-    google::ImportStatusModule();  // TODO(b/167413620): Eliminate this.
-    return type_caster_base<absl::Status>::load(src, convert);
-  }
-
-  // Conversion part 2 (C++ -> Python)
+  // Convert C++ -> Python.
   static handle cast(const absl::Status* src, return_value_policy policy,
                      handle parent, bool throw_exception = true) {
     if (!src) return none().release();
@@ -114,7 +108,7 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
   template <typename CType>
   static handle cast_impl(CType src, return_value_policy policy, handle parent,
                           bool throw_exception) {
-    google::ImportStatusModule();  // TODO(b/167413620): Eliminate this.
+    google::CheckStatusModuleImported();
     if (!throw_exception) {
       // Use the built-in/standard pybind11 caster.
       return type_caster_base<absl::Status>::cast(std::forward<CType>(src),
@@ -141,6 +135,7 @@ struct type_caster<absl::StatusOr<PayloadType>> {
   static handle cast(absl::StatusOr<PayloadType>&& src,
                      return_value_policy policy, handle parent,
                      bool throw_exception = true) {
+    google::CheckStatusModuleImported();
     if (src.ok()) {
       // Convert and return the payload.
       return PayloadCaster::cast(std::forward<PayloadType>(*src), policy,

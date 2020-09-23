@@ -6,6 +6,7 @@
 
 namespace pybind11 {
 namespace google {
+namespace {
 
 // Returns false if status_or represents a non-ok status object, and true in all
 // other cases (including the case that this is passed a non-status object).
@@ -15,6 +16,8 @@ bool IsOk(handle status_or) {
   if (!caster.load(status_or, true)) return true;
   return static_cast<absl::Status &>(caster).ok();
 }
+
+}  // namespace
 
 void RegisterStatusBindings(module m) {
   enum_<absl::StatusCode>(m, "StatusCode")

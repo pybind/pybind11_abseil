@@ -246,6 +246,19 @@ except test_bindings.StatusNotOk as e:
 
 ```
 
+### Importing the status module
+
+The status module uses the same import mechansim as the proto module; see [its
+documentation](../pybind11_protobuf/README.md#importing-the-proto-module)
+for details. For now there is a `#ifdef` to allow `ImportStatusModule` to work
+with python 2 rather than giving an error, but this will be removed eventually.
+
+If modifying the following functions, make the same changes in the
+corresponding proto functions:
+- ImportStatusModule
+- IsStatusModuleImported
+- CheckStatusModuleImported
+
 ### Use Outside of Google3
 
 The path used for the status module may be changed by altering the value of
