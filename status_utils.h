@@ -10,6 +10,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "pybind11_abseil/status_not_ok_exception.h"
 
 namespace pybind11 {
 namespace google {
@@ -63,21 +64,6 @@ DoNotThrowStatus(StatusType (Class::*f)(Args...) const) {
   };
 }
 
-// Exception to throw when we return a non-ok status.
-class StatusNotOk : public std::exception {
- public:
-  StatusNotOk(absl::Status&& status)
-      : status_(std::move(status)), what_(status_.ToString()) {}
-  StatusNotOk(const absl::Status& status)
-      : status_(status), what_(status_.ToString()) {}
-  const absl::Status& status() const { return status_; }
-  const char* what() const noexcept override { return what_.c_str(); }
-
- private:
-  absl::Status status_;
-  std::string what_;
-};
-
 // Registers the bindings for the status types in the given module. Can only
 // be called once; subsequent calls will fail due to duplicate registrations.
 void RegisterStatusBindings(module m);
@@ -100,7 +86,6 @@ inline void CheckStatusModuleImported() {
         "::ImportStatusModule() in your PYBIND11_MODULE definition?");
 #endif
 }
-
 
 }  // namespace google
 }  // namespace pybind11

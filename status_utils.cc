@@ -95,9 +95,10 @@ void RegisterStatusBindings(module m) {
   register_exception_translator([](std::exception_ptr p) {
     try {
       if (p) std::rethrow_exception(p);
-    } catch (const StatusNotOk &e) {
-      status_not_ok.attr("status") = cast(e.status());
-      status_not_ok(e.what());
+    } catch (StatusNotOk& e) {
+      auto rvalue_e = std::move(e);
+      status_not_ok.attr("status") = cast(rvalue_e.status());
+      status_not_ok(rvalue_e.what());
     }
   });
 }
