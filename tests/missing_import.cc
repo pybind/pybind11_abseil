@@ -3,6 +3,7 @@
 #include <pybind11/pybind11.h>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "pybind11_abseil/status_casters.h"
 
 namespace pybind11 {
