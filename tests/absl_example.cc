@@ -27,9 +27,8 @@ bool CheckDuration(const absl::Duration& duration, double secs) {
 }
 
 absl::Time MakeTime(double secs) {
-  int64 int_secs = static_cast<int64>(secs);
-  int64 int_microsecs = static_cast<int64>((secs - int_secs) * 1e6);
-  return absl::FromUnixSeconds(int_secs) + absl::Microseconds(int_microsecs);
+  int64 microsecs = static_cast<int64>(secs * 1e6);
+  return absl::FromUnixMicros(microsecs);
 }
 
 bool CheckDatetime(const absl::Time& datetime, double secs) {

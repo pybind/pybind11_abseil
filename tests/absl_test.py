@@ -86,6 +86,29 @@ class AbslTimeTest(unittest.TestCase):
     secs = dt_with_tz.timestamp()
     self.assertTrue(absl_example.check_datetime(dt_with_tz, secs))
 
+  def test_pass_datetime_dst_with_timezone(self):
+    pacific_tz = tz.gettz('America/Los_Angeles')
+    # pylint: disable=g-tzinfo-datetime
+    dst_end = datetime.datetime(2020, 11, 1, 2, 0, 0, tzinfo=pacific_tz)
+    # pylint: enable=g-tzinfo-datetime
+    secs = dst_end.timestamp()
+    self.assertTrue(absl_example.check_datetime(dst_end, secs))
+
+  def test_pass_datetime_dst(self):
+    dst_end = datetime.datetime(2020, 11, 1, 2, 0, 0)
+    secs = dst_end.timestamp()
+    self.assertTrue(absl_example.check_datetime(dst_end, secs))
+
+  def test_dst_datetime_from_timestamp(self):
+    secs = 1604224799  # 2020-11-01T02:00:00-08:00
+    time = datetime.datetime.fromtimestamp(secs)
+    self.assertTrue(absl_example.check_datetime(time, secs))
+
+  def test_pass_datetime_pre_unix_epoch(self):
+    dt = datetime.datetime(1969, 7, 16, 10, 56, 7, microsecond=140)
+    secs = dt.timestamp()
+    self.assertTrue(absl_example.check_datetime(dt, secs))
+
   def test_return_civilsecond(self):
     # We need to use a timezone aware datetime here, otherwise
     # datetime.timestamp converts to localtime. UTC is chosen as the convention

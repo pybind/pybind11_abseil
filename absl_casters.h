@@ -124,37 +124,31 @@ struct type_caster<absl::Time> {
         !hasattr(src, "day")) {
       return false;
     }
-    int64 hour = 0, minute = 0, second = 0, microsecond = 0;
-    if (hasattr(src, "hour") && hasattr(src, "minute") &&
-        hasattr(src, "second") && hasattr(src, "microsecond")) {
-      hour = GetInt64Attr(src, "hour");
-      minute = GetInt64Attr(src, "minute");
-      second = GetInt64Attr(src, "second");
-      microsecond = GetInt64Attr(src, "microsecond");
+    if (hasattr(src, "timestamp")) {
+      // python datetime.datetime object
+      double timestamp = src.attr("timestamp")().cast<double>();
+      int64 as_micros = static_cast<int64>(timestamp * 1e6);
+      value = absl::FromUnixMicros(as_micros);
+    } else {
+      // python datetime.date object
+      absl::CivilDay civil_day(GetInt64Attr(src, "year"),
+                               GetInt64Attr(src, "month"),
+                               GetInt64Attr(src, "day"));
+      value = absl::FromCivil(civil_day, GetTimeZone(src));
     }
-    absl::CivilSecond civil_sec(GetInt64Attr(src, "year"),
-                                GetInt64Attr(src, "month"),
-                                GetInt64Attr(src, "day"), hour, minute, second);
-    absl::TimeZone timezone = GetTimeZone(src);
-    value = absl::FromCivil(civil_sec, timezone) +
-        absl::Microseconds(microsecond);
     return true;
   }
 
   // Conversion part 2 (C++ -> Python)
   static handle cast(const absl::Time& src, return_value_policy, handle) {
-    // Convert to civil time. This will truncate fractional seconds.
-    absl::CivilSecond civil_sec =
-        absl::ToCivilSecond(src, absl::LocalTimeZone());
-    int64 micosecs = absl::ToInt64Microseconds(
-        src - absl::FromCivil(civil_sec, absl::LocalTimeZone()));
+    // This function truncates fractional microseconds as the python datetime
+    // objects cannot support a resolution higher than this.
     auto py_datetime_t = module::import("datetime").attr("datetime");
-    auto py_timedelta_t = module::import("datetime").attr("timedelta");
+    auto py_from_timestamp = py_datetime_t.attr("fromtimestamp");
     auto py_timezone_t = module::import("dateutil.tz").attr("gettz");
     auto py_timezone = py_timezone_t(absl::LocalTimeZone().name());
-    auto py_datetime = py_datetime_t(
-        civil_sec.year(), civil_sec.month(), civil_sec.day(), civil_sec.hour(),
-        civil_sec.minute(), civil_sec.second(), micosecs, py_timezone);
+    double as_seconds = static_cast<double>(absl::ToUnixMicros(src)) / 1e6;
+    auto py_datetime = py_from_timestamp(as_seconds, "tz"_a = py_timezone);
     return py_datetime.release();
   }
 };
