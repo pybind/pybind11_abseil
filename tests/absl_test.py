@@ -9,6 +9,9 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
+import sys
+
+import google3
 from dateutil import tz
 import numpy as np
 
@@ -17,11 +20,25 @@ import parameterized
 from pybind11_abseil.tests import absl_example
 
 
+if sys.version_info.major > 2:
+  DateTime = datetime.datetime
+else:
+  class DateTime(datetime.datetime):
+
+    def timestamp(self):
+      if self.tzinfo:
+        with_tz = self
+      else:
+        with_tz = self.replace(tzinfo=tz.gettz())  # pylint: disable=g-tzinfo-replace
+      epoch = datetime.datetime(1970, 1, 1, tzinfo=tz.tzutc())  # pylint: disable=g-tzinfo-datetime
+      return (with_tz - epoch).total_seconds()
+
+
 class AbslTimeTest(unittest.TestCase):
   SECONDS_IN_DAY = 24 * 60 * 60
   POSITIVE_SECS = 3 * SECONDS_IN_DAY + 2.5
   NEGATIVE_SECS = -3 * SECONDS_IN_DAY + 2.5
-  TEST_DATETIME = datetime.datetime(2000, 1, 2, 3, 4, 5, int(5e5))
+  TEST_DATETIME = DateTime(2000, 1, 2, 3, 4, 5, int(5e5))
   # Linter error relevant for pytz only.
   # pylint: disable=g-tzinfo-replace
   TEST_DATETIME_UTC = TEST_DATETIME.replace(tzinfo=tz.tzutc())
@@ -53,7 +70,7 @@ class AbslTimeTest(unittest.TestCase):
     local_tz = tz.gettz()
     # pylint: disable=g-tzinfo-datetime
     # Warning about tzinfo applies to pytz, but we are using dateutil.tz
-    expected_datetime = datetime.datetime(
+    expected_datetime = DateTime(
         year=self.TEST_DATETIME.year,
         month=self.TEST_DATETIME.month,
         day=self.TEST_DATETIME.day,
@@ -68,8 +85,10 @@ class AbslTimeTest(unittest.TestCase):
     self.assertEqual(expected_datetime, absl_example.make_datetime(secs))
 
   def test_pass_date(self):
-    secs = datetime.datetime(self.TEST_DATE.year, self.TEST_DATE.month,
-                             self.TEST_DATE.day).timestamp()
+    secs = DateTime(
+        self.TEST_DATE.year,
+        self.TEST_DATE.month,
+        self.TEST_DATE.day).timestamp()
     self.assertTrue(absl_example.check_datetime(self.TEST_DATE, secs))
 
   def test_pass_datetime(self):
@@ -80,7 +99,7 @@ class AbslTimeTest(unittest.TestCase):
     pacific_tz = tz.gettz('America/Los_Angeles')
     # pylint: disable=g-tzinfo-datetime
     # Warning about tzinfo applies to pytz, but we are using dateutil.tz
-    dt_with_tz = datetime.datetime(
+    dt_with_tz = DateTime(
         year=2020, month=2, day=1, hour=20, tzinfo=pacific_tz)
     # pylint: enable=g-tzinfo-datetime
     secs = dt_with_tz.timestamp()
@@ -89,23 +108,24 @@ class AbslTimeTest(unittest.TestCase):
   def test_pass_datetime_dst_with_timezone(self):
     pacific_tz = tz.gettz('America/Los_Angeles')
     # pylint: disable=g-tzinfo-datetime
-    dst_end = datetime.datetime(2020, 11, 1, 2, 0, 0, tzinfo=pacific_tz)
+    dst_end = DateTime(2020, 11, 1, 2, 0, 0, tzinfo=pacific_tz)
     # pylint: enable=g-tzinfo-datetime
     secs = dst_end.timestamp()
     self.assertTrue(absl_example.check_datetime(dst_end, secs))
 
   def test_pass_datetime_dst(self):
-    dst_end = datetime.datetime(2020, 11, 1, 2, 0, 0)
+    dst_end = DateTime(2020, 11, 1, 2, 0, 0)
     secs = dst_end.timestamp()
     self.assertTrue(absl_example.check_datetime(dst_end, secs))
 
+  @unittest.skipIf(sys.version_info.major < 3, 'FIX-ME WIP cl/340502989')
   def test_dst_datetime_from_timestamp(self):
     secs = 1604224799  # 2020-11-01T02:00:00-08:00
-    time = datetime.datetime.fromtimestamp(secs)
+    time = DateTime.fromtimestamp(secs)
     self.assertTrue(absl_example.check_datetime(time, secs))
 
   def test_pass_datetime_pre_unix_epoch(self):
-    dt = datetime.datetime(1969, 7, 16, 10, 56, 7, microsecond=140)
+    dt = DateTime(1969, 7, 16, 10, 56, 7, microsecond=140)
     secs = dt.timestamp()
     self.assertTrue(absl_example.check_datetime(dt, secs))
 
