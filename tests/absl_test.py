@@ -34,7 +34,7 @@ else:
       return (with_tz - epoch).total_seconds()
 
 
-class AbslTimeTest(unittest.TestCase):
+class AbslTimeTest(parameterized.TestCase):
   SECONDS_IN_DAY = 24 * 60 * 60
   POSITIVE_SECS = 3 * SECONDS_IN_DAY + 2.5
   NEGATIVE_SECS = -3 * SECONDS_IN_DAY + 2.5
@@ -118,11 +118,18 @@ class AbslTimeTest(unittest.TestCase):
     secs = dst_end.timestamp()
     self.assertTrue(absl_example.check_datetime(dst_end, secs))
 
+  @parameterized.named_parameters(('before', -1),
+                                  ('flip', 0),
+                                  ('after', 1))
   @unittest.skipIf(sys.version_info.major < 3, 'FIX-ME WIP cl/340502989')
-  def test_dst_datetime_from_timestamp(self):
-    secs = 1604224799  # 2020-11-01T02:00:00-08:00
-    time = DateTime.fromtimestamp(secs)
-    self.assertTrue(absl_example.check_datetime(time, secs))
+  def test_dst_datetime_from_timestamp(self, offs):
+    secs_flip = 1604224799  # 2020-11-01T02:00:00-08:00
+    secs = secs_flip + offs
+    time_utc = DateTime.fromtimestamp(secs, tz.tzutc())
+    time_local_aware = time_utc.astimezone(tz.gettz())
+    time_local_naive = time_local_aware.replace(tzinfo=None)
+    for time in (time_utc, time_local_aware, time_local_naive):
+      self.assertTrue(absl_example.check_datetime(time, secs))
 
   def test_pass_datetime_pre_unix_epoch(self):
     dt = DateTime(1969, 7, 16, 10, 56, 7, microsecond=140)
