@@ -129,7 +129,27 @@ struct type_caster<absl::Time> {
       double timestamp = src.attr("timestamp")().cast<double>();
       int64 as_micros = static_cast<int64>(timestamp * 1e6);
       value = absl::FromUnixMicros(as_micros);
-    } else {
+    }
+#if PY_MAJOR_VERSION < 3
+    else if (hasattr(src, "microsecond")) {  // NOLINT(readability/braces)
+      // python datetime.datetime object
+      // This doesn't rely on datetime.datetime.timestamp(), which is not
+      // available in Python 2.
+      auto utc = module::import("dateutil.tz").attr("UTC");
+      auto datetime = module_::import("datetime").attr("datetime");
+      auto gettz = module::import("dateutil.tz").attr("gettz");
+
+      auto epoch_dt = datetime.attr("fromtimestamp")(0, utc);
+      auto tz = (src.attr("tzinfo").is_none()) ? gettz() : src.attr("tzinfo");
+      auto src_with_tz = src.attr("replace")("tzinfo"_a = tz);
+
+      double timestamp =
+          (src_with_tz - epoch_dt).attr("total_seconds")().cast<double>();
+      int64 as_micros = static_cast<int64>(timestamp * 1e6);
+      value = absl::FromUnixMicros(as_micros);
+    }
+#endif
+    else {  // NOLINT(readability/braces)
       // python datetime.date object
       absl::CivilDay civil_day(GetInt64Attr(src, "year"),
                                GetInt64Attr(src, "month"),
