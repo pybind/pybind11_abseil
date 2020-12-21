@@ -1,0 +1,42 @@
+name: build_and_test
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Install Bazel
+        # Install Bazel, see https://docs.bazel.build/versions/master/install-ubuntu.html#step-1-install-required-packages
+        run: |
+          sudo apt install curl gnupg
+          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
+          sudo mv bazel.gpg /etc/apt/trusted.gpg.d/
+          echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+          sudo apt update && sudo apt install bazel -y
+
+      - name: Install virtualenv
+        run: |
+          sudo apt-get install python3-pip -y
+          sudo pip3 install virtualenv
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: bash ./scripts/build_and_run_tests.sh
