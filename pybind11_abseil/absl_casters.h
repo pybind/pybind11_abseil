@@ -38,6 +38,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <typeinfo>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -335,6 +336,15 @@ struct type_caster<absl::optional<T>>
     : public optional_caster<absl::optional<T>> {};
 template <>
 struct type_caster<absl::nullopt_t> : public void_caster<absl::nullopt_t> {};
+#endif
+
+// This is a simple port of the pybind11 std::variant type_caster, applied to
+// absl::variant. See pybind11 stl.h.
+#ifndef ABSL_HAVE_STD_VARIANT
+template <typename... Ts>
+struct type_caster<absl::variant<Ts...>>
+    : variant_caster<absl::variant<Ts...>> {};
+
 #endif
 
 }  // namespace detail

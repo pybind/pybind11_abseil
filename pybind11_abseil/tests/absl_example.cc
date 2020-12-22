@@ -196,6 +196,33 @@ void DefineNonConstSpan(module* py_m, absl::string_view type_name) {
             &FillNonConstSpan<T>, arg("value"), arg("output_span").noconvert());
 }
 
+// absl::variant
+struct A {
+  int a;
+};
+struct B {
+  int b;
+};
+typedef absl::variant<A, B> AOrB;
+
+int VariantToInt(AOrB value) {
+  if (absl::holds_alternative<A>(value)) {
+    return absl::get<A>(value).a;
+  } else if (absl::holds_alternative<B>(value)) {
+    return absl::get<B>(value).b;
+  } else {
+    throw std::exception();
+  }
+}
+
+std::vector<AOrB> IdentityWithCopy(const std::vector<AOrB>& value) {
+  return value;
+}
+std::vector<absl::variant<A*, B*>> Identity(
+    const std::vector<absl::variant<A*, B*>>& value) {
+  return value;
+}
+
 PYBIND11_MODULE(absl_example, m) {
   // absl::Time/Duration bindings.
   m.def("make_duration", &MakeDuration, arg("secs"));
@@ -257,6 +284,13 @@ PYBIND11_MODULE(absl_example, m) {
   // absl::flat_hash_set bindings
   m.def("make_set", &MakeSet, arg("values"));
   m.def("check_set", &CheckSet, arg("set"), arg("values"));
+
+  // absl::variant
+  class_<A>(m, "A").def(init<int>()).def_readonly("a", &A::a);
+  class_<B>(m, "B").def(init<int>()).def_readonly("b", &B::b);
+  m.def("VariantToInt", &VariantToInt);
+  m.def("Identity", &Identity);
+  m.def("IdentityWithCopy", &IdentityWithCopy);
 }
 
 }  // namespace test

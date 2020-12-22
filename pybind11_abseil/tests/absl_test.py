@@ -365,5 +365,26 @@ class AbslOptionalTest(absltest.TestCase):
     self.assertIsNone(absl_example.make_optional())
 
 
+class AbslVariantTest(absltest.TestCase):
+
+  def test_variant(self):
+    assert absl_example.VariantToInt(absl_example.A(3)) == 3
+    assert absl_example.VariantToInt(absl_example.B(5)) == 5
+
+    for identity_f, should_be_equal in [(absl_example.Identity, True),
+                                        (absl_example.IdentityWithCopy, False)]:
+      objs = [absl_example.A(3), absl_example.B(5)]
+      vector = identity_f(objs)
+      self.assertLen(vector, 2)
+      self.assertIsInstance(vector[0], absl_example.A)
+      self.assertEqual(vector[0].a, 3)
+      self.assertIsInstance(vector[1], absl_example.B)
+      self.assertEqual(vector[1].b, 5)
+      if should_be_equal:
+        self.assertEqual(objs, vector)
+      else:
+        self.assertNotEqual(objs, vector)
+
+
 if __name__ == '__main__':
   absltest.main()
