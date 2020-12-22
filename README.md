@@ -1,6 +1,6 @@
 # Pybind11 bindings for the Abseil C++ Common Libraries
 
-![build](https://github.com/pybind11/pybind11_abseil/workflows/build_and_test/badge.svg)
+![build_and_test](https://github.com/pybind/pybind11_abseil/workflows/build_and_test/badge.svg)
 
 [TOC]
 
