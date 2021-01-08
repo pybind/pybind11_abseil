@@ -17,6 +17,61 @@ bool IsOk(handle status_or) {
   return static_cast<absl::Status &>(caster).ok();
 }
 
+// Status factory wrappers.
+//
+// Abseil does not support taking the address of functions, per
+// https://abseil.io/about/compatibility.  To avoid breakages, we wrap these
+// factory functions so that we can use them unambiguously in the bindings
+// below.
+absl::Status WrapAbortedError(absl::string_view message) {
+  return absl::AbortedError(message);
+}
+absl::Status WrapAlreadyExistsError(absl::string_view message) {
+  return absl::AlreadyExistsError(message);
+}
+absl::Status WrapCancelledError(absl::string_view message) {
+  return absl::CancelledError(message);
+}
+absl::Status WrapDataLossError(absl::string_view message) {
+  return absl::DataLossError(message);
+}
+absl::Status WrapDeadlineExceededError(absl::string_view message) {
+  return absl::DeadlineExceededError(message);
+}
+absl::Status WrapFailedPreconditionError(absl::string_view message) {
+  return absl::FailedPreconditionError(message);
+}
+absl::Status WrapInternalError(absl::string_view message) {
+  return absl::InternalError(message);
+}
+absl::Status WrapInvalidArgumentError(absl::string_view message) {
+  return absl::InvalidArgumentError(message);
+}
+absl::Status WrapNotFoundError(absl::string_view message) {
+  return absl::NotFoundError(message);
+}
+absl::Status WrapOutOfRangeError(absl::string_view message) {
+  return absl::OutOfRangeError(message);
+}
+absl::Status WrapPermissionDeniedError(absl::string_view message) {
+  return absl::PermissionDeniedError(message);
+}
+absl::Status WrapResourceExhaustedError(absl::string_view message) {
+  return absl::ResourceExhaustedError(message);
+}
+absl::Status WrapUnauthenticatedError(absl::string_view message) {
+  return absl::UnauthenticatedError(message);
+}
+absl::Status WrapUnavailableError(absl::string_view message) {
+  return absl::UnavailableError(message);
+}
+absl::Status WrapUnimplementedError(absl::string_view message) {
+  return absl::UnimplementedError(message);
+}
+absl::Status WrapUnknownError(absl::string_view message) {
+  return absl::UnknownError(message);
+}
+
 }  // namespace
 
 void RegisterStatusBindings(module m) {
@@ -63,29 +118,24 @@ void RegisterStatusBindings(module m) {
   // return a wrapped status, not raise an exception.
 
   // Return canonical errors.
-  m.def("aborted_error", &absl::AbortedError, arg("message"));
-  m.def("already_exists_error", &absl::AlreadyExistsError, arg("message"));
-  // CanceledError has an overload which takes no arguments, so we must cast it.
-  m.def("cancelled_error",
-        (absl::Status(*)(absl::string_view)) & absl::CancelledError,
+  m.def("aborted_error", &WrapAbortedError, arg("message"));
+  m.def("already_exists_error", &WrapAlreadyExistsError, arg("message"));
+  m.def("cancelled_error", &WrapCancelledError, arg("message"));
+  m.def("data_loss_error", &WrapDataLossError, arg("message"));
+  m.def("deadline_exceeded_error", &WrapDeadlineExceededError, arg("message"));
+  m.def("failed_precondition_error", &WrapFailedPreconditionError,
         arg("message"));
-  m.def("data_loss_error", &absl::DataLossError, arg("message"));
-  m.def("deadline_exceeded_error", &absl::DeadlineExceededError,
+  m.def("internal_error", &WrapInternalError, arg("message"));
+  m.def("invalid_argument_error", &WrapInvalidArgumentError, arg("message"));
+  m.def("not_found_error", &WrapNotFoundError, arg("message"));
+  m.def("out_of_range_error", &WrapOutOfRangeError, arg("message"));
+  m.def("permission_denied_error", &WrapPermissionDeniedError, arg("message"));
+  m.def("resource_exhausted_error", &WrapResourceExhaustedError,
         arg("message"));
-  m.def("failed_precondition_error", &absl::FailedPreconditionError,
-        arg("message"));
-  m.def("internal_error", &absl::InternalError, arg("message"));
-  m.def("invalid_argument_error", &absl::InvalidArgumentError, arg("message"));
-  m.def("not_found_error", &absl::NotFoundError, arg("message"));
-  m.def("out_of_range_error", &absl::OutOfRangeError, arg("message"));
-  m.def("permission_denied_error", &absl::PermissionDeniedError,
-        arg("message"));
-  m.def("resource_exhausted_error", &absl::ResourceExhaustedError,
-        arg("message"));
-  m.def("unauthenticated_error", &absl::UnauthenticatedError, arg("message"));
-  m.def("unavailable_error", &absl::UnavailableError, arg("message"));
-  m.def("unimplemented_error", &absl::UnimplementedError, arg("message"));
-  m.def("unknown_error", &absl::UnknownError, arg("message"));
+  m.def("unauthenticated_error", &WrapUnauthenticatedError, arg("message"));
+  m.def("unavailable_error", &WrapUnavailableError, arg("message"));
+  m.def("unimplemented_error", &WrapUnimplementedError, arg("message"));
+  m.def("unknown_error", &WrapUnknownError, arg("message"));
 
   // Register the exception.
   static pybind11::exception<StatusNotOk> status_not_ok(m, "StatusNotOk");
