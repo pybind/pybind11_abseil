@@ -106,8 +106,8 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
 
  private:
   template <typename CType>
-  static handle cast_impl(CType src, return_value_policy policy, handle parent,
-                          bool throw_exception) {
+  static handle cast_impl(CType&& src, return_value_policy policy,
+                          handle parent, bool throw_exception) {
     google::CheckStatusModuleImported();
     if (!throw_exception) {
       // Use the built-in/standard pybind11 caster.
