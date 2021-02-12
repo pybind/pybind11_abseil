@@ -89,19 +89,17 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
   static handle cast(const absl::Status* src, return_value_policy policy,
                      handle parent, bool throw_exception = true) {
     if (!src) return none().release();
-    return cast_impl<const absl::Status&>(*src, policy, parent,
-                                          throw_exception);
+    return cast_impl(*src, policy, parent, throw_exception);
   }
 
   static handle cast(const absl::Status& src, return_value_policy policy,
                      handle parent, bool throw_exception = true) {
-    return cast_impl<const absl::Status&>(src, policy, parent, throw_exception);
+    return cast_impl(src, policy, parent, throw_exception);
   }
 
   static handle cast(absl::Status&& src, return_value_policy policy,
                      handle parent, bool throw_exception = true) {
-    return cast_impl<absl::Status&&>(std::move(src), policy, parent,
-                                     throw_exception);
+    return cast_impl(std::move(src), policy, parent, throw_exception);
   }
 
  private:
