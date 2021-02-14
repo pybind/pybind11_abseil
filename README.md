@@ -146,6 +146,19 @@ either the `Status` object or a function returning a `Status` to
 `pybind11::google::DoNotThrowStatus` before casting or binding. This works with
 references and pointers to `absl::Status` objects too.
 
+It isn't possible to specify separate return value policies for a `StatusOr`
+object and its payload. Since `StatusOr` is processed and not ever actually
+represented in Python, the return value policy applies to the payload. Eg, if
+you return a StatusOr<MyObject*> (note the * is inside the `StatusOr`) with a
+take_ownership return val policy and the status is OK (ie, it has a payload),
+Python will take ownership of that payload and free it when it is garbage
+collected.
+
+However, if you return a StatusOr<MyObject>* (note the * is outside the
+`StatusOr` rather than inside it now) with a take_ownership return val policy,
+Python does not take ownership of the `StatusOr` and will not free it (because
+again, that policy applies to `MyObject`, not `StatusOr`).
+
 See `status_utils.cc` in this directory for details about what methods are
 available in wrapped `absl::Status` objects.
 

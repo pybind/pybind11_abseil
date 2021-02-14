@@ -126,6 +126,15 @@ PYBIND11_MODULE(status_example, m) {
         "Return a reference in a status or to a static value.",
         return_value_policy::reference);
   m.def("return_unique_ptr_status_or", &ReturnUniquePtrStatusOr, arg("value"));
+  m.def("return_status_or_pointer", []() {
+    static absl::StatusOr<int>* ptr = new absl::StatusOr<int>(42);
+    return ptr;
+  });
+  m.def("return_failure_status_or_pointer", []() {
+    static absl::StatusOr<int>* ptr =
+        new absl::StatusOr<int>(absl::InvalidArgumentError("Uh oh!"));
+    return ptr;
+  });
 }
 
 }  // namespace test

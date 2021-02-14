@@ -138,6 +138,17 @@ class StatusOrTest(absltest.TestCase):
         status.StatusCode.CANCELLED)
     self.assertFalse(status.is_ok(failure_result))
 
+  def test_return_status_or_pointer(self):
+    expected_result = 42
+    for _ in range(3):
+      result = status_example.return_status_or_pointer()
+      self.assertEqual(result, expected_result)
+
+  def test_return_failed_status_or_pointer(self):
+    for _ in range(3):
+      with self.assertRaises(status.StatusNotOk):
+        status_example.return_failure_status_or_pointer()
+
 
 if __name__ == '__main__':
   absltest.main()
