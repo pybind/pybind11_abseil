@@ -235,6 +235,31 @@ structs (ie, any type which you created bindings for using
 `pybind11::class_<...>`) can be used, but unique_ptrs to converted types (eg,
 `int`, `string`, `absl::Time`, `absl::Duration`, etc) cannot be used.
 
+### absl::StatusCode
+
+The `status` module provides `pybind11::enum_` bindings for `absl::StatusCode`.
+These use python constant style- eg `status.StatusCode.OK`,
+`status.StatusCode.CANCELLED`, etc.
+
+Warning: Pybind enums are their own type, and will never compare equally to
+integers due to being a different type, regardless of their value. In particular,
+note that the [status proto](http://google3/util/task/status.proto)
+`code` field is an integer, so it will never directly compare as equal to a
+`StatusCode`. To fix this, convert an integer to a `StatusCode` or vice-versa.
+
+```python
+status_code = 0  # An integer.
+
+if status_code == status.StatusCode.OK:  # Wrong: always evaluates to false.
+  ...
+
+if status.StatusCode(status_code) == status.StatusCode.OK:  # Correct.
+  ...
+
+if status_code == int(status.StatusCode.OK):  # Also correct.
+  ...
+```
+
 ### Aliasing parts of the status module
 
 The need to import the `status` module can be eliminated by aliasing the parts
