@@ -104,8 +104,8 @@ void RegisterStatusBindings(module m) {
           "update",
           (void (absl::Status::*)(const absl::Status &)) & absl::Status::Update,
           arg("other"))
-      .def("to_string", &absl::Status::ToString)
-      .def("__repr__", &absl::Status::ToString);
+      .def("to_string", [](const absl::Status& s) { return s.ToString(); })
+      .def("__repr__", [](const absl::Status& s) { return s.ToString(); });
 
   m.def("is_ok", &IsOk, arg("status_or"),
         "Returns false only if passed a non-ok status; otherwise returns true. "

@@ -92,6 +92,18 @@ class StatusTest(absltest.TestCase):
     failure_status = status_example.make_status(status.StatusCode.CANCELLED)
     self.assertFalse(status.is_ok(failure_status))
 
+  def test_ok_to_string(self):
+    ok_status = status_example.make_status(status.StatusCode.OK)
+    self.assertEqual(ok_status.to_string(), 'OK')
+    self.assertEqual(repr(ok_status), 'OK')
+    self.assertEqual(str(ok_status), 'OK')
+
+  def test_canonical_error_to_string(self):
+    test_status = status.aborted_error('test')
+    self.assertEqual(test_status.to_string(), 'ABORTED: test')
+    self.assertEqual(repr(test_status), 'ABORTED: test')
+    self.assertEqual(str(test_status), 'ABORTED: test')
+
 
 class StatusOrTest(absltest.TestCase):
 
@@ -148,6 +160,13 @@ class StatusOrTest(absltest.TestCase):
     for _ in range(3):
       with self.assertRaises(status.StatusNotOk):
         status_example.return_failure_status_or_pointer()
+
+  def test_canonical_error_to_string(self):
+    failure_result = status_example.make_failure_status_or(
+        status.StatusCode.CANCELLED)
+    self.assertEqual(failure_result.to_string(), 'CANCELLED: ')
+    self.assertEqual(repr(failure_result), 'CANCELLED: ')
+    self.assertEqual(str(failure_result), 'CANCELLED: ')
 
 
 if __name__ == '__main__':
