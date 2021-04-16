@@ -43,6 +43,13 @@ bool CheckSpan(absl::Span<const int> span, const std::vector<int>& values) {
   return true;
 }
 
+bool CheckSpanCasterCopy(const handle& span, const std::vector<int>& values) {
+  pybind11::detail::make_caster<absl::Span<const int>> caster;
+  caster = pybind11::detail::load_type<absl::Span<const int>>(span);
+  return CheckSpan(pybind11::detail::cast_op<absl::Span<const int>>(caster),
+                   values);
+}
+
 absl::CivilSecond MakeCivilSecond(double secs) {
   return absl::ToCivilSecond(absl::FromUnixSeconds(static_cast<int64_t>(secs)),
                              absl::UTCTimeZone());
@@ -246,6 +253,8 @@ PYBIND11_MODULE(absl_example, m) {
 
   // absl::Span bindings.
   m.def("check_span", &CheckSpan, arg("span"), arg("values"));
+  m.def("check_span_caster_copy", &CheckSpanCasterCopy, arg("span"),
+        arg("values"));
   class_<VectorContainer>(m, "VectorContainer")
       .def(init())
       .def("make_span", &VectorContainer::MakeSpan, arg("values"));

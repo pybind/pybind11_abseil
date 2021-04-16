@@ -269,6 +269,18 @@ struct type_caster<absl::Span<const T>> {
       : vector_converter_(std::move(other.vector_converter_)),
         value_(get_vector()) {}
 
+  type_caster& operator=(const type_caster<absl::Span<const T>>& other) {
+    vector_converter_ = other.vector_converter_;
+    value_ = get_vector();
+    return *this;
+  }
+
+  type_caster& operator=(type_caster<absl::Span<const T>>&& other) {
+    vector_converter_ = std::move(other.vector_converter_);
+    value_ = get_vector();
+    return *this;
+  }
+
   static constexpr auto name = _("Span[") + make_caster<T>::name + _("]");
 
   // We do not allow moving because 1) spans are super lightweight, so there's

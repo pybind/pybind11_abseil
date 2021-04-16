@@ -227,6 +227,7 @@ class AbslSpanTest(parameterized.TestCase):
     # Pass values twice- one will be converted to a span, the other to a vector
     # (which is known to work), and then they will be compared.
     self.assertTrue(absl_example.check_span(values, values))
+    self.assertTrue(absl_example.check_span_caster_copy(values, values))
 
   def test_span_with_pointers(self):
     objs = [absl_example.ObjectForSpan(3), absl_example.ObjectForSpan(5)]
