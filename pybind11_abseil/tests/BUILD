@@ -1,6 +1,6 @@
 # Tests and examples for pybind11_abseil.
 
-# load("//devtools/python/blaze:python3.bzl", "py2and3_strict_test")
+# load("//devtools/python/blaze:strict.bzl", "py_strict_test")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 
 licenses(["notice"])
@@ -23,7 +23,8 @@ py_test(
     name = "absl_test",
     srcs = ["absl_test.py"],
     data = [":absl_example.so"],
-    srcs_version = "PY2AND3",
+    python_version = "PY3",
+    srcs_version = "PY3",
 )
 
 pybind_extension(
@@ -41,7 +42,8 @@ py_test(
     name = "missing_import_test",
     srcs = ["missing_import_test.py"],
     data = [":missing_import.so"],
-    srcs_version = "PY2AND3",
+    python_version = "PY3",
+    srcs_version = "PY3",
 )
 
 pybind_extension(
@@ -61,5 +63,6 @@ py_test(
         ":status_example.so",
         "//pybind11_abseil:status.so",
     ],
-    srcs_version = "PY2AND3",
+    python_version = "PY3",
+    srcs_version = "PY3",
 )
