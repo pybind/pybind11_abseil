@@ -24,6 +24,43 @@ including a separated header file:
 #include "pybind11_abseil/absl_numpy_span_caster.h"
 ```
 
+## Installation
+
+You will need to depend on `pybind11`, `pybind11_bazel`(see
+[doc](https://github.com/pybind/pybind11_bazel#installation), and on
+`pybind11_abseil`, e.g.
+
+```
+git_repository(
+    name = "pybind11_bazel",
+    remote = "https://github.com/pybind/pybind11_bazel.git",
+    branch = "master",
+)
+
+http_archive(
+  name = "pybind11",
+  build_file = "@pybind11_bazel//:pybind11.BUILD",
+  strip_prefix = "pybind11-2.6.2",
+  sha256 = "8ff2fff22df038f5cd02cea8af56622bc67f5b64534f1b83b9f133b8366acff2",
+  urls = ["https://github.com/pybind/pybind11/archive/v2.6.2.tar.gz"],
+)
+
+load("@pybind11_bazel//:python_configure.bzl", "python_configure")
+python_configure(name = "local_config_python")
+
+git_repository(
+    name = "pybind11_abseil",
+    remote = "https://github.com/pybind/pybind11_abseil.git",
+    branch = "master",
+)
+```
+
+Then, in your BUILD file:
+
+```
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+```
+
 ## absl::Duration
 
 `absl::Duration` objects are converted to/ from python datetime.timedelta objects.
