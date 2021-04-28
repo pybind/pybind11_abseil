@@ -138,7 +138,8 @@ struct type_caster<absl::StatusOr<PayloadType>> {
  public:
   using PayloadCaster = make_caster<PayloadType>;
   using StatusCaster = make_caster<absl::Status>;
-  static constexpr auto name = _("StatusOr[") + PayloadCaster::name + _("]");
+  static constexpr auto name =
+      _("Union[") + StatusCaster::name + _(", ") + PayloadCaster::name + _("]");
 
   // Convert C++ -> Python.
   static handle cast(const absl::StatusOr<PayloadType>* src,
