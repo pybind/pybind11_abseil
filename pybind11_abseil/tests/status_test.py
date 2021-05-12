@@ -9,12 +9,21 @@ from pybind11_abseil import status
 from pybind11_abseil.tests import status_example
 
 
+def docstring_signature(f):
+  """Returns the first line from a docstring - the signature for a function."""
+  return f.__doc__.split('\n')[0]
+
+
 class StatusTest(absltest.TestCase):
 
   def test_pass_status(self):
     test_status = status.Status(status.StatusCode.CANCELLED, 'test')
     self.assertTrue(
         status_example.check_status(test_status, status.StatusCode.CANCELLED))
+
+  def test_return_status_return_type_from_doc(self):
+    self.assertEndsWith(
+        docstring_signature(status_example.return_status), ' -> None')
 
   def test_return_ok(self):
     # The return_status function should convert an ok status to None.
@@ -38,6 +47,10 @@ class StatusTest(absltest.TestCase):
     # Catch as a generic Exception, the base type of StatusNotOk.
     with self.assertRaises(Exception):
       status_example.return_status(status.StatusCode.CANCELLED, 'test')
+
+  def test_make_status_return_type_from_doc(self):
+    self.assertRegex(
+        docstring_signature(status_example.make_status), r' -> .*\.Status')
 
   def test_make_ok(self):
     # The make_status function has been set up to return a status object
@@ -107,6 +120,11 @@ class StatusTest(absltest.TestCase):
 
 class StatusOrTest(absltest.TestCase):
 
+  def test_return_value_status_or_return_type_from_doc(self):
+    self.assertEndsWith(
+        docstring_signature(status_example.return_value_status_or),
+        ' -> int')
+
   def test_return_value(self):
     self.assertEqual(status_example.return_value_status_or(5), 5)
 
@@ -114,6 +132,11 @@ class StatusOrTest(absltest.TestCase):
     with self.assertRaises(status.StatusNotOk) as cm:
       status_example.return_failure_status_or(status.StatusCode.NOT_FOUND)
     self.assertEqual(cm.exception.status.code(), status.StatusCode.NOT_FOUND)
+
+  def test_make_failure_status_or_return_type_from_doc(self):
+    self.assertRegex(
+        docstring_signature(status_example.make_failure_status_or),
+        r' -> Union\[.*\.Status, int\]')
 
   def test_make_not_ok(self):
     self.assertEqual(

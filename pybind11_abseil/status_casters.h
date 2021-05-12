@@ -21,6 +21,7 @@
 #include <pybind11/pybind11.h>
 
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "absl/status/status.h"
@@ -58,6 +59,20 @@ inline module ImportStatusModule() {
 
 namespace detail {
 
+template <typename StatusType>
+struct NoThrowStatusType {
+  // NoThrowStatus should only wrap absl::Status or absl::StatusOr.
+  using NoThrowAbslStatus = type_caster_base<absl::Status>;
+  static constexpr auto name = NoThrowAbslStatus::name;
+};
+
+template <typename PayloadType>
+struct NoThrowStatusType<absl::StatusOr<PayloadType>> {
+  using NoThrowAbslStatus = type_caster_base<absl::Status>;
+  static constexpr auto name = _("Union[") + NoThrowAbslStatus::name + _(", ") +
+                               make_caster<PayloadType>::name + _("]");
+};
+
 // Convert NoThrowStatus by dispatching to a caster for StatusType with the
 // argument throw_exception = false. StatusType should be an absl::Status
 // (rvalue, lvalue, reference, or pointer), or an absl::StatusOr value.
@@ -67,7 +82,7 @@ template <typename StatusType>
 struct type_caster<google::NoThrowStatus<StatusType>> {
   using InputType = google::NoThrowStatus<StatusType>;
   using StatusCaster = make_caster<StatusType>;
-  static constexpr auto name = StatusCaster::name;
+  static constexpr auto name = NoThrowStatusType<StatusType>::name;
 
   // Convert C++->Python.
   static handle cast(const InputType& src, return_value_policy policy,
@@ -85,7 +100,8 @@ struct type_caster<google::NoThrowStatus<StatusType>> {
 template <>
 struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
  public:
-  // Convert C++ -> Python.
+  static constexpr auto name = _("None");
+  //  Convert C++ -> Python.
   static handle cast(const absl::Status* src, return_value_policy policy,
                      handle parent, bool throw_exception = true) {
     if (!src) return none().release();
@@ -138,8 +154,7 @@ struct type_caster<absl::StatusOr<PayloadType>> {
  public:
   using PayloadCaster = make_caster<PayloadType>;
   using StatusCaster = make_caster<absl::Status>;
-  static constexpr auto name =
-      _("Union[") + StatusCaster::name + _(", ") + PayloadCaster::name + _("]");
+  static constexpr auto name = PayloadCaster::name;
 
   // Convert C++ -> Python.
   static handle cast(const absl::StatusOr<PayloadType>* src,
