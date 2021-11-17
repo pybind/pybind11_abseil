@@ -48,10 +48,6 @@ pybind_library(
 pybind_library(
     name = "status_casters",
     hdrs = ["status_casters.h"],
-    data = select({
-        "//devtools/python/blaze:py3_mode": [],
-        "//devtools/python/blaze:py2_mode": [":status"],
-    }),
     deps = [
         ":status_utils",
         "@com_google_absl//absl/status",
