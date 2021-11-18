@@ -72,7 +72,7 @@ Therefore, C code cannot mutate any datetime.timedelta objects from python.
 Additionally, datetime.date objects can be converted to `absl::Time` objects.
 C code cannot mutate any datetime.datetime objects from python.
 
-Python date objects effectively truncate the time to 0 (ie, midnight).
+Python date objects effectively truncate the time to 0 (i.e., midnight).
 Python time objects are not supported because `absl::Time` would implicitly
 assume a year, which could be confusing.
 
@@ -105,7 +105,7 @@ Currently, this will always result in the list being copied, so you lose the
 efficiency gains of spans in native C++, but you still get the API versatility.
 
 The value type in the span can be any type that pybind knows about. However, it
-must be immutable (ie, `absl::Span<const ValueType>`). Theoretically mutable
+must be immutable (i.e., `absl::Span<const ValueType>`). Theoretically mutable
 ValueTypes could be supported, but with some subtle limitations, and this is
 not needed right now, so the implementation has been deferred.
 
@@ -185,14 +185,14 @@ references and pointers to `absl::Status` objects too.
 
 It isn't possible to specify separate return value policies for a `StatusOr`
 object and its payload. Since `StatusOr` is processed and not ever actually
-represented in Python, the return value policy applies to the payload. Eg, if
+represented in Python, the return value policy applies to the payload. E.g., if
 you return a StatusOr<MyObject*> (note the * is inside the `StatusOr`) with a
-take_ownership return val policy and the status is OK (ie, it has a payload),
+take_ownership return val policy and the status is OK (i.e., it has a payload),
 Python will take ownership of that payload and free it when it is garbage
 collected.
 
-However, if you return a StatusOr<MyObject>* (note the * is outside the
-`StatusOr` rather than inside it now) with a take_ownership return val policy,
+However, if you return a `StatusOr<MyObject>*` (note: the `*` is outside the
+`StatusOr` rather than inside it now) with a `take_ownership` return val policy,
 Python does not take ownership of the `StatusOr` and will not free it (because
 again, that policy applies to `MyObject`, not `StatusOr`).
 
@@ -266,16 +266,16 @@ be applied to the payload if the status is OK. However, references cannot be
 used as the payload type, because that's a restriction on `absl::StatusOr` in
 general, not pybind11 (see https://yaqs/5903163345338368).
 
-This can handle any type of payload that pybind knows about. unique_ptrs
-(ie, `absl::StatusOr<std::unique_ptr<...>>`) to wrapped classes or
-structs (ie, any type which you created bindings for using
-`pybind11::class_<...>`) can be used, but unique_ptrs to converted types (eg,
-`int`, `string`, `absl::Time`, `absl::Duration`, etc) cannot be used.
+This can handle any type of payload that pybind knows about. unique_ptrs (i.e.,
+`absl::StatusOr<std::unique_ptr<...>>`) to wrapped classes or structs (i.e., any
+type which you created bindings for using `pybind11::class_<...>`) can be used,
+but unique_ptrs to converted types (e.g., `int`, `string`, `absl::Time`,
+`absl::Duration`, etc.) cannot be used.
 
 ### absl::StatusCode
 
 The `status` module provides `pybind11::enum_` bindings for `absl::StatusCode`.
-These use python constant style- eg `status.StatusCode.OK`,
+These use python constant style, e.g. `status.StatusCode.OK`,
 `status.StatusCode.CANCELLED`, etc.
 
 Warning: Pybind enums are their own type, and will never compare equally to
