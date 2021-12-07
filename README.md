@@ -340,6 +340,6 @@ corresponding proto functions:
 
 The path used for the status module may be changed by altering the value of
 `PYBIND11_ABSEIL_STATUS_MODULE_PATH` defined in `status_casters.h`. This uses
-the same mechanism as the proto module, so see [its documentation]
-(../pybind11_protobuf/README.md?cl=head#use-outside-of-google3)
+the same mechanism as the proto module, so see [its documentation
+](../pybind11_protobuf/README.md?cl=head#use-outside-of-google3)
 for details.
