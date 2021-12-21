@@ -10,10 +10,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "com_google_absl",
-    sha256 = "137836d52edb41891cc6d137a228278ae30e76607e3cbd6b8cdb653743c0823e",  # SHARED_ABSL_SHA
-    strip_prefix = "abseil-cpp-6df644c56f31b100bf731e27c3825069745651e3",
+    sha256 = "dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4",  # SHARED_ABSL_SHA
+    strip_prefix = "abseil-cpp-20211102.0",
     urls = [
-        "https://github.com/abseil/abseil-cpp/archive/6df644c56f31b100bf731e27c3825069745651e3.tar.gz",
+        "https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.tar.gz"
     ],
 )
 
@@ -21,18 +21,18 @@ http_archive(
 # See https://github.com/pybind/pybind11_bazel
 http_archive(
   name = "pybind11_bazel",
-  strip_prefix = "pybind11_bazel-26973c0ff320cb4b39e45bc3e4297b82bc3a6c09",
-  sha256 = "8f546c03bdd55d0e88cb491ddfbabe5aeb087f87de2fbf441391d70483affe39",
-  urls = ["https://github.com/pybind/pybind11_bazel/archive/26973c0ff320cb4b39e45bc3e4297b82bc3a6c09.tar.gz"],
+  strip_prefix = "pybind11_bazel-72cbbf1fbc830e487e3012862b7b720001b70672",
+  sha256 = "516c1b3a10d87740d2b7de6f121f8e19dde2c372ecbfe59aef44cd1872c10395",
+  urls = ["https://github.com/pybind/pybind11_bazel/archive/72cbbf1fbc830e487e3012862b7b720001b70672.tar.gz"],
 )
 
 # We still require the pybind library.
 http_archive(
   name = "pybind11",
   build_file = "@pybind11_bazel//:pybind11.BUILD",
-  strip_prefix = "pybind11-2.6.2",
-  sha256 = "8ff2fff22df038f5cd02cea8af56622bc67f5b64534f1b83b9f133b8366acff2",
-  urls = ["https://github.com/pybind/pybind11/archive/v2.6.2.tar.gz"],
+  strip_prefix = "pybind11-2.8.1",
+  sha256 = "f1bcc07caa568eb312411dde5308b1e250bd0e1bc020fae855bf9f43209940cc",
+  urls = ["https://github.com/pybind/pybind11/archive/refs/tags/v2.8.1.tar.gz"],
 )
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
 python_configure(name = "local_config_python")

@@ -11,10 +11,19 @@ set -e  # exit when any command fails
 MYDIR="$(dirname "$(realpath "$0")")"
 
 BAZEL=$(which bazel)
-if [ ! -x $BAZEL ]
+if [[ -z $BAZEL || ! -x $BAZEL ]]
 then
-  echo -n "Bazel not found (bazel (https://bazel.build/) is needed to "
-  echo "compile & test). Exiting..."
+  echo -n 'Bazel not found (bazel (https://bazel.build/) is needed to '
+  echo 'compile & test). Exiting...'
+  exit 1
+fi
+
+VIRTUAL_ENV_BINARY=$(which virtualenv)
+if [[ -z $VIRTUAL_ENV_BINARY || ! -x $VIRTUAL_ENV_BINARY ]]
+then
+  echo -n 'virtualenv command not found '
+  echo -n '(try `python3 -m pip install virtualenv`, possibly as root). '
+  echo 'Exiting...'
   exit 1
 fi
 
