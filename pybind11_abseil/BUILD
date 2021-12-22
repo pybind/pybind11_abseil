@@ -12,6 +12,7 @@ pybind_library(
     name = "absl_casters",
     hdrs = ["absl_casters.h"],
     deps = [
+        "@com_google_absl//absl/cleanup",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
@@ -24,7 +25,8 @@ pybind_library(
 pybind_library(
     name = "absl_numpy_span_caster",
     hdrs = ["absl_numpy_span_caster.h"],
-    deps = ["@com_google_absl//absl/types:span"],
+    deprecation = "Please use //pybind11_abseil:absl_casters.",
+    deps = [":absl_casters"],
 )
 
 cc_library(

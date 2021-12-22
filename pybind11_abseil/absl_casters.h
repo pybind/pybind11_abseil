@@ -13,7 +13,8 @@
 // - absl::Duration- converted to/from python datetime.timedelta
 // - absl::CivilTime- converted to/from python datetime.datetime and from date.
 // - absl::Time- converted to/from python datetime.datetime and from date.
-// - absl::Span- const value types only.
+// - absl::Span- converted to python sequences and from python buffers,
+//               opaque std::vectors and/or sequences.
 // - absl::string_view
 // - absl::optional- converts absl::nullopt to/from python None, otherwise
 //   converts the contained value.
@@ -33,13 +34,11 @@
 
 #include <cmath>
 #include <cstdint>
-#include <exception>
-#include <memory>
-#include <stdexcept>
+#include <tuple>
 #include <type_traits>
-#include <typeinfo>
 #include <vector>
 
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
@@ -228,56 +227,70 @@ template <>
 struct type_caster<absl::CivilYear>
     : public absl_civil_time_caster<absl::CivilYear> {};
 
-// Convert between absl::Span and python sequence types.
-//
-// TODO(kenoslund): It may be possible to avoid copies in some cases:
-// Python to C++: Numpy arrays are contiguous, so we could overlay without copy.
-// C++ to Python: Python buffer.
-// https://pybind11.readthedocs.io/en/stable/advanced/pycpp/numpy.html#buffer-protocol
-template <typename T>
-struct type_caster<absl::Span<const T>> {
-  // NOTE: In general, it's *unsafe* to have a pointer type for T. It's
-  // ok for unmutable sequences of pybind11-wrapped objects.
-  //
-  // In general if `T` is a pointer or other non-owning reference type, the
-  // resultant `Span` may immediately contain dangling references to temporary
-  // objects owned by temporary `type_caster<T>` objects, and cannot be used.
-  // In particular, passing a list that is mutated before the C++ call
-  // returns, or a lazy sequence is unsafe. Use `std::vector<pybind11::object>`
-  // instead and convert the element in C++.
-  //
-  // If the Python calling code ensures that the sequence of elements used to
-  // initialize the Span are kept alive until the pybind11-bound function
-  // returns, then the Span can safely be used, e.g. using a tuple or a
-  // not-mutated list of pybind11-wrapped objects is ok.
-  //
-  // The static_assert below prevents spans of pointers to converted types from
-  // being used, since the caster (which owns the converted value) would be
-  // destroyed before the function that uses it executes, resulting in a
-  // dangling reference.
-  static_assert(
-      !std::is_pointer<T>::value ||
-          std::is_base_of<type_caster_base<pybind11::detail::intrinsic_t<T>>,
-                          pybind11::detail::make_caster<T>>::value,
-      "Spans of pointers are not supported for converted types.");
-  type_caster() : vector_converter_(), value_(get_vector()) {}
-  // Copy and Move constructors need to ensure the span points to the copied
-  // or moved vector, not the original one.
-  type_caster(const type_caster<absl::Span<const T>>& other)
-      : vector_converter_(other.vector_converter_), value_(get_vector()) {}
-  type_caster(type_caster<absl::Span<const T>>&& other)
-      : vector_converter_(std::move(other.vector_converter_)),
-        value_(get_vector()) {}
+// Returns {true, a span referencing the data contained by src} without copying
+// or converting the data if possible. Otherwise returns {false, an empty span}.
+template <typename T, typename std::enable_if<std::is_arithmetic<T>::value,
+                                              bool>::type = true>
+std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle src) {
+  Py_buffer view;
+  int flags = PyBUF_STRIDES | PyBUF_FORMAT;
+  if (!std::is_const<T>::value) flags |= PyBUF_WRITABLE;
+  if (PyObject_GetBuffer(src.ptr(), &view, flags) == 0) {
+    auto cleanup = absl::MakeCleanup([&view] { PyBuffer_Release(&view); });
+    if (view.ndim == 1 && view.strides[0] == sizeof(T) &&
+        view.format[0] == format_descriptor<T>::c) {
+      return {true, absl::MakeSpan(static_cast<T*>(view.buf), view.shape[0])};
+    }
+  } else {
+    // Clear the buffer error (failure is reported in the return value).
+    PyErr_Clear();
+  }
+  return {false, absl::Span<T>()};
+}
+// If T is not a numeric type, the buffer interface cannot be used.
+template <typename T, typename std::enable_if<!std::is_arithmetic<T>::value,
+                                              bool>::type = true>
+constexpr std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle src) {
+  return {false, absl::Span<T>()};
+}
 
-  type_caster& operator=(const type_caster<absl::Span<const T>>& other) {
-    vector_converter_ = other.vector_converter_;
-    value_ = get_vector();
+// Helper to determine whether T is a span.
+template <typename T>
+struct is_absl_span : std::false_type {};
+template <typename T>
+struct is_absl_span<absl::Span<T>> : std::true_type {};
+
+// Convert between absl::Span and sequence types.
+// See http://g3doc/pybind11_abseil/README.md#abslspan
+template <typename T>
+struct type_caster<absl::Span<T>> {
+ public:
+  // The type referenced by the span, with const removed.
+  using value_type = typename std::remove_cv<T>::type;
+  static_assert(!is_absl_span<value_type>::value,
+                "Nested absl spans are not supported.");
+
+  type_caster() = default;
+  // Copy and Move operations must ensure the span points to the copied or
+  // moved vector (if any), not the original one. Allows implicit conversions.
+  template <typename U>
+  type_caster(const type_caster<absl::Span<U>>& other) {
+    *this = other;
+  }
+  template <typename U>
+  type_caster(type_caster<absl::Span<U>>&& other) {
+    *this = std::move(other);
+  }
+  template <typename U>
+  type_caster& operator=(const type_caster<absl::Span<U>>& other) {
+    list_caster_ = other.list_caster_;
+    value_ = list_caster_ ? get_value(*list_caster_) : other.value_;
     return *this;
   }
-
-  type_caster& operator=(type_caster<absl::Span<const T>>&& other) {
-    vector_converter_ = std::move(other.vector_converter_);
-    value_ = get_vector();
+  template <typename U>
+  type_caster& operator=(type_caster<absl::Span<U>>&& other) {
+    list_caster_ = std::move(other.list_caster_);
+    value_ = list_caster_ ? get_value(*list_caster_) : other.value_;
     return *this;
   }
 
@@ -287,30 +300,58 @@ struct type_caster<absl::Span<const T>> {
   // no advantage to moving and 2) the span cannot exist without the caster,
   // so moving leaves an implicit dependency (while a reference or pointer
   // make that dependency explicit).
-  operator absl::Span<const T>*() { return &value_; }
-  operator absl::Span<const T>&() { return value_; }
+  operator absl::Span<T>*() { return &value_; }
+  operator absl::Span<T>&() { return value_; }
   template <typename T_>
   using cast_op_type = cast_op_type<T_>;
 
   bool load(handle src, bool convert) {
-    if (!vector_converter_.load(src, convert)) return false;
-    // std::vector implicitly converted to absl::Span.
-    value_ = get_vector();
-    return true;
+    // Attempt to reference a buffer, including np.ndarray and array.arrays.
+    bool loaded;
+    std::tie(loaded, value_) = LoadSpanFromBuffer<T>(src);
+    if (loaded) return true;
+
+    // Attempt to unwrap an opaque std::vector.
+    type_caster_base<std::vector<value_type>> caster;
+    if (caster.load(src, false)) {
+      value_ = get_value(caster);
+      return true;
+    }
+
+    // Attempt to convert a native sequence. If the is_base_of_v check passes,
+    // the elements do not require converting and pointers do not reference a
+    // temporary object owned by the element caster. Pointers to converted
+    // types are not allowed because they would result a dangling reference
+    // when the element caster is destroyed. TODO(b/169068487): improve this.
+    if (convert && std::is_const<T>::value &&
+        (!std::is_pointer<T>::value ||
+         std::is_base_of<type_caster_generic, make_caster<T>>::value)) {
+      list_caster_.emplace();
+      if (list_caster_->load(src, convert)) {
+        value_ = get_value(*list_caster_);
+        return true;
+      } else {
+        list_caster_.reset();
+      }
+    }
+
+    return false;  // Python type cannot be loaded into a span.
   }
 
   template <typename CType>
   static handle cast(CType&& src, return_value_policy policy, handle parent) {
-    return VectorConverter::cast(src, policy, parent);
+    return ListCaster::cast(src, policy, parent);
   }
 
  private:
-  std::vector<T>& get_vector() {
-    return static_cast<std::vector<T>&>(vector_converter_);
+  template <typename Caster>
+  absl::Span<T> get_value(Caster& caster) {
+    return absl::MakeSpan(static_cast<std::vector<value_type>&>(caster));
   }
-  using VectorConverter = make_caster<std::vector<T>>;
-  VectorConverter vector_converter_;
-  absl::Span<const T> value_;
+
+  using ListCaster = list_caster<std::vector<value_type>, value_type>;
+  absl::optional<ListCaster> list_caster_;
+  absl::Span<T> value_;
 };
 
 // Convert between absl::flat_hash_map and python dict.

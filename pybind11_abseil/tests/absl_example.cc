@@ -4,7 +4,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 
+#include <cstddef>
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
@@ -15,7 +18,6 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "pybind11_abseil/absl_casters.h"
-#include "pybind11_abseil/absl_numpy_span_caster.h"
 
 namespace pybind11 {
 namespace test {
@@ -33,21 +35,6 @@ absl::Time MakeTime(double secs) {
 
 bool CheckDatetime(const absl::Time& datetime, double secs) {
   return datetime == MakeTime(secs);
-}
-
-bool CheckSpan(absl::Span<const int> span, const std::vector<int>& values) {
-  if (span.size() != values.size()) return false;
-  for (int i = 0; i < span.size(); ++i) {
-    if (span[i] != values[i]) return false;
-  }
-  return true;
-}
-
-bool CheckSpanCasterCopy(const handle& span, const std::vector<int>& values) {
-  pybind11::detail::make_caster<absl::Span<const int>> caster;
-  caster = pybind11::detail::load_type<absl::Span<const int>>(span);
-  return CheckSpan(pybind11::detail::cast_op<absl::Span<const int>>(caster),
-                   values);
 }
 
 absl::CivilSecond MakeCivilSecond(double secs) {
@@ -176,12 +163,24 @@ bool CheckSet(const absl::flat_hash_set<int>& set,
   return set == check;
 }
 
-// Non-const Span.
-template <typename T>
-void FillNonConstSpan(T value, absl::Span<T> output_span) {
-  for (auto& i : output_span) {
-    i = value;
+// Span
+bool CheckSpan(absl::Span<const int> span, const std::vector<int>& values) {
+  if (span.size() != values.size()) return false;
+  for (size_t i = 0; i < span.size(); ++i) {
+    if (span[i] != values[i]) return false;
   }
+  return true;
+}
+
+bool CheckSpanCasterCopy(const handle& span, const std::vector<int>& values) {
+  pybind11::detail::make_caster<absl::Span<const int>> caster;
+  caster = pybind11::detail::load_type<absl::Span<const int>>(span);
+  return CheckSpan(pybind11::detail::cast_op<absl::Span<const int>>(caster),
+                   values);
+}
+
+void FillSpan(int value, absl::Span<int> output_span) {
+  for (auto& i : output_span) i = value;
 }
 
 struct ObjectForSpan {
@@ -189,18 +188,25 @@ struct ObjectForSpan {
   int value;
 };
 
-int SumObjectPointersSpan(absl::Span<ObjectForSpan* const> inputs) {
+void FillObjectPointersSpan(int value,
+                            absl::Span<ObjectForSpan* const> output_span) {
+  for (ObjectForSpan* item : output_span) item->value = value;
+}
+
+void FillObjectSpan(int value, absl::Span<ObjectForSpan> output_span) {
+  for (auto& item : output_span) item.value = value;
+}
+
+int SumObjectPointersSpan(absl::Span<const ObjectForSpan* const> span) {
   int result = 0;
-  for (ObjectForSpan* item : inputs) {
-    result += item->value;
-  }
+  for (const ObjectForSpan* item : span) result += item->value;
   return result;
 }
 
-template <typename T>
-void DefineNonConstSpan(module* py_m, absl::string_view type_name) {
-  py_m->def(absl::StrCat("fill_non_const_span_", type_name).c_str(),
-            &FillNonConstSpan<T>, arg("value"), arg("output_span").noconvert());
+int SumObjectSpan(absl::Span<const ObjectForSpan> span) {
+  int result = 0;
+  for (auto& item : span) result += item.value;
+  return result;
 }
 
 // absl::variant
@@ -230,6 +236,24 @@ std::vector<absl::variant<A*, B*>> Identity(
   return value;
 }
 
+}  // namespace test
+}  // namespace pybind11
+
+PYBIND11_MAKE_OPAQUE(std::vector<pybind11::test::ObjectForSpan>);
+
+namespace pybind11 {
+namespace test {
+
+// Demonstration of constness check for span template parameters.
+static_assert(std::is_const<const int>::value);
+static_assert(
+    std::is_const<int* const>::value);  // pointer is const, int is not.
+static_assert(std::is_const<const int* const>::value);
+static_assert(!std::is_const<int>::value);
+static_assert(!std::is_const<int*>::value);
+static_assert(
+    !std::is_const<const int*>::value);  // int is const, pointer is not.
+
 PYBIND11_MODULE(absl_example, m) {
   // absl::Time/Duration bindings.
   m.def("make_duration", &MakeDuration, arg("secs"));
@@ -253,25 +277,28 @@ PYBIND11_MODULE(absl_example, m) {
 
   // absl::Span bindings.
   m.def("check_span", &CheckSpan, arg("span"), arg("values"));
+  m.def("check_span_no_convert", &CheckSpan, arg("span").noconvert(),
+        arg("values"));
   m.def("check_span_caster_copy", &CheckSpanCasterCopy, arg("span"),
         arg("values"));
   class_<VectorContainer>(m, "VectorContainer")
       .def(init())
       .def("make_span", &VectorContainer::MakeSpan, arg("values"));
+  // Non-const spans can never be converted, so `output_span` could be marked as
+  // `noconvert`, but that would be redundant (so test that it is not needed).
+  m.def("fill_span", &FillSpan, arg("value"), arg("output_span"));
 
-  // non-const absl::Span bindings.
-  DefineNonConstSpan<double>(&m, "double");
-  DefineNonConstSpan<int>(&m, "int");
-  // Wrap a const Span with a non-const Span lambda to avoid copying data.
-  m.def(
-      "check_span_no_copy",
-      [](absl::Span<int> span, const std::vector<int>& values) -> bool {
-        return CheckSpan(span, values);
-      },
-      arg("span"), arg("values"));
-
-  class_<ObjectForSpan>(m, "ObjectForSpan").def(init<int>());
-  m.def("SumObjectPointersSpan", &SumObjectPointersSpan);
+  // Span of objects.
+  class_<ObjectForSpan>(m, "ObjectForSpan")
+      .def(init<int>())
+      .def_readwrite("value", &ObjectForSpan::value);
+  bind_vector<std::vector<ObjectForSpan>>(m, "ObjectVector");
+  m.def("sum_object_pointers_span", &SumObjectPointersSpan, arg("span"));
+  m.def("sum_object_span", &SumObjectSpan, arg("span"));
+  m.def("sum_object_span_no_convert", &SumObjectSpan, arg("span").noconvert());
+  m.def("fill_object_pointers_span", &FillObjectPointersSpan, arg("value"),
+        arg("output_span"));
+  m.def("fill_object_span", &FillObjectSpan, arg("value"), arg("output_span"));
 
   // absl::string_view bindings.
   m.def("check_string_view", &CheckStringView, arg("view"), arg("values"));

@@ -10,7 +10,6 @@ pybind_extension(
     srcs = ["absl_example.cc"],
     deps = [
         "//pybind11_abseil:absl_casters",
-        "//pybind11_abseil:absl_numpy_span_caster",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/time",
