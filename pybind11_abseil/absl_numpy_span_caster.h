@@ -1,6 +1,0 @@
-#ifndef PYBIND11_ABSEIL_ABSL_NUMPY_SPAN_CASTER_H_
-#define PYBIND11_ABSEIL_ABSL_NUMPY_SPAN_CASTER_H_
-
-#include "pybind11_abseil/absl_casters.h"
-
-#endif  // PYBIND11_ABSEIL_ABSL_NUMPY_SPAN_CASTER_H_

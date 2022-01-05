@@ -322,7 +322,7 @@ struct type_caster<absl::Span<T>> {
     // the elements do not require converting and pointers do not reference a
     // temporary object owned by the element caster. Pointers to converted
     // types are not allowed because they would result a dangling reference
-    // when the element caster is destroyed. TODO(b/169068487): improve this.
+    // when the element caster is destroyed.
     if (convert && std::is_const<T>::value &&
         (!std::is_pointer<T>::value ||
          std::is_base_of<type_caster_generic, make_caster<T>>::value)) {

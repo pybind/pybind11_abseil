@@ -22,13 +22,6 @@ pybind_library(
     ],
 )
 
-pybind_library(
-    name = "absl_numpy_span_caster",
-    hdrs = ["absl_numpy_span_caster.h"],
-    deprecation = "Please use //pybind11_abseil:absl_casters.",
-    deps = [":absl_casters"],
-)
-
 cc_library(
     name = "status_not_ok_exception",
     hdrs = ["status_not_ok_exception.h"],
