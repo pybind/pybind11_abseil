@@ -36,6 +36,15 @@ class StatusTest(absltest.TestCase):
     self.assertEqual(cm.exception.status.code(), status.StatusCode.CANCELLED)
     self.assertEqual(cm.exception.status.message(), 'test')
 
+  def test_return_not_ok_twice(self):
+    # Each exception is a different instance with different messages.
+    with self.assertRaises(status.StatusNotOk) as cm1:
+      status_example.return_status(status.StatusCode.CANCELLED, 'test1')
+    with self.assertRaises(status.StatusNotOk) as cm2:
+      status_example.return_status(status.StatusCode.CANCELLED, 'test2')
+    self.assertEqual(cm1.exception.status.message(), 'test1')
+    self.assertEqual(cm2.exception.status.message(), 'test2')
+
   def test_return_not_ok_catch_with_alias(self):
     # Catch as status_example.StatusNotOk, an alias of status.StatusNotOk.
     with self.assertRaises(status_example.StatusNotOk) as cm:

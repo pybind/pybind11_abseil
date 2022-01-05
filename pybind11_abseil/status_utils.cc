@@ -72,6 +72,22 @@ absl::Status WrapUnknownError(absl::string_view message) {
   return absl::UnknownError(message);
 }
 
+// Allows exception to raise an instance, with custom parameters and attributes.
+template <typename type>
+class exception_with_attributes : public exception<type> {
+ public:
+  using exception<type>::exception;
+
+  // Could be merged into pybind11::exception<type>.
+  void operator()(tuple args, dict kwargs, dict attributes) {
+    object exc = object::operator()(*args, **kwargs);
+    for (const auto& item : attributes) {
+      exc.attr(item.first) = item.second;
+    }
+    PyErr_SetObject(this->ptr(), exc.ptr());
+  }
+};
+
 }  // namespace
 
 void RegisterStatusBindings(module m) {
@@ -138,7 +154,7 @@ void RegisterStatusBindings(module m) {
   m.def("unknown_error", &WrapUnknownError, arg("message"));
 
   // Register the exception.
-  static pybind11::exception<StatusNotOk> status_not_ok(m, "StatusNotOk");
+  static exception_with_attributes<StatusNotOk> status_not_ok(m, "StatusNotOk");
 
   // Register a custom handler which converts a C++ StatusNotOk to a Python
   // StatusNotOk exception and adds the status field.
@@ -147,8 +163,10 @@ void RegisterStatusBindings(module m) {
       if (p) std::rethrow_exception(p);
     } catch (StatusNotOk& e) {
       auto rvalue_e = std::move(e);
-      status_not_ok.attr("status") = cast(rvalue_e.status());
-      status_not_ok(rvalue_e.what());
+      status_not_ok(
+          pybind11::make_tuple(rvalue_e.what()),               // args
+          pybind11::dict(),                                    // kwargs
+          pybind11::dict(arg("status") = rvalue_e.status()));  // attributes
     }
   });
 }
