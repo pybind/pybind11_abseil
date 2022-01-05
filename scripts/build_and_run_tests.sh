@@ -10,20 +10,23 @@ set -e  # exit when any command fails
 
 MYDIR="$(dirname "$(realpath "$0")")"
 
-BAZEL=$(which bazel)
+BAZEL=$(which bazel || true)
 if [[ -z $BAZEL || ! -x $BAZEL ]]
 then
+  echo -e -n '\e[1m\e[93m'
   echo -n 'Bazel not found (bazel (https://bazel.build/) is needed to '
-  echo 'compile & test). Exiting...'
+  echo -n 'compile & test). '
+  echo -e 'Exiting...\e[0m'
   exit 1
 fi
 
-VIRTUAL_ENV_BINARY=$(which virtualenv)
+VIRTUAL_ENV_BINARY=$(which virtualenv || true)
 if [[ -z $VIRTUAL_ENV_BINARY || ! -x $VIRTUAL_ENV_BINARY ]]
 then
+  echo -e -n '\e[1m\e[93m'
   echo -n 'virtualenv command not found '
   echo -n '(try `python3 -m pip install virtualenv`, possibly as root). '
-  echo 'Exiting...'
+  echo -e 'Exiting...\e[0m'
   exit 1
 fi
 
@@ -36,11 +39,11 @@ then
 fi
 
 echo -e "\e[33mRunning ${0} from $PWD\e[0m"
-PYBIN=`which python3`
-if [ ! -x $PYBIN ]
+PYBIN=$(which python3 || true)
+if [[ -z $PYBIN || ! -x $PYBIN ]]
 then
-  echo -e "\e[1m\e[93m$PYBIN not found! Skip build and test.\e[0m"
-  continue
+  echo -e '\e[1m\e[93mpython3 not found! Skip build and test.\e[0m'
+  exit 1
 fi
 
 PYVERSION=$($PYBIN -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')
