@@ -23,6 +23,11 @@ pybind_library(
 )
 
 cc_library(
+    name = "no_throw_status",
+    hdrs = ["no_throw_status.h"],
+)
+
+cc_library(
     name = "status_not_ok_exception",
     hdrs = ["status_not_ok_exception.h"],
     deps = ["@com_google_absl//absl/status"],
@@ -34,6 +39,7 @@ pybind_library(
     hdrs = ["status_utils.h"],
     deps = [
         ":absl_casters",
+        ":no_throw_status",
         ":status_not_ok_exception",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
