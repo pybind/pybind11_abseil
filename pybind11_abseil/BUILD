@@ -37,6 +37,7 @@ pybind_library(
     name = "status_utils",
     srcs = ["status_utils.cc"],
     hdrs = ["status_utils.h"],
+    visibility = ["//visibility:private"],
     deps = [
         ":absl_casters",
         ":no_throw_status",
