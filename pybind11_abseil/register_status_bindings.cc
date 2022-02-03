@@ -1,8 +1,15 @@
-#include "pybind11_abseil/status_utils.h"
+#include "pybind11_abseil/register_status_bindings.h"
 
 #include <pybind11/pybind11.h>
 
+#include <exception>
+#include <string>
+#include <utility>
+
+#include "absl/status/status.h"
+#include "absl/strings/string_view.h"
 #include "pybind11_abseil/absl_casters.h"
+#include "pybind11_abseil/status_not_ok_exception.h"
 
 namespace pybind11 {
 namespace google {
@@ -90,6 +97,8 @@ class exception_with_attributes : public exception<type> {
 
 }  // namespace
 
+namespace internal {
+
 void RegisterStatusBindings(module m) {
   enum_<absl::StatusCode>(m, "StatusCode")
       .value("OK", absl::StatusCode::kOk)
@@ -171,5 +180,6 @@ void RegisterStatusBindings(module m) {
   });
 }
 
+}  // namespace internal
 }  // namespace google
 }  // namespace pybind11

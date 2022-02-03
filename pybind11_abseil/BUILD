@@ -34,12 +34,19 @@ cc_library(
 )
 
 pybind_library(
-    name = "status_utils",
-    srcs = ["status_utils.cc"],
-    hdrs = ["status_utils.h"],
+    name = "check_status_module_imported",
+    hdrs = ["check_status_module_imported.h"],
     visibility = ["//visibility:private"],
     deps = [
-        ":absl_casters",
+        "@com_google_absl//absl/status",
+    ],
+)
+
+pybind_library(
+    name = "status_caster",
+    hdrs = ["status_caster.h"],
+    deps = [
+        ":check_status_module_imported",
         ":no_throw_status",
         ":status_not_ok_exception",
         "@com_google_absl//absl/status",
@@ -48,17 +55,53 @@ pybind_library(
 )
 
 pybind_library(
-    name = "status_casters",
-    hdrs = ["status_casters.h"],
+    name = "statusor_caster",
+    hdrs = ["statusor_caster.h"],
     deps = [
-        ":status_utils",
+        ":check_status_module_imported",
+        ":no_throw_status",
+        ":status_caster",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+pybind_library(
+    name = "register_status_bindings",
+    srcs = ["register_status_bindings.cc"],
+    hdrs = ["register_status_bindings.h"],
+    visibility = ["//visibility:private"],
+    deps = [
+        ":absl_casters",
+        ":status_not_ok_exception",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
     ],
 )
 
 pybind_extension(
     name = "status",
     srcs = ["status.cc"],
-    deps = [":status_utils"],
+    deps = [":register_status_bindings"],
+)
+
+pybind_library(
+    name = "import_status_module",
+    srcs = ["import_status_module.cc"],
+    hdrs = ["import_status_module.h"],
+    deps = [
+        ":check_status_module_imported",
+        ":register_status_bindings",
+        "@com_google_absl//absl/status",
+    ],
+)
+
+pybind_library(
+    name = "status_casters",
+    hdrs = ["status_casters.h"],
+    deps = [
+        ":import_status_module",
+        ":status_caster",
+        ":statusor_caster",
+    ],
 )

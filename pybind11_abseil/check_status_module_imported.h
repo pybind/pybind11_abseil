@@ -1,27 +1,13 @@
-// Utility classes functions for absl::Status objects.
-// These are needed by both the status module and casters.
-#ifndef PYBIND11_ABSEIL_STATUS_UTILS_H_
-#define PYBIND11_ABSEIL_STATUS_UTILS_H_
+#ifndef PYBIND11_ABSEIL_CHECK_STATUS_MODULE_IMPORTED_H_
+#define PYBIND11_ABSEIL_CHECK_STATUS_MODULE_IMPORTED_H_
 
 #include <pybind11/pybind11.h>
 
-#include <exception>
-#include <stdexcept>
-
 #include "absl/status/status.h"
-#include "absl/status/statusor.h"
-#include "pybind11_abseil/no_throw_status.h"
-#include "pybind11_abseil/status_not_ok_exception.h"
 
 namespace pybind11 {
 namespace google {
-
-// Registers the bindings for the status types in the given module. Can only
-// be called once; subsequent calls will fail due to duplicate registrations.
-void RegisterStatusBindings(module m);
-
-// If modifying the functions below, see
-// g3doc/pybind11_abseil/README.md#importing-the-status-module
+namespace internal {
 
 // Returns true if the status module has been imported.
 inline bool IsStatusModuleImported() {
@@ -39,7 +25,8 @@ inline void CheckStatusModuleImported() {
 #endif
 }
 
+}  // namespace internal
 }  // namespace google
 }  // namespace pybind11
 
-#endif  // PYBIND11_ABSEIL_STATUS_UTILS_H_
+#endif  // PYBIND11_ABSEIL_CHECK_STATUS_MODULE_IMPORTED_H_

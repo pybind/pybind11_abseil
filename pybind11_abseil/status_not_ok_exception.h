@@ -2,6 +2,9 @@
 #define PYBIND11_ABSEIL_STATUS_NOT_OK_EXCEPTION_H_
 
 #include <exception>
+#include <string>
+#include <utility>
+
 #include "absl/status/status.h"
 
 namespace pybind11 {
