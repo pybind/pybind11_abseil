@@ -73,6 +73,8 @@ pybind_library(
     visibility = ["//visibility:private"],
     deps = [
         ":absl_casters",
+        ":no_throw_status",
+        ":status_caster",
         ":status_not_ok_exception",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",

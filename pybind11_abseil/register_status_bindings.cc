@@ -3,12 +3,15 @@
 #include <pybind11/pybind11.h>
 
 #include <exception>
+#include <functional>
 #include <string>
 #include <utility>
 
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "pybind11_abseil/absl_casters.h"
+#include "pybind11_abseil/no_throw_status.h"
+#include "pybind11_abseil/status_caster.h"
 #include "pybind11_abseil/status_not_ok_exception.h"
 
 namespace pybind11 {
@@ -79,6 +82,17 @@ absl::Status WrapUnknownError(absl::string_view message) {
   return absl::UnknownError(message);
 }
 
+void def_status_factory(
+    module& m, const char* name,
+    absl::Status (*absl_status_factory)(absl::string_view message)) {
+  m.def(
+      name,
+      [absl_status_factory](absl::string_view message) {
+        return DoNotThrowStatus(absl_status_factory(message));
+      },
+      arg("message"));
+}
+
 // Allows exception to raise an instance, with custom parameters and attributes.
 template <typename type>
 class exception_with_attributes : public exception<type> {
@@ -139,28 +153,24 @@ void RegisterStatusBindings(module m) {
         "used in this case because an ok status is never returned; instead, a "
         "non-status object is returned, which doesn't have a .ok() method.");
 
-  // status_casters.h has not been included, so the functions below will
-  // return a wrapped status, not raise an exception.
-
   // Return canonical errors.
-  m.def("aborted_error", &WrapAbortedError, arg("message"));
-  m.def("already_exists_error", &WrapAlreadyExistsError, arg("message"));
-  m.def("cancelled_error", &WrapCancelledError, arg("message"));
-  m.def("data_loss_error", &WrapDataLossError, arg("message"));
-  m.def("deadline_exceeded_error", &WrapDeadlineExceededError, arg("message"));
-  m.def("failed_precondition_error", &WrapFailedPreconditionError,
-        arg("message"));
-  m.def("internal_error", &WrapInternalError, arg("message"));
-  m.def("invalid_argument_error", &WrapInvalidArgumentError, arg("message"));
-  m.def("not_found_error", &WrapNotFoundError, arg("message"));
-  m.def("out_of_range_error", &WrapOutOfRangeError, arg("message"));
-  m.def("permission_denied_error", &WrapPermissionDeniedError, arg("message"));
-  m.def("resource_exhausted_error", &WrapResourceExhaustedError,
-        arg("message"));
-  m.def("unauthenticated_error", &WrapUnauthenticatedError, arg("message"));
-  m.def("unavailable_error", &WrapUnavailableError, arg("message"));
-  m.def("unimplemented_error", &WrapUnimplementedError, arg("message"));
-  m.def("unknown_error", &WrapUnknownError, arg("message"));
+  def_status_factory(m, "aborted_error", WrapAbortedError);
+  def_status_factory(m, "already_exists_error", WrapAlreadyExistsError);
+  def_status_factory(m, "cancelled_error", WrapCancelledError);
+  def_status_factory(m, "data_loss_error", WrapDataLossError);
+  def_status_factory(m, "deadline_exceeded_error", WrapDeadlineExceededError);
+  def_status_factory(m, "failed_precondition_error",
+                     WrapFailedPreconditionError);
+  def_status_factory(m, "internal_error", WrapInternalError);
+  def_status_factory(m, "invalid_argument_error", WrapInvalidArgumentError);
+  def_status_factory(m, "not_found_error", WrapNotFoundError);
+  def_status_factory(m, "out_of_range_error", WrapOutOfRangeError);
+  def_status_factory(m, "permission_denied_error", WrapPermissionDeniedError);
+  def_status_factory(m, "resource_exhausted_error", WrapResourceExhaustedError);
+  def_status_factory(m, "unauthenticated_error", WrapUnauthenticatedError);
+  def_status_factory(m, "unavailable_error", WrapUnavailableError);
+  def_status_factory(m, "unimplemented_error", WrapUnimplementedError);
+  def_status_factory(m, "unknown_error", WrapUnknownError);
 
   // Register the exception.
   static exception_with_attributes<StatusNotOk> status_not_ok(m, "StatusNotOk");
@@ -172,10 +182,12 @@ void RegisterStatusBindings(module m) {
       if (p) std::rethrow_exception(p);
     } catch (StatusNotOk& e) {
       auto rvalue_e = std::move(e);
+      auto py_status = cast(
+          google::NoThrowStatus<const absl::Status&>(rvalue_e.status()));
       status_not_ok(
-          pybind11::make_tuple(rvalue_e.what()),               // args
-          pybind11::dict(),                                    // kwargs
-          pybind11::dict(arg("status") = rvalue_e.status()));  // attributes
+          pybind11::make_tuple(rvalue_e.what()),       // args
+          pybind11::dict(),                            // kwargs
+          pybind11::dict(arg("status") = py_status));  // attributes
     }
   });
 }
