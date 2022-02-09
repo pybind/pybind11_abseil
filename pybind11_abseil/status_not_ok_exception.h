@@ -17,9 +17,11 @@ namespace google {
 class StatusNotOk : public std::exception {
  public:
   StatusNotOk(absl::Status&& status)
-      : status_(std::move(status)), what_(status_.ToString()) {}
+      : status_(std::move(status)),
+        what_(status_.ToString(absl::StatusToStringMode::kWithEverything)) {}
   StatusNotOk(const absl::Status& status)
-      : status_(status), what_(status_.ToString()) {}
+      : status_(status),
+        what_(status_.ToString(absl::StatusToStringMode::kWithEverything)) {}
   const absl::Status& status() const& { return status_; }
   absl::Status&& status() && { return std::move(status_); }
   const char* what() const noexcept override { return what_.c_str(); }
