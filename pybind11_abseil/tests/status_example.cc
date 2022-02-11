@@ -79,6 +79,20 @@ absl::StatusOr<std::unique_ptr<IntValue>> ReturnUniquePtrStatusOr(int value) {
   return absl::make_unique<IntValue>(value);
 }
 
+class IntGetter {
+ public:
+  virtual ~IntGetter() { }
+  virtual absl::StatusOr<int> Get(int i) const = 0;
+};
+
+class PyIntGetter : public IntGetter {
+ public:
+  using IntGetter::IntGetter;
+  absl::StatusOr<int> Get(int i) const override {
+    PYBIND11_OVERRIDE_PURE(absl::StatusOr<int>, IntGetter, Get, i);
+  }
+};
+
 PYBIND11_MODULE(status_example, m) {
   auto status_module = pybind11::google::ImportStatusModule();
   m.attr("StatusNotOk") = status_module.attr("StatusNotOk");
@@ -135,6 +149,10 @@ PYBIND11_MODULE(status_example, m) {
         new absl::StatusOr<int>(absl::InvalidArgumentError("Uh oh!"));
     return ptr;
   });
+
+  class_<IntGetter, PyIntGetter>(m, "IntGetter")
+      .def(init())
+      .def("Get", &IntGetter::Get);
 }
 
 }  // namespace test

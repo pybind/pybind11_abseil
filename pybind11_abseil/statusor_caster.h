@@ -42,7 +42,17 @@ struct type_caster<absl::StatusOr<PayloadType>> {
  public:
   using PayloadCaster = make_caster<PayloadType>;
   using StatusCaster = make_caster<absl::Status>;
-  static constexpr auto name = PayloadCaster::name;
+
+  PYBIND11_TYPE_CASTER(absl::StatusOr<PayloadType>, PayloadCaster::name);
+
+  // We need this to support overriding virtual functions in Python. See the
+  // test cases for example.
+  bool load(handle /*src*/, bool /*convert*/) {
+    // This will not be called as long as we do not call C++ functions that
+    // redirect virtual calls back to Python.
+    // TODO(wangxf): Implement the load function.
+    return false;
+  }
 
   // Convert C++ -> Python.
   static handle cast(const absl::StatusOr<PayloadType>* src,

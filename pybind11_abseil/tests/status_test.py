@@ -127,6 +127,14 @@ class StatusTest(absltest.TestCase):
     self.assertEqual(str(test_status), 'ABORTED: test')
 
 
+class IntGetter(status_example.IntGetter):
+
+  def Get(self, i):
+    if i > 10:
+      raise ValueError('Value out of range')
+    return i
+
+
 class StatusOrTest(absltest.TestCase):
 
   def test_return_value_status_or_return_type_from_doc(self):
@@ -199,6 +207,12 @@ class StatusOrTest(absltest.TestCase):
     self.assertEqual(failure_result.to_string(), 'CANCELLED: ')
     self.assertEqual(repr(failure_result), 'CANCELLED: ')
     self.assertEqual(str(failure_result), 'CANCELLED: ')
+
+  def test_overriding_in_python(self):
+    int_getter = IntGetter()
+    self.assertEqual(int_getter.Get(5), 5)
+    with self.assertRaises(ValueError):
+      int_getter.Get(100)
 
 
 if __name__ == '__main__':
