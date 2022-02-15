@@ -144,7 +144,12 @@ void RegisterStatusBindings(module m) {
           (void (absl::Status::*)(const absl::Status &)) & absl::Status::Update,
           arg("other"))
       .def("to_string", [](const absl::Status& s) { return s.ToString(); })
-      .def("__repr__", [](const absl::Status& s) { return s.ToString(); });
+      .def("__repr__", [](const absl::Status& s) { return s.ToString(); })
+      .def_static("OkStatus", DoNotThrowStatus(&absl::OkStatus))
+      .def("raw_code", &absl::Status::code)
+      .def("CanonicalCode", &absl::Status::code)
+      .def("error_message", &absl::Status::message)
+      .def("IgnoreError", &absl::Status::IgnoreError);
 
   m.def("is_ok", &IsOk, arg("status_or"),
         "Returns false only if passed a non-ok status; otherwise returns true. "
