@@ -8,6 +8,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import array
 import datetime
 import sys
 
@@ -221,19 +222,26 @@ def make_srided_numpy_array(stride):
 
 class AbslNumericSpanTest(parameterized.TestCase):
 
+  # The check_span* functions use signed ints. Arrays with different numeric
+  # types and all non-array types (eg native sequence types) require converting.
+  CONVERTED_NUMERIC_LISTS = (
+      ('array_wrong_dtype', array.array('b', [9, 8, 7])),
+      ('numpy_wrong_dtype', np.array([7, 8, 9], dtype=np.uint16)),
+      ('tuple', (1, 2, 3)),
+      ('list', [4, 5, 6]),
+  )
+
+  NOT_CONVERTED_NUMERIC_LISTS = (
+      ('array_matching_dtype', array.array('i', [9, 8, 7])),
+      ('numpy_matching_dtype', np.array([7, 8, 9], dtype=np.int32)),
+  )
+
+  NUMERIC_LISTS = CONVERTED_NUMERIC_LISTS + NOT_CONVERTED_NUMERIC_LISTS
+
   def test_return_span(self):
     values = [1, 2, 3, 4]
     container = absl_example.VectorContainer()
     self.assertSequenceEqual(container.make_span(values), values)
-
-  CONVERTED_NUMERIC_LISTS = (('numpy_wrong_dtype',
-                              np.array([7, 8, 9], dtype=np.uint16)),
-                             ('tuple', (1, 2, 3)), ('list', [4, 5, 6]))
-
-  NOT_CONVERTED_NUMERIC_LISTS = (('numpy_matching_dtype',
-                                  np.array([7, 8, 9], dtype=np.int32)),)
-
-  NUMERIC_LISTS = CONVERTED_NUMERIC_LISTS + NOT_CONVERTED_NUMERIC_LISTS
 
   @parameterized.named_parameters(*NUMERIC_LISTS)
   def test_pass_span_from(self, values):
