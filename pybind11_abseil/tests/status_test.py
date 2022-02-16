@@ -129,8 +129,8 @@ class StatusTest(absltest.TestCase):
   def test_create_ok_status(self):
     ok_status = status.Status.OkStatus()
     self.assertEqual(ok_status.to_string(), 'OK')
-    self.assertEqual(ok_status.raw_code(), status.StatusCode.OK)
-    self.assertEqual(ok_status.CanonicalCode(), status.StatusCode.OK)
+    self.assertEqual(ok_status.raw_code(), 0)
+    self.assertEqual(ok_status.CanonicalCode(), 0)
     self.assertEqual(ok_status.error_message(), '')
     self.assertIsNone(ok_status.IgnoreError())
 
