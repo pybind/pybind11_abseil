@@ -154,7 +154,7 @@ Supported exactly the same way pybind11 supports `std::string_view`.
 
 Supported exactly the same way pybind11 supports `std::optional`.
 
-## absl::flat_hash_map
+## absl::flat_hash_map and absl::btree_map
 
 Supported exactly the same way pybind11 supports `std::map`.
 

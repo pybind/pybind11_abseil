@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -161,6 +162,29 @@ bool CheckSet(const absl::flat_hash_set<int>& set,
               const std::vector<int>& values) {
   absl::flat_hash_set<int> check(values.begin(), values.end());
   return set == check;
+}
+
+absl::btree_map<int, int> MakeBtreeMap(
+    const std::vector<std::pair<int, int>>& keys_and_values) {
+  absl::btree_map<int, int> map;
+  for (const auto& kvp : keys_and_values) {
+    map.insert(kvp);
+  }
+  return map;
+}
+
+bool CheckBtreeMap(const absl::btree_map<int, int>& map,
+                   const std::vector<std::pair<int, int>>& keys_and_values) {
+  for (const auto& kvp : keys_and_values) {
+    auto found = map.find(kvp.first);
+    if (found == map.end()) {
+      return false;
+    }
+    if (found->second != kvp.second) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Span
@@ -320,6 +344,10 @@ PYBIND11_MODULE(absl_example, m) {
   // absl::flat_hash_set bindings
   m.def("make_set", &MakeSet, arg("values"));
   m.def("check_set", &CheckSet, arg("set"), arg("values"));
+
+  // absl::btree_map bindings
+  m.def("make_btree_map", &MakeBtreeMap, arg("keys_and_values"));
+  m.def("check_btree_map", &CheckBtreeMap, arg("map"), arg("keys_and_values"));
 
   // absl::variant
   class_<A>(m, "A").def(init<int>()).def_readonly("a", &A::a);

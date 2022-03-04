@@ -39,6 +39,7 @@
 #include <vector>
 
 #include "absl/cleanup/cleanup.h"
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
@@ -365,6 +366,11 @@ struct type_caster<absl::flat_hash_map<Key, Value, Hash, Equal, Alloc>>
 template <typename Key, typename Hash, typename Equal, typename Alloc>
 struct type_caster<absl::flat_hash_set<Key, Hash, Equal, Alloc>>
     : set_caster<absl::flat_hash_set<Key, Hash, Equal, Alloc>, Key> {};
+
+// Convert between absl::btree_map and python dict.
+template <typename Key, typename Value, typename Compare, typename Alloc>
+struct type_caster<absl::btree_map<Key, Value, Compare, Alloc>>
+    : map_caster<absl::btree_map<Key, Value, Compare, Alloc>, Key, Value> {};
 
 // Convert between absl::string_view and python.
 //
