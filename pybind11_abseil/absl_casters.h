@@ -20,6 +20,7 @@
 //   converts the contained value.
 // - absl::flat_hash_map- converts to/from python dict.
 // - absl::flat_hash_set- converst to/from python set.
+// - absl::btree_map- converts to/from python dict.
 //
 // For details, see the README.md.
 //
