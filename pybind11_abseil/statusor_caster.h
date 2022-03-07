@@ -13,7 +13,6 @@
 #include "pybind11_abseil/check_status_module_imported.h"
 #include "pybind11_abseil/no_throw_status.h"
 #include "pybind11_abseil/status_caster.h"
-#include "pybind11_abseil/statusor_caster.h"
 
 namespace pybind11 {
 namespace detail {
