@@ -122,6 +122,15 @@ class StringContainer {
   std::string values_;
 };
 
+bool CheckAbslCord(absl::Cord cord, const std::string& values) {
+  return cord == values;
+}
+
+absl::Cord ReturnAbslCord(const std::string& values) {
+  absl::Cord cord(values);
+  return cord;
+}
+
 bool CheckOptional(const absl::optional<int> optional, bool given, int value) {
   if (!given && !optional.has_value()) return true;
   if (given && optional.has_value() && optional.value() == value) return true;
@@ -329,6 +338,10 @@ PYBIND11_MODULE(absl_example, m) {
   class_<StringContainer>(m, "StringContainer")
       .def(init())
       .def("make_string_view", &StringContainer::MakeStringView, arg("values"));
+
+  // absl::Cord bindings.
+  m.def("check_absl_cord", &CheckAbslCord, arg("view"), arg("values"));
+  m.def("return_absl_cord", &ReturnAbslCord, arg("values"));
 
   // absl::optional bindings.
   m.def("check_optional", &CheckOptional, arg("optional") = absl::nullopt,

@@ -43,6 +43,7 @@
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/civil_time.h"
 #include "absl/time/time.h"
@@ -384,6 +385,31 @@ template <>
 struct type_caster<absl::string_view> : string_caster<absl::string_view, true> {
 };
 #endif
+
+template <>
+struct type_caster<absl::Cord> {
+ public:
+  using StringViewCaster = make_caster<absl::string_view>;
+  PYBIND11_TYPE_CASTER(absl::Cord, _<absl::Cord>());
+
+  // Conversion part 1 (Python->C++)
+  bool load(handle src, bool convert) {
+    auto caster = StringViewCaster();
+    if (caster.load(src, convert)) {
+      absl::string_view view = cast_op<absl::string_view>(std::move(caster));
+      value = view;
+      return true;
+    }
+    return false;
+  }
+
+  // Conversion part 2 (C++ -> Python)
+  static handle cast(const absl::Cord& src, return_value_policy policy,
+                     handle parent) {
+    return StringViewCaster::cast(
+        absl::string_view(std::string(src)), policy, parent);
+  }
+};
 
 // Convert between absl::optional and python.
 //

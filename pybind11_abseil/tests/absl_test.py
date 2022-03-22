@@ -333,6 +333,25 @@ class AbslStringViewTest(absltest.TestCase):
         absl_example.check_string_view(self.TEST_STRING, self.TEST_STRING))
 
 
+class AbslCordTest(absltest.TestCase):
+  TEST_STRING = 'absl_Cord'
+  TEST_BYTES = b'absl_Cord'
+
+  def test_return_absl_cord(self):
+    self.assertSequenceEqual(
+        absl_example.return_absl_cord(self.TEST_STRING), self.TEST_STRING)
+    self.assertSequenceEqual(
+        absl_example.return_absl_cord(self.TEST_BYTES), self.TEST_STRING)
+
+  def test_pass_absl_cord(self):
+    self.assertTrue(
+        absl_example.check_absl_cord(self.TEST_STRING, self.TEST_STRING))
+    self.assertFalse(
+        absl_example.check_absl_cord(self.TEST_STRING, '12345'))
+    self.assertTrue(
+        absl_example.check_absl_cord(self.TEST_BYTES, self.TEST_STRING))
+
+
 class AbslFlatHashMapTest(absltest.TestCase):
 
   def test_return_map(self):
