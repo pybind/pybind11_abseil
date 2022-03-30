@@ -65,15 +65,17 @@ class StatusTest(absltest.TestCase):
     # The make_status function has been set up to return a status object
     # instead of raising an exception (this is done in status_example.cc).
     test_status = status_example.make_status(status.StatusCode.OK)
-    self.assertEqual(test_status.code(), status.StatusCode.OK)
     self.assertTrue(test_status.ok())
+    self.assertEqual(test_status.code(), status.StatusCode.OK)
+    self.assertEqual(test_status.code_int(), 0)
 
   def test_make_not_ok(self):
     # The make_status function should always return a status object, even if
     # it is not ok (ie, it should *not* convert it to an exception).
     test_status = status_example.make_status(status.StatusCode.CANCELLED)
-    self.assertEqual(test_status.code(), status.StatusCode.CANCELLED)
     self.assertFalse(test_status.ok())
+    self.assertEqual(test_status.code(), status.StatusCode.CANCELLED)
+    self.assertEqual(test_status.code_int(), 1)
 
   def test_make_not_ok_manual_cast(self):
     test_status = status_example.make_status_manual_cast(

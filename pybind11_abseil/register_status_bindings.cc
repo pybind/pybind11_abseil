@@ -138,6 +138,9 @@ void RegisterStatusBindings(module m) {
       .def(init<absl::StatusCode, std::string>())
       .def("ok", &absl::Status::ok)
       .def("code", &absl::Status::code)
+      .def("code_int", [](const absl::Status& self) {
+          return static_cast<int>(self.code());
+      })
       .def("message", &absl::Status::message)
       .def(
           "update",
