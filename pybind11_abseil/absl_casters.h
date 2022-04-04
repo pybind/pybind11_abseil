@@ -13,6 +13,7 @@
 // - absl::Duration- converted to/from python datetime.timedelta
 // - absl::CivilTime- converted to/from python datetime.datetime and from date.
 // - absl::Time- converted to/from python datetime.datetime and from date.
+// - absl::TimeZone- converted to/from python str and from int.
 // - absl::Span- converted to python sequences and from python buffers,
 //               opaque std::vectors and/or sequences.
 // - absl::string_view
@@ -78,6 +79,31 @@ inline absl::TimeZone GetTimeZone(handle src) {
       std::lround(utc_offset.attr("total_seconds")().cast<double>());
   return absl::FixedTimeZone(offset_seconds);
 }
+
+template <>
+struct type_caster<absl::TimeZone> {
+ public:
+  PYBIND11_TYPE_CASTER(absl::TimeZone, _<absl::TimeZone>());
+
+  // Conversion part 1 (Python->C++)
+  bool load(handle src, bool convert) {
+    if (PyUnicode_Check(src.ptr())) {
+      if (LoadTimeZone(PyUnicode_AsUTF8(src.ptr()), &value)) {
+        return true;
+      }
+    } else if (PyLong_Check(src.ptr())) {
+      value = absl::FixedTimeZone(PyLong_AsLong(src.ptr()));
+      return true;
+    }
+    return false;
+  }
+
+  // Conversion part 2 (C++ -> Python)
+  static handle cast(const absl::TimeZone& src, return_value_policy, handle) {
+    // Converts to Python str
+    return PyUnicode_FromStringAndSize(src.name().data(), src.name().size());
+  }
+};
 
 // Convert between absl::Duration and python datetime.timedelta.
 template <>

@@ -92,6 +92,8 @@ bool CheckCivilYear(absl::CivilYear datetime, double secs) {
   return datetime == MakeCivilYear(secs);
 }
 
+absl::TimeZone RoundtripTimeZone(absl::TimeZone timezone) { return timezone; }
+
 // Since a span does not own its elements, we must create a class to own them
 // and persist beyond the function that constructs the span for testing.
 class VectorContainer {
@@ -293,6 +295,9 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("check_duration", &CheckDuration, arg("duration"), arg("secs"));
   m.def("make_datetime", &MakeTime, arg("secs"));
   m.def("check_datetime", &CheckDatetime, arg("datetime"), arg("secs"));
+
+  // absl::TimeZone bindings
+  m.def("roundtrip_timezone", &RoundtripTimeZone, arg("timezone"));
 
   // absl::CivilTime bindings
   m.def("make_civilsecond", &MakeCivilSecond, arg("secs"));

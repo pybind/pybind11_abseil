@@ -191,6 +191,15 @@ class AbslTimeTest(parameterized.TestCase):
     self.assertTrue(
         absl_example.check_civilyear(self.TEST_DATETIME, truncated.timestamp()))
 
+  def test_timezone(self):
+    expected_timezone = 'Fixed/UTC+02:00:00'
+    timezone = absl_example.roundtrip_timezone(expected_timezone)
+    self.assertEqual(expected_timezone, timezone)
+    timezone = absl_example.roundtrip_timezone(2 * 60 * 60)
+    self.assertEqual(expected_timezone, timezone)
+    with self.assertRaises(TypeError):
+      absl_example.roundtrip_timezone('Not a timezone')
+
 
 def make_read_only_numpy_array():
   values = np.zeros(5, dtype=np.int32)
