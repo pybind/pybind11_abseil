@@ -83,7 +83,7 @@ inline absl::TimeZone GetTimeZone(handle src) {
 template <>
 struct type_caster<absl::TimeZone> {
  public:
-  PYBIND11_TYPE_CASTER(absl::TimeZone, _<absl::TimeZone>());
+  PYBIND11_TYPE_CASTER(absl::TimeZone, const_name("absl::TimeZone"));
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
@@ -111,7 +111,7 @@ struct type_caster<absl::Duration> {
  public:
   // This macro establishes the name 'absl::Duration' in function signatures
   // and declares a local variable 'value' of type absl::Duration.
-  PYBIND11_TYPE_CASTER(absl::Duration, _<absl::Duration>());
+  PYBIND11_TYPE_CASTER(absl::Duration, const_name("absl::Duration"));
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
@@ -144,7 +144,7 @@ struct type_caster<absl::Time> {
  public:
   // This macro establishes the name 'absl::Time' in function signatures
   // and declares a local variable 'value' of type absl::Time.
-  PYBIND11_TYPE_CASTER(absl::Time, _<absl::Time>());
+  PYBIND11_TYPE_CASTER(absl::Time, const_name("absl::Time"));
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
@@ -205,7 +205,7 @@ struct type_caster<absl::Time> {
 template <typename CivilTimeType>
 struct absl_civil_time_caster {
  public:
-  PYBIND11_TYPE_CASTER(CivilTimeType, _<CivilTimeType>());
+  PYBIND11_TYPE_CASTER(CivilTimeType, const_name("CivilTimeType"));
 
   bool load(handle src, bool convert) {
     if (!convert || !hasattr(src, "year") || !hasattr(src, "month") ||
@@ -416,7 +416,7 @@ template <>
 struct type_caster<absl::Cord> {
  public:
   using StringViewCaster = make_caster<absl::string_view>;
-  PYBIND11_TYPE_CASTER(absl::Cord, _<absl::Cord>());
+  PYBIND11_TYPE_CASTER(absl::Cord, const_name("absl::Cord"));
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {

@@ -30,9 +30,8 @@ http_archive(
 http_archive(
   name = "pybind11",
   build_file = "@pybind11_bazel//:pybind11.BUILD",
-  strip_prefix = "pybind11-2.8.1",
-  sha256 = "f1bcc07caa568eb312411dde5308b1e250bd0e1bc020fae855bf9f43209940cc",
-  urls = ["https://github.com/pybind/pybind11/archive/refs/tags/v2.8.1.tar.gz"],
+  strip_prefix = "pybind11-master",
+  urls = ["https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz"],
 )
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
 python_configure(name = "local_config_python")
