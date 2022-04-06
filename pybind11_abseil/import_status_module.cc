@@ -9,12 +9,12 @@
 namespace pybind11 {
 namespace google {
 
-module ImportStatusModule(bool bypass_regular_import) {
+module_ ImportStatusModule(bool bypass_regular_import) {
   if (!PyGILState_Check()) {
     pybind11_fail("ImportStatusModule() PyGILState_Check() failure.");
   }
   if (bypass_regular_import) {
-    auto m = reinterpret_borrow<module>(PyImport_AddModule(
+    auto m = reinterpret_borrow<module_>(PyImport_AddModule(
         PYBIND11_TOSTRING(PYBIND11_ABSEIL_STATUS_MODULE_PATH)));
     if (!internal::IsStatusModuleImported()) {
       internal::RegisterStatusBindings(m);
@@ -22,7 +22,7 @@ module ImportStatusModule(bool bypass_regular_import) {
     // else no-op because bindings are already loaded.
     return m;
   }
-  return module::import(PYBIND11_TOSTRING(PYBIND11_ABSEIL_STATUS_MODULE_PATH));
+  return module_::import(PYBIND11_TOSTRING(PYBIND11_ABSEIL_STATUS_MODULE_PATH));
 }
 
 }  // namespace google
