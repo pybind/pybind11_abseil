@@ -149,9 +149,7 @@ void RegisterStatusBindings(module m) {
       .def("to_string", [](const absl::Status& s) { return s.ToString(); })
       .def("__repr__", [](const absl::Status& s) { return s.ToString(); })
       .def_static("OkStatus", DoNotThrowStatus(&absl::OkStatus))
-      .def("raw_code", [](const absl::Status& self) {
-          return static_cast<int>(self.code());
-      })
+      .def("raw_code", &absl::Status::raw_code)
       .def("CanonicalCode", [](const absl::Status& self) {
           return static_cast<int>(self.code());
       })

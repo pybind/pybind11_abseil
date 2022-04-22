@@ -136,6 +136,11 @@ class StatusTest(absltest.TestCase):
     self.assertEqual(ok_status.error_message(), '')
     self.assertIsNone(ok_status.IgnoreError())
 
+  def test_raw_code_ne_code(self):
+    st500 = status_example.status_from_int_code(500, 'Not a canonical code.')
+    self.assertEqual(st500.raw_code(), 500)
+    self.assertEqual(st500.code(), status.StatusCode.UNKNOWN)
+
 
 class IntGetter(status_example.IntGetter):
 

@@ -153,6 +153,12 @@ PYBIND11_MODULE(status_example, m) {
   class_<IntGetter, PyIntGetter>(m, "IntGetter")
       .def(init())
       .def("Get", &IntGetter::Get);
+
+  // Needed to exercise raw_code() != code().
+  m.def("status_from_int_code", [](int code, const std::string& msg) {
+    return google::DoNotThrowStatus(
+        absl::Status(static_cast<absl::StatusCode>(code), msg));
+  });
 }
 
 }  // namespace test
