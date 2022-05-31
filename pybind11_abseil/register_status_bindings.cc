@@ -93,21 +93,15 @@ void def_status_factory(
       arg("message"));
 }
 
-// Allows exception to raise an instance, with custom parameters and attributes.
-template <typename type>
-class exception_with_attributes : public exception<type> {
- public:
-  using exception<type>::exception;
-
-  // Could be merged into pybind11::exception<type>.
-  void operator()(tuple args, dict kwargs, dict attributes) {
-    object exc = object::operator()(*args, **kwargs);
-    for (const auto& item : attributes) {
-      exc.attr(item.first) = item.second;
-    }
-    PyErr_SetObject(this->ptr(), exc.ptr());
-  }
-};
+object BuildStatusNotOk(handle PyStatusNotOk, const StatusNotOk& e) {
+  object py_e = PyStatusNotOk(e.what());
+  py_e.attr("status") = cast(google::NoThrowStatus<absl::Status>(e.status()));
+  // code is int by choice. Sorry it would be a major API break to make this an
+  // enum. Use status.code() to obtain the enum.
+  py_e.attr("code") = cast(e.status().raw_code());
+  py_e.attr("message") = cast(e.status().message());
+  return py_e;
+}
 
 }  // namespace
 
@@ -182,23 +176,24 @@ void RegisterStatusBindings(module m) {
   def_status_factory(m, "unimplemented_error", WrapUnimplementedError);
   def_status_factory(m, "unknown_error", WrapUnknownError);
 
-  // Register the exception.
-  static exception_with_attributes<StatusNotOk> status_not_ok(m, "StatusNotOk");
+  // Generate the Python exception type.
+  static exception<StatusNotOk> PyStatusNotOk(m, "StatusNotOk");
 
-  // Register a custom handler which converts a C++ StatusNotOk to a Python
-  // StatusNotOk exception and adds the status field.
+  // Register a custom handler which converts a C++ StatusNotOk to a
+  // PyStatusNotOk.
   register_exception_translator([](std::exception_ptr p) {
     try {
       if (p) std::rethrow_exception(p);
-    } catch (StatusNotOk& e) {
-      auto rvalue_e = std::move(e);
-      auto py_status = cast(
-          google::NoThrowStatus<const absl::Status&>(rvalue_e.status()));
-      status_not_ok(
-          pybind11::make_tuple(rvalue_e.what()),       // args
-          pybind11::dict(),                            // kwargs
-          pybind11::dict(arg("status") = py_status));  // attributes
+    } catch (const StatusNotOk& e) {
+      PyErr_SetObject(PyStatusNotOk.ptr(),
+                      BuildStatusNotOk(PyStatusNotOk, e).ptr());
     }
+  });
+
+  m.def("BuildStatusNotOk", [](int code, const std::string& msg) {
+    return BuildStatusNotOk(
+        PyStatusNotOk,
+        StatusNotOk(absl::Status(static_cast<absl::StatusCode>(code), msg)));
   });
 }
 

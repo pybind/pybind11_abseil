@@ -35,6 +35,21 @@ class StatusTest(absltest.TestCase):
       status_example.return_status(status.StatusCode.CANCELLED, 'test')
     self.assertEqual(cm.exception.status.code(), status.StatusCode.CANCELLED)
     self.assertEqual(cm.exception.status.message(), 'test')
+    self.assertEqual(cm.exception.code, int(status.StatusCode.CANCELLED))
+    self.assertEqual(cm.exception.message, 'test')
+
+  def test_build_status_not_ok_enum(self):
+    e = status.BuildStatusNotOk(status.StatusCode.INVALID_ARGUMENT, 'Msg enum.')
+    self.assertEqual(e.status.code(), status.StatusCode.INVALID_ARGUMENT)
+    self.assertEqual(e.code, int(status.StatusCode.INVALID_ARGUMENT))
+    self.assertEqual(e.message, 'Msg enum.')
+
+  def test_build_status_not_ok_int(self):
+    e = status.BuildStatusNotOk(
+        int(status.StatusCode.ALREADY_EXISTS), 'Msg int.')
+    self.assertEqual(e.status.code(), status.StatusCode.ALREADY_EXISTS)
+    self.assertEqual(e.code, int(status.StatusCode.ALREADY_EXISTS))
+    self.assertEqual(e.message, 'Msg int.')
 
   def test_return_not_ok_twice(self):
     # Each exception is a different instance with different messages.
