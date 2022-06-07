@@ -46,6 +46,19 @@ class AbslTimeTest(parameterized.TestCase):
     duration = datetime.timedelta(seconds=self.NEGATIVE_SECS)
     self.assertTrue(absl_example.check_duration(duration, self.NEGATIVE_SECS))
 
+  def test_pass_float_duration(self):
+    self.assertTrue(
+        absl_example.check_duration(self.POSITIVE_SECS, self.POSITIVE_SECS))
+
+  def test_pass_integer_duration(self):
+    self.assertTrue(
+        absl_example.check_duration(self.SECONDS_IN_DAY, self.SECONDS_IN_DAY))
+
+  def test_duration_integer_overflow(self):
+    duration = 2**129
+    with self.assertRaises(RuntimeError):
+      absl_example.check_duration(duration, duration)
+
   def test_return_datetime(self):
     secs = self.TEST_DATETIME.timestamp()
     local_tz = tz.gettz()

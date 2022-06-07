@@ -115,15 +115,28 @@ struct type_caster<absl::Duration> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
-    // Ensure that absl::Duration is converted from a Python datetime.timedelta.
-    if (!convert || !hasattr(src, "days") || !hasattr(src, "seconds") ||
-        !hasattr(src, "microseconds")) {
+    if (!convert) {
       return false;
     }
-    value = absl::Hours(24 * GetInt64Attr(src, "days")) +
-            absl::Seconds(GetInt64Attr(src, "seconds")) +
-            absl::Microseconds(GetInt64Attr(src, "microseconds"));
-    return true;
+    if (PyFloat_Check(src.ptr())) {
+      value = absl::Seconds(src.cast<double>());
+      return true;
+    } else if (PyLong_Check(src.ptr())) {
+      value = absl::Seconds(src.cast<int64_t>());
+      return true;
+    } else {
+      // Ensure that absl::Duration is converted from a Python
+      // datetime.timedelta.
+      if (!hasattr(src, "days") || !hasattr(src, "seconds") ||
+          !hasattr(src, "microseconds")) {
+        return false;
+      }
+      value = absl::Hours(24 * GetInt64Attr(src, "days")) +
+              absl::Seconds(GetInt64Attr(src, "seconds")) +
+              absl::Microseconds(GetInt64Attr(src, "microseconds"));
+      return true;
+    }
+    return false;
   }
 
   // Conversion part 2 (C++ -> Python)
