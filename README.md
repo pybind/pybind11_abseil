@@ -110,7 +110,7 @@ The following python types can be loaded *without* copying or converting:
   - The array dtype matches T exactly.
   - If T is not const, the buffer allows writing.
   - The stride does not indicate to skip elements or go in reverse order.
-- [Opaque](go/pybind11-opaque-types) `std::vector<T>` => `Span<{const or non-const} T>`.
+- [Opaque](https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#making-opaque-types) `std::vector<T>` => `Span<{const or non-const} T>`.
   - T can be any type, including converted or pointer types, but must
     match exactly between C++ and python.
   - Opaque vectors are *not* currently compatible with the smart holder.
