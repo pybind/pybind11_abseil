@@ -1,5 +1,6 @@
 #include "pybind11_abseil/register_status_bindings.h"
 
+#include <pybind11/embed.h>
 #include <pybind11/pybind11.h>
 
 #include <exception>
@@ -93,16 +94,6 @@ void def_status_factory(
       arg("message"));
 }
 
-object BuildStatusNotOk(handle PyStatusNotOk, const StatusNotOk& e) {
-  object py_e = PyStatusNotOk(e.what());
-  py_e.attr("status") = cast(google::NoThrowStatus<absl::Status>(e.status()));
-  // code is int by choice. Sorry it would be a major API break to make this an
-  // enum. Use status.code() to obtain the enum.
-  py_e.attr("code") = cast(e.status().raw_code());
-  py_e.attr("message") = cast(e.status().message());
-  return py_e;
-}
-
 }  // namespace
 
 namespace internal {
@@ -142,6 +133,10 @@ void RegisterStatusBindings(module m) {
           arg("other"))
       .def("to_string", [](const absl::Status& s) { return s.ToString(); })
       .def("__repr__", [](const absl::Status& s) { return s.ToString(); })
+      .def("to_string_status_not_ok",
+           [](const absl::Status& s) {
+             return s.ToString();
+           })
       .def_static("OkStatus", DoNotThrowStatus(&absl::OkStatus))
       .def("raw_code", &absl::Status::raw_code)
       .def("CanonicalCode", [](const absl::Status& self) {
@@ -176,8 +171,39 @@ void RegisterStatusBindings(module m) {
   def_status_factory(m, "unimplemented_error", WrapUnimplementedError);
   def_status_factory(m, "unknown_error", WrapUnknownError);
 
-  // Generate the Python exception type.
-  static exception<StatusNotOk> PyStatusNotOk(m, "StatusNotOk");
+  pybind11::exec(R"(
+      class StatusNotOk(Exception):
+        def __init__(self, *args):
+          if len(args) != 1 or isinstance(args[0], str):
+            # THIS WILL BECOME AN ERROR IN THE FUTURE.
+            self._status = None
+            Exception.__init__(self, *args)
+            return
+          status = args[0]
+          assert status is not None
+          assert not status.ok()
+          self._status = status
+          Exception.__init__(self, status.to_string_status_not_ok())
+
+        @property
+        def status(self):
+          assert self._status is not None
+          return self._status
+
+        @property
+        def code(self):
+          assert self._status is not None
+          # code is int by choice. Sorry it would be a major API break to make
+          # this an enum.
+          return self._status.raw_code()
+
+        @property
+        def message(self):
+          assert self._status is not None
+          return self._status.message()
+      )",
+                 m.attr("__dict__"), m.attr("__dict__"));
+  static pybind11::object PyStatusNotOk = m.attr("StatusNotOk");
 
   // Register a custom handler which converts a C++ StatusNotOk to a
   // PyStatusNotOk.
@@ -185,15 +211,15 @@ void RegisterStatusBindings(module m) {
     try {
       if (p) std::rethrow_exception(p);
     } catch (const StatusNotOk& e) {
-      PyErr_SetObject(PyStatusNotOk.ptr(),
-                      BuildStatusNotOk(PyStatusNotOk, e).ptr());
+      PyErr_SetObject(
+          PyStatusNotOk.ptr(),
+          PyStatusNotOk(google::NoThrowStatus<absl::Status>(e.status())).ptr());
     }
   });
 
   m.def("BuildStatusNotOk", [](int code, const std::string& msg) {
-    return BuildStatusNotOk(
-        PyStatusNotOk,
-        StatusNotOk(absl::Status(static_cast<absl::StatusCode>(code), msg)));
+    return PyStatusNotOk(google::NoThrowStatus<absl::Status>(
+        absl::Status(static_cast<absl::StatusCode>(code), msg)));
   });
 }
 

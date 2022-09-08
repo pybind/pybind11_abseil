@@ -51,6 +51,20 @@ class StatusTest(absltest.TestCase):
     self.assertEqual(e.code, int(status.StatusCode.ALREADY_EXISTS))
     self.assertEqual(e.message, 'Msg int.')
 
+  def test_status_not_ok_status(self):
+    e = status.StatusNotOk(status.Status(status.StatusCode.CANCELLED, 'Cnclld'))
+    self.assertEqual(e.code, int(status.StatusCode.CANCELLED))
+    self.assertEqual(e.message, 'Cnclld')
+
+  def test_status_nok_ok_str(self):
+    e = status.StatusNotOk('Deprecated.')
+    self.assertEqual(str(e), 'Deprecated.')
+
+  def test_status_nok_ok_none(self):
+    with self.assertRaises(AssertionError) as cm:
+      status.StatusNotOk(None)
+    self.assertEqual(str(cm.exception), '')
+
   def test_return_not_ok_twice(self):
     # Each exception is a different instance with different messages.
     with self.assertRaises(status.StatusNotOk) as cm1:
