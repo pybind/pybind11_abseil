@@ -21,9 +21,9 @@ http_archive(
 # See https://github.com/pybind/pybind11_bazel
 http_archive(
   name = "pybind11_bazel",
-  strip_prefix = "pybind11_bazel-72cbbf1fbc830e487e3012862b7b720001b70672",
-  sha256 = "516c1b3a10d87740d2b7de6f121f8e19dde2c372ecbfe59aef44cd1872c10395",
-  urls = ["https://github.com/pybind/pybind11_bazel/archive/72cbbf1fbc830e487e3012862b7b720001b70672.tar.gz"],
+  strip_prefix = "pybind11_bazel-c3ba38c05bd2ea859abc4b58f19c1a02268d71b5",
+  sha256 = "159f61003ddd7af0447542d845324e286688cdcfbcfa24fd8b2c08c7f7bf9b37",
+  urls = ["https://github.com/pybind/pybind11_bazel/archive/c3ba38c05bd2ea859abc4b58f19c1a02268d71b5.tar.gz"],
 )
 
 # We still require the pybind library.
