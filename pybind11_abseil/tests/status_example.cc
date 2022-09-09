@@ -93,6 +93,14 @@ class PyIntGetter : public IntGetter {
   }
 };
 
+absl::StatusOr<int> CallGetRedirectToPython(IntGetter* ptr, int i) {
+  if (ptr) {
+    return ptr->Get(i);
+  }
+  return absl::InvalidArgumentError(
+      "Function parameter should not be nullptr.");
+}
+
 PYBIND11_MODULE(status_example, m) {
   auto status_module = pybind11::google::ImportStatusModule();
   m.attr("StatusNotOk") = status_module.attr("StatusNotOk");
@@ -153,6 +161,8 @@ PYBIND11_MODULE(status_example, m) {
   class_<IntGetter, PyIntGetter>(m, "IntGetter")
       .def(init())
       .def("Get", &IntGetter::Get);
+  m.def("call_get_redirect_to_python", &CallGetRedirectToPython,
+        arg("ptr"), arg("i"));
 
   // Needed to exercise raw_code() != code().
   m.def("status_from_int_code", [](int code, const std::string& msg) {
