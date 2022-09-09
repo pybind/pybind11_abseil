@@ -57,8 +57,9 @@ class StatusTest(absltest.TestCase):
     self.assertEqual(e.message, 'Cnclld')
 
   def test_status_nok_ok_str(self):
-    e = status.StatusNotOk('Deprecated.')
-    self.assertEqual(str(e), 'Deprecated.')
+    with self.assertRaises(AttributeError) as cm:
+      status.StatusNotOk('')
+    self.assertEqual(str(cm.exception), "'str' object has no attribute 'ok'")
 
   def test_status_nok_ok_none(self):
     with self.assertRaises(AssertionError) as cm:

@@ -173,13 +173,7 @@ void RegisterStatusBindings(module m) {
 
   pybind11::exec(R"(
       class StatusNotOk(Exception):
-        def __init__(self, *args):
-          if len(args) != 1 or isinstance(args[0], str):
-            # THIS WILL BECOME AN ERROR IN THE FUTURE.
-            self._status = None
-            Exception.__init__(self, *args)
-            return
-          status = args[0]
+        def __init__(self, status):
           assert status is not None
           assert not status.ok()
           self._status = status
@@ -187,19 +181,16 @@ void RegisterStatusBindings(module m) {
 
         @property
         def status(self):
-          assert self._status is not None
           return self._status
 
         @property
         def code(self):
-          assert self._status is not None
           # code is int by choice. Sorry it would be a major API break to make
           # this an enum.
           return self._status.raw_code()
 
         @property
         def message(self):
-          assert self._status is not None
           return self._status.message()
       )",
                  m.attr("__dict__"), m.attr("__dict__"));
