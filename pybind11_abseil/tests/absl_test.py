@@ -361,9 +361,9 @@ class AbslCordTest(absltest.TestCase):
 
   def test_return_absl_cord(self):
     self.assertSequenceEqual(
-        absl_example.return_absl_cord(self.TEST_STRING), self.TEST_STRING)
+        absl_example.return_absl_cord(self.TEST_STRING), self.TEST_BYTES)
     self.assertSequenceEqual(
-        absl_example.return_absl_cord(self.TEST_BYTES), self.TEST_STRING)
+        absl_example.return_absl_cord(self.TEST_BYTES), self.TEST_BYTES)
 
   def test_pass_absl_cord(self):
     self.assertTrue(

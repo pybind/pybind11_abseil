@@ -445,8 +445,7 @@ struct type_caster<absl::Cord> {
   // Conversion part 2 (C++ -> Python)
   static handle cast(const absl::Cord& src, return_value_policy policy,
                      handle parent) {
-    return StringViewCaster::cast(
-        absl::string_view(std::string(src)), policy, parent);
+    return bytes(std::string(src)).release();
   }
 };
 
