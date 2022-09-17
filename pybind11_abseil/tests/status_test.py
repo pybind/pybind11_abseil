@@ -166,6 +166,18 @@ class StatusTest(absltest.TestCase):
     self.assertEqual(ok_status.error_message(), '')
     self.assertIsNone(ok_status.IgnoreError())
 
+  def test_error_message_malformed_utf8(self):
+    malformed_utf8 = b'\x80'
+    stx80 = status.invalid_argument_error(malformed_utf8)
+    self.assertEqual(stx80.message(), '�')
+    self.assertEqual(stx80.message_bytes(), malformed_utf8)
+    self.assertEqual(stx80.error_message(), '�')
+    self.assertEqual(stx80.to_string(), 'INVALID_ARGUMENT: �')
+    self.assertEqual(str(stx80), 'INVALID_ARGUMENT: �')
+    self.assertEqual(repr(stx80), 'INVALID_ARGUMENT: �')
+    e = status.StatusNotOk(stx80)
+    self.assertEqual(str(e), 'INVALID_ARGUMENT: �')
+
   def test_raw_code_ne_code(self):
     st500 = status_example.status_from_int_code(500, 'Not a canonical code.')
     self.assertEqual(st500.raw_code(), 500)

@@ -94,6 +94,17 @@ void def_status_factory(
       arg("message"));
 }
 
+// TODO(b/225205409): Move to utility library.
+// To avoid clobbering potentially critical error messages with
+// `UnicodeDecodeError`.
+str decode_utf8_replace(absl::string_view s) {
+  PyObject* u = PyUnicode_DecodeUTF8(s.data(), s.size(), "replace");
+  if (u == nullptr) {
+    throw error_already_set();
+  }
+  return reinterpret_steal<str>(u);
+}
+
 }  // namespace
 
 namespace internal {
@@ -123,26 +134,43 @@ void RegisterStatusBindings(module m) {
       .def(init<absl::StatusCode, std::string>())
       .def("ok", &absl::Status::ok)
       .def("code", &absl::Status::code)
-      .def("code_int", [](const absl::Status& self) {
-          return static_cast<int>(self.code());
-      })
-      .def("message", &absl::Status::message)
-      .def(
-          "update",
-          (void (absl::Status::*)(const absl::Status &)) & absl::Status::Update,
-          arg("other"))
-      .def("to_string", [](const absl::Status& s) { return s.ToString(); })
-      .def("__repr__", [](const absl::Status& s) { return s.ToString(); })
+      .def("code_int",
+           [](const absl::Status& self) {
+             return static_cast<int>(self.code());
+           })
+      .def("message",
+           [](const absl::Status& self) {
+             return decode_utf8_replace(self.message());
+           })
+      .def("message_bytes",
+           [](const absl::Status& self) {
+             return bytes(self.message().data(), self.message().size());
+           })
+      .def("update",
+           (void(absl::Status::*)(const absl::Status&)) & absl::Status::Update,
+           arg("other"))
+      .def("to_string",
+           [](const absl::Status& s) {
+             return decode_utf8_replace(s.ToString());
+           })
+      .def("__repr__",
+           [](const absl::Status& s) {
+             return decode_utf8_replace(s.ToString());
+           })
       .def("to_string_status_not_ok",
            [](const absl::Status& s) {
-             return s.ToString();
+             return decode_utf8_replace(s.ToString());
            })
       .def_static("OkStatus", DoNotThrowStatus(&absl::OkStatus))
       .def("raw_code", &absl::Status::raw_code)
-      .def("CanonicalCode", [](const absl::Status& self) {
-          return static_cast<int>(self.code());
-      })
-      .def("error_message", &absl::Status::message)
+      .def("CanonicalCode",
+           [](const absl::Status& self) {
+             return static_cast<int>(self.code());
+           })
+      .def("error_message",
+           [](const absl::Status& self) {
+             return decode_utf8_replace(self.message());
+           })
       .def("IgnoreError", &absl::Status::IgnoreError);
 
   m.def("is_ok", &IsOk, arg("status_or"),
