@@ -19,6 +19,8 @@ namespace pybind11 {
 namespace google {
 namespace {
 
+enum struct InitFromTag { capsule, serialized };
+
 // Returns false if status_or represents a non-ok status object, and true in all
 // other cases (including the case that this is passed a non-status object).
 bool IsOk(handle status_or) {
@@ -110,6 +112,10 @@ str decode_utf8_replace(absl::string_view s) {
 namespace internal {
 
 void RegisterStatusBindings(module m) {
+  enum_<InitFromTag>(m, "InitFromTag")
+      .value("capsule", InitFromTag::capsule)
+      .value("serialized", InitFromTag::serialized);
+
   enum_<absl::StatusCode>(m, "StatusCode")
       .value("OK", absl::StatusCode::kOk)
       .value("CANCELLED", absl::StatusCode::kCancelled)
@@ -131,7 +137,45 @@ void RegisterStatusBindings(module m) {
 
   class_<absl::Status>(m, "Status")
       .def(init())
-      .def(init<absl::StatusCode, std::string>())
+      .def(init([](InitFromTag init_from_tag, const object& obj) {
+             switch (init_from_tag) {
+               case InitFromTag::capsule: {
+                 PyErr_SetString(PyExc_NotImplementedError,
+                                 "Implemented in pending child cl/474244219.");
+                 throw error_already_set();
+               }
+               case InitFromTag::serialized: {
+                 auto state = cast<tuple>(obj);
+                 if (len(state) != 3) {
+                   throw value_error(
+                       absl::StrCat("Unexpected len(state) == ", len(state),
+                                    " [", __FILE__, ":", __LINE__, "]"));
+                 }
+                 auto code = cast<absl::StatusCode>(state[0]);
+                 auto message = cast<std::string>(state[1]);
+                 auto all_payloads = cast<tuple>(state[2]);
+                 auto status = std::unique_ptr<absl::Status>{
+                     new absl::Status{code, message}};
+                 for (auto ap_item_obj : all_payloads) {
+                   auto ap_item_tup = cast<tuple>(ap_item_obj);
+                   if (len(ap_item_tup) != 2) {
+                     throw value_error(absl::StrCat(
+                         "Unexpected len(tuple) == ", len(ap_item_tup),
+                         " where (type_url, payload) is expected [", __FILE__,
+                         ":", __LINE__, "]"));
+                   }
+                   auto type_url = cast<absl::string_view>(ap_item_tup[0]);
+                   auto payload = cast<absl::string_view>(ap_item_tup[1]);
+                   status->SetPayload(type_url, absl::Cord(payload));
+                 }
+                 return status;
+               }
+             }
+             throw std::runtime_error(absl::StrCat(
+                 "Meant to be unreachable [", __FILE__, ":", __LINE__, "]"));
+           }),
+           arg("init_from_tag"), arg("obj"))
+      .def(init<absl::StatusCode, std::string>(), arg("code"), arg("msg"))
       .def("ok", &absl::Status::ok)
       .def("code", &absl::Status::code)
       .def("code_int",
@@ -171,7 +215,39 @@ void RegisterStatusBindings(module m) {
            [](const absl::Status& self) {
              return decode_utf8_replace(self.message());
            })
-      .def("IgnoreError", &absl::Status::IgnoreError);
+      .def("IgnoreError", &absl::Status::IgnoreError)
+      .def("SetPayload",
+           [](absl::Status& self, absl::string_view type_url,
+              absl::string_view payload) {
+             self.SetPayload(type_url, absl::Cord(payload));
+           })
+      .def("ErasePayload",
+           [](absl::Status& self, absl::string_view type_url) {
+             return self.ErasePayload(type_url);
+           })
+      .def("AllPayloads",
+           [](const absl::Status& s) {
+             list key_value_pairs;
+             s.ForEachPayload([&key_value_pairs](absl::string_view key,
+                                                 const absl::Cord& value) {
+               key_value_pairs.append(make_tuple(bytes(std::string(key)),
+                                                 bytes(std::string(value))));
+             });
+             // Make the order deterministic, especially long-term.
+             key_value_pairs.attr("sort")();
+             return tuple(key_value_pairs);
+           })
+      .def(
+          "__reduce_ex__",
+          [](const object& self, int) {
+            return make_tuple(
+                self.attr("__class__"),
+                make_tuple(InitFromTag::serialized,
+                           make_tuple(self.attr("code")(),
+                                      self.attr("message_bytes")(),
+                                      self.attr("AllPayloads")())));
+          },
+          arg("protocol") = -1);
 
   m.def("is_ok", &IsOk, arg("status_or"),
         "Returns false only if passed a non-ok status; otherwise returns true. "

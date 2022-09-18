@@ -1,10 +1,9 @@
 """Tests for google3.third_party.pybind11_abseil.status_casters."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import pickle
 
 from absl.testing import absltest
+from absl.testing import parameterized
 from pybind11_abseil import status
 from pybind11_abseil.tests import status_example
 
@@ -14,7 +13,7 @@ def docstring_signature(f):
   return f.__doc__.split('\n')[0]
 
 
-class StatusTest(absltest.TestCase):
+class StatusTest(parameterized.TestCase):
 
   def test_pass_status(self):
     test_status = status.Status(status.StatusCode.CANCELLED, 'test')
@@ -182,6 +181,93 @@ class StatusTest(absltest.TestCase):
     st500 = status_example.status_from_int_code(500, 'Not a canonical code.')
     self.assertEqual(st500.raw_code(), 500)
     self.assertEqual(st500.code(), status.StatusCode.UNKNOWN)
+
+  def test_payload_management_apis(self):
+    st = status.Status(status.StatusCode.CANCELLED, '')
+    self.assertEqual(st.AllPayloads(), ())
+    st.SetPayload('Url1', 'Payload1')
+    self.assertEqual(st.AllPayloads(), ((b'Url1', b'Payload1'),))
+    st.SetPayload('Url0', 'Payload0')
+    self.assertEqual(st.AllPayloads(),
+                     ((b'Url0', b'Payload0'), (b'Url1', b'Payload1')))
+    st.SetPayload('Url2', 'Payload2')
+    self.assertEqual(st.AllPayloads(),
+                     ((b'Url0', b'Payload0'), (b'Url1', b'Payload1'),
+                      (b'Url2', b'Payload2')))
+    st.SetPayload('Url2', 'Payload2B')
+    self.assertEqual(st.AllPayloads(),
+                     ((b'Url0', b'Payload0'), (b'Url1', b'Payload1'),
+                      (b'Url2', b'Payload2B')))
+    self.assertTrue(st.ErasePayload('Url1'))
+    self.assertEqual(st.AllPayloads(),
+                     ((b'Url0', b'Payload0'), (b'Url2', b'Payload2B')))
+    self.assertFalse(st.ErasePayload('Url1'))
+    self.assertEqual(st.AllPayloads(),
+                     ((b'Url0', b'Payload0'), (b'Url2', b'Payload2B')))
+    self.assertFalse(st.ErasePayload('UrlNeverExisted'))
+    self.assertEqual(st.AllPayloads(),
+                     ((b'Url0', b'Payload0'), (b'Url2', b'Payload2B')))
+    self.assertTrue(st.ErasePayload('Url0'))
+    self.assertEqual(st.AllPayloads(), ((b'Url2', b'Payload2B'),))
+    self.assertTrue(st.ErasePayload('Url2'))
+    self.assertEqual(st.AllPayloads(), ())
+    self.assertFalse(st.ErasePayload('UrlNeverExisted'))
+    self.assertEqual(st.AllPayloads(), ())
+
+  def assertEqualStatus(self, a, b):
+    self.assertEqual(a.code(), b.code())
+    self.assertEqual(a.message_bytes(), b.message_bytes())
+    self.assertSequenceEqual(sorted(a.AllPayloads()), sorted(b.AllPayloads()))
+
+  @parameterized.parameters(0, 1, 2)
+  def test_pickle(self, payload_size):
+    orig = status.Status(status.StatusCode.CANCELLED, 'Cucumber.')
+    expected_all_payloads = []
+    for i in range(payload_size):
+      type_url = f'Url{i}'
+      payload = f'Payload{i}'
+      orig.SetPayload(type_url, payload)
+      expected_all_payloads.append((type_url.encode(), payload.encode()))
+    expected_all_payloads = tuple(expected_all_payloads)
+
+    # Redundant with other tests, but here to reassure that the preconditions
+    # for the tests below to be meaningful are met.
+    self.assertEqual(orig.code(), status.StatusCode.CANCELLED)
+    self.assertEqual(orig.message_bytes(), b'Cucumber.')
+    self.assertEqual(orig.AllPayloads(), expected_all_payloads)
+
+    # Exercises implementation details, but is simple and might be useful to
+    # narrow down root causes for regressions.
+    redx = orig.__reduce_ex__()
+    self.assertLen(redx, 2)
+    self.assertIs(redx[0], status.Status)
+    self.assertEqual(
+        redx[1],
+        (status.InitFromTag.serialized,
+         (status.StatusCode.CANCELLED, b'Cucumber.', expected_all_payloads)))
+
+    ser = pickle.dumps(orig)
+    deser = pickle.loads(ser)
+    self.assertEqualStatus(deser, orig)
+    self.assertIs(deser.__class__, orig.__class__)
+
+  def test_init_from_serialized_exception_unexpected_len_state(self):
+    with self.assertRaisesRegex(
+        ValueError, r'Unexpected len\(state\) == 4'
+        r' \[.*register_status_bindings\.cc:[0-9]+\]'):
+      status.Status(status.InitFromTag.serialized, (0, 0, 0, 0))
+
+  def test_init_from_serialized_exception_unexpected_len_ap_item_tup(self):
+    with self.assertRaisesRegex(
+        ValueError,
+        r'Unexpected len\(tuple\) == 3 where \(type_url, payload\) is expected'
+        r' \[.*register_status_bindings\.cc:[0-9]+\]'):
+      status.Status(status.InitFromTag.serialized,
+                    (status.StatusCode.CANCELLED, '', ((0, 0, 0),)))
+
+  def test_init_from_capsule_not_implemented_error(self):
+    with self.assertRaises(NotImplementedError):
+      status.Status(status.InitFromTag.capsule, ())
 
 
 class IntGetter(status_example.IntGetter):
