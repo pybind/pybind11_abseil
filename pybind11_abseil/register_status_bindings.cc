@@ -9,17 +9,20 @@
 #include <utility>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "pybind11_abseil/absl_casters.h"
+#include "pybind11_abseil/init_from_tag.h"
 #include "pybind11_abseil/no_throw_status.h"
+#include "pybind11_abseil/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/status_caster.h"
 #include "pybind11_abseil/status_not_ok_exception.h"
+#include "pybind11_abseil/utils_pybind11_absl.h"
 
 namespace pybind11 {
 namespace google {
 namespace {
-
-enum struct InitFromTag { capsule, serialized };
 
 // Returns false if status_or represents a non-ok status object, and true in all
 // other cases (including the case that this is passed a non-status object).
@@ -96,17 +99,6 @@ void def_status_factory(
       arg("message"));
 }
 
-// TODO(b/225205409): Move to utility library.
-// To avoid clobbering potentially critical error messages with
-// `UnicodeDecodeError`.
-str decode_utf8_replace(absl::string_view s) {
-  PyObject* u = PyUnicode_DecodeUTF8(s.data(), s.size(), "replace");
-  if (u == nullptr) {
-    throw error_already_set();
-  }
-  return reinterpret_steal<str>(u);
-}
-
 }  // namespace
 
 namespace internal {
@@ -114,6 +106,7 @@ namespace internal {
 void RegisterStatusBindings(module m) {
   enum_<InitFromTag>(m, "InitFromTag")
       .value("capsule", InitFromTag::capsule)
+      .value("capsule_direct_only", InitFromTag::capsule_direct_only)
       .value("serialized", InitFromTag::serialized);
 
   enum_<absl::StatusCode>(m, "StatusCode")
@@ -135,14 +128,37 @@ void RegisterStatusBindings(module m) {
       .value("DATA_LOSS", absl::StatusCode::kDataLoss)
       .value("UNAUTHENTICATED", absl::StatusCode::kUnauthenticated);
 
+  m.def(
+      "StatusCodeFromInt",
+      [](int code_int) {
+        auto code = absl::StatusCode(code_int);
+        if (absl::StatusCodeToString(code).empty()) {
+          // StatusCodeToString() seems to be the best available method for
+          // this purpose.
+          throw value_error(absl::StrCat("code_int=", code_int,
+                                         " is not a valid absl::StatusCode"));
+        }
+        return code;
+      },
+      arg("code_int"));
+
   class_<absl::Status>(m, "Status")
       .def(init())
       .def(init([](InitFromTag init_from_tag, const object& obj) {
              switch (init_from_tag) {
-               case InitFromTag::capsule: {
-                 PyErr_SetString(PyExc_NotImplementedError,
-                                 "Implemented in pending child cl/474244219.");
-                 throw error_already_set();
+               case InitFromTag::capsule:
+               case InitFromTag::capsule_direct_only: {
+                 absl::StatusOr<absl::Status*> raw_ptr =
+                     pybind11_abseil::raw_ptr_from_capsule::RawPtrFromCapsule<
+                         absl::Status>(obj.ptr(), "::absl::Status",
+                                       init_from_tag == InitFromTag::capsule
+                                           ? "as_absl_Status"
+                                           : nullptr);
+                 if (!raw_ptr.ok()) {
+                   throw value_error(std::string(raw_ptr.status().message()));
+                 }
+                 return std::unique_ptr<absl::Status>{
+                     new absl::Status{*raw_ptr.value()}};
                }
                case InitFromTag::serialized: {
                  auto state = cast<tuple>(obj);
@@ -247,7 +263,11 @@ void RegisterStatusBindings(module m) {
                                       self.attr("message_bytes")(),
                                       self.attr("AllPayloads")())));
           },
-          arg("protocol") = -1);
+          arg("protocol") = -1)
+      .def("as_absl_Status", [](absl::Status* self) -> object {
+        return reinterpret_steal<object>(
+            PyCapsule_New(static_cast<void*>(self), "::absl::Status", nullptr));
+      });
 
   m.def("is_ok", &IsOk, arg("status_or"),
         "Returns false only if passed a non-ok status; otherwise returns true. "

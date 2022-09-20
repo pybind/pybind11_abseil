@@ -105,6 +105,13 @@ PYBIND11_MODULE(status_example, m) {
   auto status_module = pybind11::google::ImportStatusModule();
   m.attr("StatusNotOk") = status_module.attr("StatusNotOk");
 
+  m.def("make_bad_capsule", [](bool pass_name) {
+    // https://docs.python.org/3/c-api/capsule.html:
+    // The pointer argument may not be NULL.
+    return capsule(static_cast<void*>(static_cast<int*>(nullptr) + 1),
+                   pass_name ? "NotGood" : nullptr);
+  });
+
   class_<IntValue>(m, "IntValue").def_readonly("value", &IntValue::value);
 
   class_<TestClass>(m, "TestClass")

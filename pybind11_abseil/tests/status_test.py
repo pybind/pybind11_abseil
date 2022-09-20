@@ -13,6 +13,36 @@ def docstring_signature(f):
   return f.__doc__.split('\n')[0]
 
 
+class BadCapsule:
+
+  def __init__(self, pass_name):
+    self.pass_name = pass_name
+
+  def as_absl_Status(self):  # pylint: disable=invalid-name
+    return status_example.make_bad_capsule(self.pass_name)
+
+
+class NotACapsule:
+
+  def __init__(self, not_a_capsule):
+    self.not_a_capsule = not_a_capsule
+
+  def as_absl_Status(self):  # pylint: disable=invalid-name
+    return self.not_a_capsule
+
+
+class StatusCodeTest(absltest.TestCase):
+
+  def test_status_code_from_int_valid(self):
+    self.assertEqual(status.StatusCodeFromInt(13), status.StatusCode.INTERNAL)
+
+  def test_status_code_from_int_invalid(self):
+    with self.assertRaises(ValueError) as ctx:
+      status.StatusCodeFromInt(9876)
+    self.assertEqual(
+        str(ctx.exception), 'code_int=9876 is not a valid absl::StatusCode')
+
+
 class StatusTest(parameterized.TestCase):
 
   def test_pass_status(self):
@@ -265,9 +295,62 @@ class StatusTest(parameterized.TestCase):
       status.Status(status.InitFromTag.serialized,
                     (status.StatusCode.CANCELLED, '', ((0, 0, 0),)))
 
-  def test_init_from_capsule_not_implemented_error(self):
-    with self.assertRaises(NotImplementedError):
-      status.Status(status.InitFromTag.capsule, ())
+  def test_init_from_capsule_direct_ok(self):
+    orig = status.Status(status.StatusCode.CANCELLED, 'Direct.')
+    from_cap = status.Status(status.InitFromTag.capsule, orig.as_absl_Status())
+    self.assertEqualStatus(from_cap, orig)
+
+  def test_init_from_capsule_as_capsule_method_ok(self):
+    orig = status.Status(status.StatusCode.CANCELLED, 'AsCapsuleMethod.')
+    from_cap = status.Status(status.InitFromTag.capsule, orig)
+    self.assertEqualStatus(from_cap, orig)
+
+  @parameterized.parameters((False, 'NULL'), (True, '"NotGood"'))
+  def test_init_from_capsule_direct_bad_capsule(self, pass_name, quoted_name):
+    with self.assertRaises(ValueError) as ctx:
+      status.Status(status.InitFromTag.capsule,
+                    status_example.make_bad_capsule(pass_name))
+    self.assertEqual(
+        str(ctx.exception),
+        f'obj is a capsule with name {quoted_name} but "::absl::Status"'
+        f' is expected.')
+
+  @parameterized.parameters((False, 'NULL'), (True, '"NotGood"'))
+  def test_init_from_capsule_correct_method_bad_capsule(self, pass_name,
+                                                        quoted_name):
+    with self.assertRaises(ValueError) as ctx:
+      status.Status(status.InitFromTag.capsule, BadCapsule(pass_name))
+    self.assertEqual(
+        str(ctx.exception),
+        f'BadCapsule.as_absl_Status() returned a capsule with name'
+        f' {quoted_name} but "::absl::Status" is expected.')
+
+  @parameterized.parameters(None, '', 0)
+  def test_init_from_capsule_direct_only_not_a_capsule(self, not_a_capsule):
+    with self.assertRaises(ValueError) as ctx:
+      status.Status(status.InitFromTag.capsule_direct_only, not_a_capsule)
+    nm = not_a_capsule.__class__.__name__
+    self.assertEqual(str(ctx.exception), f'{nm} object is not a capsule.')
+
+  @parameterized.parameters(None, '', 0)
+  def test_init_from_capsule_direct_not_a_capsule(self, not_a_capsule):
+    with self.assertRaises(ValueError) as ctx:
+      status.Status(status.InitFromTag.capsule, not_a_capsule)
+    nm = not_a_capsule.__class__.__name__
+    self.assertEqual(
+        str(ctx.exception),
+        f"{nm}.as_absl_Status() call failed: AttributeError: '{nm}' object"
+        f" has no attribute 'as_absl_Status'")
+
+  @parameterized.parameters(None, '', 0)
+  def test_init_from_capsule_correct_method_not_a_capsule(self, not_a_capsule):
+    with self.assertRaises(ValueError) as ctx:
+      status.Status(status.InitFromTag.capsule, NotACapsule(not_a_capsule))
+    nm = not_a_capsule.__class__.__name__
+    self.assertEqual(
+        str(ctx.exception),
+        f'NotACapsule.as_absl_Status() returned an object ({nm})'
+        f' that is not a capsule.')
 
 
 class IntGetter(status_example.IntGetter):

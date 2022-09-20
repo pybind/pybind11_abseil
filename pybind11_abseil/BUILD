@@ -67,6 +67,34 @@ pybind_library(
     ],
 )
 
+cc_library(
+    name = "init_from_tag",
+    hdrs = ["init_from_tag.h"],
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
+    name = "raw_ptr_from_capsule",
+    hdrs = ["raw_ptr_from_capsule.h"],
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@local_config_python//:python_headers",  # buildcleaner: keep
+    ],
+)
+
+pybind_library(
+    name = "utils_pybind11_absl",
+    srcs = ["utils_pybind11_absl.cc"],
+    hdrs = ["utils_pybind11_absl.h"],
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_google_absl//absl/strings",
+    ],
+)
+
 pybind_library(
     name = "register_status_bindings",
     srcs = ["register_status_bindings.cc"],
@@ -74,10 +102,14 @@ pybind_library(
     visibility = ["//visibility:private"],
     deps = [
         ":absl_casters",
+        ":init_from_tag",
         ":no_throw_status",
+        ":raw_ptr_from_capsule",
         ":status_caster",
         ":status_not_ok_exception",
+        ":utils_pybind11_absl",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
     ],
 )
