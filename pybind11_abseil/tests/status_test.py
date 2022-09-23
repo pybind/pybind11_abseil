@@ -42,6 +42,9 @@ class StatusCodeTest(absltest.TestCase):
     self.assertEqual(
         str(ctx.exception), 'code_int=9876 is not a valid absl::StatusCode')
 
+  def test_status_code_as_int(self):
+    self.assertEqual(status.StatusCodeAsInt(status.StatusCode.UNAVAILABLE), 14)
+
 
 class StatusTest(parameterized.TestCase):
 

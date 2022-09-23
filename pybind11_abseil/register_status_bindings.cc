@@ -142,6 +142,11 @@ void RegisterStatusBindings(module m) {
       },
       arg("code_int"));
 
+  m.def(
+      "StatusCodeAsInt",
+      [](const absl::StatusCode& code) { return static_cast<int>(code); },
+      arg("code"));
+
   class_<absl::Status>(m, "Status")
       .def(init())
       .def(init([](InitFromTag init_from_tag, const object& obj) {
