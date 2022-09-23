@@ -178,16 +178,18 @@ class StatusTest(parameterized.TestCase):
     failure_status = status_example.make_status(status.StatusCode.CANCELLED)
     self.assertFalse(status.is_ok(failure_status))
 
+  def test_repr(self):
+    any_status = status_example.make_status(status.StatusCode.DATA_LOSS)
+    self.assertRegex(repr(any_status), r'<.*\.status.Status object at .*>')
+
   def test_ok_to_string(self):
     ok_status = status_example.make_status(status.StatusCode.OK)
     self.assertEqual(ok_status.to_string(), 'OK')
-    self.assertEqual(repr(ok_status), 'OK')
     self.assertEqual(str(ok_status), 'OK')
 
   def test_canonical_error_to_string(self):
     test_status = status.aborted_error('test')
     self.assertEqual(test_status.to_string(), 'ABORTED: test')
-    self.assertEqual(repr(test_status), 'ABORTED: test')
     self.assertEqual(str(test_status), 'ABORTED: test')
 
   def test_create_ok_status(self):
@@ -206,7 +208,6 @@ class StatusTest(parameterized.TestCase):
     self.assertEqual(stx80.error_message(), '�')
     self.assertEqual(stx80.to_string(), 'INVALID_ARGUMENT: �')
     self.assertEqual(str(stx80), 'INVALID_ARGUMENT: �')
-    self.assertEqual(repr(stx80), 'INVALID_ARGUMENT: �')
     e = status.StatusNotOk(stx80)
     self.assertEqual(str(e), 'INVALID_ARGUMENT: �')
 
@@ -434,7 +435,6 @@ class StatusOrTest(absltest.TestCase):
     failure_result = status_example.make_failure_status_or(
         status.StatusCode.CANCELLED)
     self.assertEqual(failure_result.to_string(), 'CANCELLED: ')
-    self.assertEqual(repr(failure_result), 'CANCELLED: ')
     self.assertEqual(str(failure_result), 'CANCELLED: ')
 
   def test_overriding_in_python(self):

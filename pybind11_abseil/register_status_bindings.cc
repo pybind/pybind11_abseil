@@ -218,7 +218,7 @@ void RegisterStatusBindings(module m) {
            [](const absl::Status& s) {
              return decode_utf8_replace(s.ToString());
            })
-      .def("__repr__",
+      .def("__str__",
            [](const absl::Status& s) {
              return decode_utf8_replace(s.ToString());
            })
