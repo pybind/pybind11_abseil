@@ -248,10 +248,41 @@ class StatusTest(parameterized.TestCase):
     self.assertFalse(st.ErasePayload('UrlNeverExisted'))
     self.assertEqual(st.AllPayloads(), ())
 
-  def assertEqualStatus(self, a, b):
-    self.assertEqual(a.code(), b.code())
-    self.assertEqual(a.message_bytes(), b.message_bytes())
-    self.assertSequenceEqual(sorted(a.AllPayloads()), sorted(b.AllPayloads()))
+  def testDunderEqAndDunderHash(self):
+    s0 = status.Status(status.StatusCode.CANCELLED, 'A')
+    sb = status.Status(status.StatusCode.CANCELLED, 'A')
+    sp = status.Status(status.StatusCode.CANCELLED, 'A')
+    sp.SetPayload('Url1p', 'Payload1p')
+    sc = status.Status(status.StatusCode.UNKNOWN, 'A')
+    sm = status.Status(status.StatusCode.CANCELLED, 'B')
+    sx = status.Status(status.StatusCode.UNKNOWN, 'B')
+
+    self.assertTrue(bool(s0 == s0))  # pylint: disable=comparison-with-itself
+    self.assertTrue(bool(s0 == sb))
+    self.assertFalse(bool(s0 == sp))
+    self.assertFalse(bool(s0 == sc))
+    self.assertFalse(bool(s0 == sm))
+    self.assertFalse(bool(s0 == sx))
+    self.assertFalse(bool(s0 == 'AnyOtherType'))
+
+    self.assertEqual(hash(sb), hash(s0))
+    self.assertEqual(hash(sp), hash(s0))  # Payload ignored intentionally.
+    self.assertNotEqual(hash(sc), hash(s0))
+    self.assertNotEqual(hash(sm), hash(s0))
+    self.assertNotEqual(hash(sx), hash(s0))
+
+    st_set = {s0}
+    self.assertLen(st_set, 1)
+    st_set.add(sb)
+    self.assertLen(st_set, 1)
+    st_set.add(sp)
+    self.assertLen(st_set, 2)
+    st_set.add(sc)
+    self.assertLen(st_set, 3)
+    st_set.add(sm)
+    self.assertLen(st_set, 4)
+    st_set.add(sx)
+    self.assertLen(st_set, 5)
 
   @parameterized.parameters(0, 1, 2)
   def test_pickle(self, payload_size):
@@ -282,7 +313,7 @@ class StatusTest(parameterized.TestCase):
 
     ser = pickle.dumps(orig)
     deser = pickle.loads(ser)
-    self.assertEqualStatus(deser, orig)
+    self.assertEqual(deser, orig)
     self.assertIs(deser.__class__, orig.__class__)
 
   def test_init_from_serialized_exception_unexpected_len_state(self):
@@ -302,12 +333,12 @@ class StatusTest(parameterized.TestCase):
   def test_init_from_capsule_direct_ok(self):
     orig = status.Status(status.StatusCode.CANCELLED, 'Direct.')
     from_cap = status.Status(status.InitFromTag.capsule, orig.as_absl_Status())
-    self.assertEqualStatus(from_cap, orig)
+    self.assertEqual(from_cap, orig)
 
   def test_init_from_capsule_as_capsule_method_ok(self):
     orig = status.Status(status.StatusCode.CANCELLED, 'AsCapsuleMethod.')
     from_cap = status.Status(status.InitFromTag.capsule, orig)
-    self.assertEqualStatus(from_cap, orig)
+    self.assertEqual(from_cap, orig)
 
   @parameterized.parameters((False, 'NULL'), (True, '"NotGood"'))
   def test_init_from_capsule_direct_bad_capsule(self, pass_name, quoted_name):

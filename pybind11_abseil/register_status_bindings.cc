@@ -3,6 +3,7 @@
 #include <pybind11/embed.h>
 #include <pybind11/pybind11.h>
 
+#include <cstddef>
 #include <exception>
 #include <functional>
 #include <string>
@@ -99,6 +100,19 @@ void def_status_factory(
       arg("message"));
 }
 
+absl::StatusOr<absl::Status*> StatusRawPtrFromCapsule(
+    const object& obj, bool enable_as_capsule_method = true) {
+  return pybind11_abseil::raw_ptr_from_capsule::RawPtrFromCapsule<absl::Status>(
+      obj.ptr(), "::absl::Status",
+      enable_as_capsule_method ? "as_absl_Status" : nullptr);
+}
+
+// https://stackoverflow.com/questions/2590677/how-do-i-combine-hash-values-in-c0x
+std::size_t boost_hash_combine(std::size_t lhs, std::size_t rhs) {
+  lhs ^= rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
+  return lhs;
+}
+
 }  // namespace
 
 namespace internal {
@@ -153,12 +167,10 @@ void RegisterStatusBindings(module m) {
              switch (init_from_tag) {
                case InitFromTag::capsule:
                case InitFromTag::capsule_direct_only: {
+                 bool enable_as_capsule_method =
+                     (init_from_tag == InitFromTag::capsule);
                  absl::StatusOr<absl::Status*> raw_ptr =
-                     pybind11_abseil::raw_ptr_from_capsule::RawPtrFromCapsule<
-                         absl::Status>(obj.ptr(), "::absl::Status",
-                                       init_from_tag == InitFromTag::capsule
-                                           ? "as_absl_Status"
-                                           : nullptr);
+                     StatusRawPtrFromCapsule(obj, enable_as_capsule_method);
                  if (!raw_ptr.ok()) {
                    throw value_error(std::string(raw_ptr.status().message()));
                  }
@@ -257,6 +269,24 @@ void RegisterStatusBindings(module m) {
              // Make the order deterministic, especially long-term.
              key_value_pairs.attr("sort")();
              return tuple(key_value_pairs);
+           })
+      .def("__eq__",
+           [](const absl::Status& self, const object& rhs) {
+             absl::StatusOr<absl::Status*> rhs_ptr = StatusRawPtrFromCapsule(
+                 rhs, /*enable_as_capsule_method=*/true);
+             return rhs_ptr.ok() && *rhs_ptr.value() == self;
+           })
+      .def("__hash__",
+           [](const absl::Status& self) {
+             // Payload is ignored intentionally to minimize runtime.
+             return boost_hash_combine(
+                 std::hash<int>{}(self.raw_code()),
+#if defined(ABSL_USES_STD_STRING_VIEW)
+                 std::hash<std::string_view>{}(self.message())
+#else
+                 std::hash<std::string>{}(std::string(self.message()))
+#endif
+             );
            })
       .def(
           "__reduce_ex__",
