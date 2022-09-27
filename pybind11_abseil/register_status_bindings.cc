@@ -367,9 +367,9 @@ void RegisterStatusBindings(module m) {
     }
   });
 
-  m.def("BuildStatusNotOk", [](int code, const std::string& msg) {
+  m.def("BuildStatusNotOk", [](absl::StatusCode code, const std::string& msg) {
     return PyStatusNotOk(google::NoThrowStatus<absl::Status>(
-        absl::Status(static_cast<absl::StatusCode>(code), msg)));
+        absl::Status(code, msg)));
   });
 }
 

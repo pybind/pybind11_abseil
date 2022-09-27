@@ -77,11 +77,9 @@ class StatusTest(parameterized.TestCase):
     self.assertEqual(e.message, 'Msg enum.')
 
   def test_build_status_not_ok_int(self):
-    e = status.BuildStatusNotOk(
-        int(status.StatusCode.ALREADY_EXISTS), 'Msg int.')
-    self.assertEqual(e.status.code(), status.StatusCode.ALREADY_EXISTS)
-    self.assertEqual(e.code, int(status.StatusCode.ALREADY_EXISTS))
-    self.assertEqual(e.message, 'Msg int.')
+    with self.assertRaises(TypeError) as cm:
+      status.BuildStatusNotOk(1, 'Msg int.')  # pytype: disable=wrong-arg-types
+    self.assertIn('incompatible function arguments', str(cm.exception))
 
   def test_status_not_ok_status(self):
     e = status.StatusNotOk(status.Status(status.StatusCode.CANCELLED, 'Cnclld'))
