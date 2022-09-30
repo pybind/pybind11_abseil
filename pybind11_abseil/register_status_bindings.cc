@@ -161,7 +161,8 @@ void RegisterStatusBindings(module m) {
       [](const absl::StatusCode& code) { return static_cast<int>(code); },
       arg("code"));
 
-  class_<absl::Status>(m, "Status")
+  class_<absl::Status> py_class_status(m, "Status");
+  py_class_status.def(init())
       .def(init())
       .def(init([](InitFromTag init_from_tag, const object& obj) {
              switch (init_from_tag) {
@@ -227,14 +228,6 @@ void RegisterStatusBindings(module m) {
            (void(absl::Status::*)(const absl::Status&)) & absl::Status::Update,
            arg("other"))
       .def("to_string",
-           [](const absl::Status& s) {
-             return decode_utf8_replace(s.ToString());
-           })
-      .def("__str__",
-           [](const absl::Status& s) {
-             return decode_utf8_replace(s.ToString());
-           })
-      .def("to_string_status_not_ok",
            [](const absl::Status& s) {
              return decode_utf8_replace(s.ToString());
            })
@@ -304,6 +297,11 @@ void RegisterStatusBindings(module m) {
             PyCapsule_New(static_cast<void*>(self), "::absl::Status", nullptr));
       });
 
+  py_class_status.def("__str__",
+       [](const absl::Status& s) {
+         return decode_utf8_replace(s.ToString());
+       });
+
   m.def("is_ok", &IsOk, arg("status_or"),
         "Returns false only if passed a non-ok status; otherwise returns true. "
         "This can be used on the return value of a function which returns a "
@@ -330,13 +328,22 @@ void RegisterStatusBindings(module m) {
   def_status_factory(m, "unimplemented_error", WrapUnimplementedError);
   def_status_factory(m, "unknown_error", WrapUnknownError);
 
+  // Having Python code embedded here is a compromise solution:
+  // * Ideally the code would live in a .py file, where it is accessible to
+  //   tooling such as linters or source code indexing systems.
+  // * But that makes the dependency management in build systems much more
+  //   complex.
+  // * The embedded code fragment is small and expected to always stay small,
+  //   having it here is most practical given current technologies (the lesser
+  //   of two evils).
   pybind11::exec(R"(
       class StatusNotOk(Exception):
+
         def __init__(self, status):
           assert status is not None
           assert not status.ok()
           self._status = status
-          Exception.__init__(self, status.to_string_status_not_ok())
+          Exception.__init__(self, str(self))
 
         @property
         def status(self):
@@ -351,8 +358,25 @@ void RegisterStatusBindings(module m) {
         @property
         def message(self):
           return self._status.message()
+
+        def __str__(self):
+          return self._status.to_string()
+
+        def __eq__(self, other):
+          if not isinstance(other, StatusNotOk):
+            return NotImplemented
+          lhs = Status(InitFromTag.capsule, self._status)
+          rhs = Status(InitFromTag.capsule, other._status)
+          return lhs == rhs
+
+        # NOTE: The absl::SourceLocation is lost.
+        #       It is impossible to serialize-deserialize.
+        def __reduce_ex__(self, protocol):
+          del protocol
+          return (type(self), (self._status,))
       )",
                  m.attr("__dict__"), m.attr("__dict__"));
+
   static pybind11::object PyStatusNotOk = m.attr("StatusNotOk");
 
   // Register a custom handler which converts a C++ StatusNotOk to a

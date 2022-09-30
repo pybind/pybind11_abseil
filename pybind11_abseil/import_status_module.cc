@@ -2,10 +2,6 @@
 
 #include <pybind11/pybind11.h>
 
-#include "absl/status/status.h"
-#include "pybind11_abseil/check_status_module_imported.h"
-#include "pybind11_abseil/register_status_bindings.h"
-
 namespace pybind11 {
 namespace google {
 
@@ -14,13 +10,10 @@ module_ ImportStatusModule(bool bypass_regular_import) {
     pybind11_fail("ImportStatusModule() PyGILState_Check() failure.");
   }
   if (bypass_regular_import) {
-    auto m = reinterpret_borrow<module_>(PyImport_AddModule(
-        PYBIND11_TOSTRING(PYBIND11_ABSEIL_STATUS_MODULE_PATH)));
-    if (!internal::IsStatusModuleImported()) {
-      internal::RegisterStatusBindings(m);
-    }
-    // else no-op because bindings are already loaded.
-    return m;
+    throw std::runtime_error(
+        "ImportStatusModule(bypass_regular_import=true) is no longer supported."
+        " Please change the calling code to"
+        " call this function without arguments.");
   }
   return module_::import(PYBIND11_TOSTRING(PYBIND11_ABSEIL_STATUS_MODULE_PATH));
 }

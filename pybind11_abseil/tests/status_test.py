@@ -45,6 +45,10 @@ class StatusCodeTest(absltest.TestCase):
   def test_status_code_as_int(self):
     self.assertEqual(status.StatusCodeAsInt(status.StatusCode.UNAVAILABLE), 14)
 
+  def test_repr(self):
+    self.assertEqual(
+        repr(status.StatusCode.NOT_FOUND), '<StatusCode.NOT_FOUND: 5>')
+
 
 class StatusTest(parameterized.TestCase):
 
@@ -69,17 +73,6 @@ class StatusTest(parameterized.TestCase):
     self.assertEqual(cm.exception.status.message(), 'test')
     self.assertEqual(cm.exception.code, int(status.StatusCode.CANCELLED))
     self.assertEqual(cm.exception.message, 'test')
-
-  def test_build_status_not_ok_enum(self):
-    e = status.BuildStatusNotOk(status.StatusCode.INVALID_ARGUMENT, 'Msg enum.')
-    self.assertEqual(e.status.code(), status.StatusCode.INVALID_ARGUMENT)
-    self.assertEqual(e.code, int(status.StatusCode.INVALID_ARGUMENT))
-    self.assertEqual(e.message, 'Msg enum.')
-
-  def test_build_status_not_ok_int(self):
-    with self.assertRaises(TypeError) as cm:
-      status.BuildStatusNotOk(1, 'Msg int.')  # pytype: disable=wrong-arg-types
-    self.assertIn('incompatible function arguments', str(cm.exception))
 
   def test_status_not_ok_status(self):
     e = status.StatusNotOk(status.Status(status.StatusCode.CANCELLED, 'Cnclld'))
@@ -246,7 +239,7 @@ class StatusTest(parameterized.TestCase):
     self.assertFalse(st.ErasePayload('UrlNeverExisted'))
     self.assertEqual(st.AllPayloads(), ())
 
-  def testDunderEqAndDunderHash(self):
+  def test_eq_and_hash(self):
     s0 = status.Status(status.StatusCode.CANCELLED, 'A')
     sb = status.Status(status.StatusCode.CANCELLED, 'A')
     sp = status.Status(status.StatusCode.CANCELLED, 'A')
@@ -475,6 +468,39 @@ class StatusOrTest(absltest.TestCase):
         status_example.call_get_redirect_to_python(int_getter, 5), 5)
     with self.assertRaises(ValueError):
       status_example.call_get_redirect_to_python(int_getter, 100)
+
+
+class StatusNotOkTest(absltest.TestCase):
+
+  def test_build_status_not_ok_enum(self):
+    e = status.BuildStatusNotOk(status.StatusCode.INVALID_ARGUMENT, 'Msg enum.')
+    self.assertEqual(e.status.code(), status.StatusCode.INVALID_ARGUMENT)
+    self.assertEqual(e.code, int(status.StatusCode.INVALID_ARGUMENT))
+    self.assertEqual(e.message, 'Msg enum.')
+
+  def test_build_status_not_ok_int(self):
+    with self.assertRaises(TypeError) as cm:
+      status.BuildStatusNotOk(1, 'Msg int.')  # pytype: disable=wrong-arg-types
+    self.assertIn('incompatible function arguments', str(cm.exception))
+
+  def test_eq(self):
+    sa1 = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sa')
+    sa2 = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sa')
+    sb = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sb')
+    self.assertTrue(bool(sa1 == sa1))  # pylint: disable=comparison-with-itself
+    self.assertTrue(bool(sa1 == sa2))
+    self.assertFalse(bool(sa1 == sb))
+    self.assertFalse(bool(sa1 == 'x'))
+    self.assertFalse(bool('x' == sa1))
+
+  def test_pickle(self):
+    orig = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'Cabbage')
+    ser = pickle.dumps(orig)
+    deser = pickle.loads(ser)
+    self.assertEqual(deser.message, 'Cabbage')
+    self.assertEqual(deser, orig)
+    self.assertIs(deser.__class__, orig.__class__)
+
 
 if __name__ == '__main__':
   absltest.main()

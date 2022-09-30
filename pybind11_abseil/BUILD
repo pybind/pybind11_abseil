@@ -1,5 +1,6 @@
 # Pybind11 bindings for the Abseil C++ Common Libraries
 
+# LOAD(pytype_pybind_extension)
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -124,11 +125,6 @@ pybind_library(
     name = "import_status_module",
     srcs = ["import_status_module.cc"],
     hdrs = ["import_status_module.h"],
-    deps = [
-        ":check_status_module_imported",
-        ":register_status_bindings",
-        "@com_google_absl//absl/status",
-    ],
 )
 
 pybind_library(

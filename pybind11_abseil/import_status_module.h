@@ -18,7 +18,9 @@ namespace google {
 // Imports the bindings for the status types. This is meant to only be called
 // from a PYBIND11_MODULE definition. The Python GIL must be held when calling
 // this function (enforced).
-module_ ImportStatusModule(bool bypass_regular_import = true);
+// TODO(b/225205409): Remove bypass_regular_import.
+// bypass_regular_import is deprecated and can only be false (enforced).
+module_ ImportStatusModule(bool bypass_regular_import = false);
 
 }  // namespace google
 }  // namespace pybind11

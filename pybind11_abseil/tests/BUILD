@@ -1,6 +1,6 @@
 # Tests and examples for pybind11_abseil.
 
-# load("//devtools/python/blaze:strict.bzl", "py_strict_test")
+# LOAD(pytype_strict_contrib_test)
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 
 licenses(["notice"])
