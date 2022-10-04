@@ -231,6 +231,18 @@ void RegisterStatusBindings(module m) {
            [](const absl::Status& s) {
              return decode_utf8_replace(s.ToString());
            })
+      .def("status_not_ok_str",
+           [](const absl::Status& s) {
+             std::string code_str = absl::StatusCodeToString(s.code());
+             if (code_str.empty()) {
+               // This code is meant to be unreachable, but we want to produce
+               // as much of the original error as possible even if this
+               // assumption is violated.
+               code_str = std::to_string(static_cast<int>(s.code()));
+             }
+             return decode_utf8_replace(
+                 absl::StrCat(s.message(), " [", code_str, "]"));
+           })
       .def_static("OkStatus", DoNotThrowStatus(&absl::OkStatus))
       .def("raw_code", &absl::Status::raw_code)
       .def("CanonicalCode",
@@ -360,7 +372,7 @@ void RegisterStatusBindings(module m) {
           return self._status.message()
 
         def __str__(self):
-          return self._status.to_string()
+          return self._status.status_not_ok_str()
 
         def __eq__(self, other):
           if not isinstance(other, StatusNotOk):

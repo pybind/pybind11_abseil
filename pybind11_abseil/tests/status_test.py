@@ -200,7 +200,7 @@ class StatusTest(parameterized.TestCase):
     self.assertEqual(stx80.to_string(), 'INVALID_ARGUMENT: �')
     self.assertEqual(str(stx80), 'INVALID_ARGUMENT: �')
     e = status.StatusNotOk(stx80)
-    self.assertEqual(str(e), 'INVALID_ARGUMENT: �')
+    self.assertEqual(str(e), '� [INVALID_ARGUMENT]')
 
   def test_raw_code_ne_code(self):
     st500 = status_example.status_from_int_code(500, 'Not a canonical code.')
