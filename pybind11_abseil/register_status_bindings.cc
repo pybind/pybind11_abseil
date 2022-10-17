@@ -389,7 +389,9 @@ void RegisterStatusBindings(module m) {
       )",
                  m.attr("__dict__"), m.attr("__dict__"));
 
-  static pybind11::object PyStatusNotOk = m.attr("StatusNotOk");
+  // Intentionally leak this Python reference:
+  // https://google.github.io/styleguide/cppguide.html#Static_and_Global_Variables
+  static handle PyStatusNotOk = object(m.attr("StatusNotOk")).release();
 
   // Register a custom handler which converts a C++ StatusNotOk to a
   // PyStatusNotOk.
