@@ -108,7 +108,10 @@ PYBIND11_MODULE(status_example, m) {
   m.def("make_bad_capsule", [](bool pass_name) {
     // https://docs.python.org/3/c-api/capsule.html:
     // The pointer argument may not be NULL.
-    return capsule(static_cast<void*>(static_cast<int*>(nullptr) + 1),
+    int dummy_pointee[] = {};  // This will become a dangling pointer when this
+    // function returns: We don't want the pointer to be used. Hopefully if it
+    // is used unintentionally, one of the sanitizers will flag it.
+    return capsule(static_cast<void*>(dummy_pointee),
                    pass_name ? "NotGood" : nullptr);
   });
 
