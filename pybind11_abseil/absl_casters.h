@@ -162,7 +162,7 @@ struct type_caster<absl::Time> {
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
     // Ensure that absl::Duration is converted from a Python datetime.date.
-    if (!convert || !hasattr(src, "year") || !hasattr(src, "month") ||
+    if (!hasattr(src, "year") || !hasattr(src, "month") ||
         !hasattr(src, "day")) {
       return false;
     }
