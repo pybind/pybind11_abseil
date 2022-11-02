@@ -161,7 +161,16 @@ struct type_caster<absl::Time> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
-    // Ensure that absl::Duration is converted from a Python datetime.date.
+    if (convert) {
+      if (PyLong_Check(src.ptr())) {
+        value = absl::FromUnixSeconds(src.cast<int64_t>());
+        return true;
+      } else if (PyFloat_Check(src.ptr())) {
+        value = absl::time_internal::FromUnixDuration(absl::Seconds(
+            src.cast<double>()));
+        return true;
+      }
+    }
     if (!hasattr(src, "year") || !hasattr(src, "month") ||
         !hasattr(src, "day")) {
       return false;

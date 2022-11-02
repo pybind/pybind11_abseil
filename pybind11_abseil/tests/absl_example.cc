@@ -295,6 +295,9 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("check_duration", &CheckDuration, arg("duration"), arg("secs"));
   m.def("make_datetime", &MakeTime, arg("secs"));
   m.def("check_datetime", &CheckDatetime, arg("datetime"), arg("secs"));
+  m.def("absl_time_overloads", [](const absl::Time&) { return "absl::Time"; });
+  m.def("absl_time_overloads", [](int) {  return "int"; });
+  m.def("absl_time_overloads", [](float) { return "float"; });
 
   // absl::TimeZone bindings
   m.def("roundtrip_timezone", &RoundtripTimeZone, arg("timezone"));

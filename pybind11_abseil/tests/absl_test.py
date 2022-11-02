@@ -125,6 +125,25 @@ class AbslTimeTest(parameterized.TestCase):
     secs = dt.timestamp()
     self.assertTrue(absl_example.check_datetime(dt, secs))
 
+  def test_absl_time_overloads(self):
+    self.assertEqual(absl_example.absl_time_overloads(10), 'int')
+    self.assertEqual(absl_example.absl_time_overloads(10.0), 'float')
+    self.assertEqual(
+        absl_example.absl_time_overloads(self.TEST_DATE), 'absl::Time')
+    self.assertEqual(
+        absl_example.absl_time_overloads(self.TEST_DATETIME), 'absl::Time')
+
+  def test_pass_int_as_absl_time(self):
+    secs = int(datetime.datetime(self.TEST_DATE.year, self.TEST_DATE.month,
+                                 self.TEST_DATE.day).timestamp())
+    self.assertTrue(absl_example.check_datetime(secs, secs))
+
+  def test_pass_float_as_absl_time(self):
+    secs = datetime.datetime(self.TEST_DATE.year, self.TEST_DATE.month,
+                             self.TEST_DATE.day).timestamp()
+    self.assertIsInstance(secs, float)
+    self.assertTrue(absl_example.check_datetime(secs, secs))
+
   def test_return_civilsecond(self):
     # We need to use a timezone aware datetime here, otherwise
     # datetime.timestamp converts to localtime. UTC is chosen as the convention
