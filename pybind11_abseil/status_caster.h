@@ -11,6 +11,7 @@
 #include "absl/status/status.h"
 #include "pybind11_abseil/check_status_module_imported.h"
 #include "pybind11_abseil/no_throw_status.h"
+#include "pybind11_abseil/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/status_not_ok_exception.h"
 
 namespace pybind11 {
@@ -66,6 +67,22 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
   static handle cast(absl::Status&& src, return_value_policy policy,
                      handle parent, bool throw_exception = true) {
     return cast_impl(std::move(src), policy, parent, throw_exception);
+  }
+
+  bool load(handle src, bool convert) {
+    if (type_caster_base<absl::Status>::load(src, convert)) {
+      return true;
+    }
+    if (convert) {
+      absl::StatusOr<void*> raw_ptr =
+          pybind11_abseil::raw_ptr_from_capsule::RawPtrFromCapsule<void>(
+              src.ptr(), "::absl::Status", "as_absl_Status");
+      if (raw_ptr.ok()) {
+        value = raw_ptr.value();
+        return true;
+      }
+    }
+    return false;
   }
 
  private:

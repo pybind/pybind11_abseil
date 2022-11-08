@@ -105,6 +105,20 @@ PYBIND11_MODULE(status_example, m) {
   auto status_module = pybind11::google::ImportStatusModule();
   m.attr("StatusNotOk") = status_module.attr("StatusNotOk");
 
+  m.def("make_absl_status_capsule", [](bool return_ok_status) {
+    static absl::Status ok_status;
+    static absl::Status not_ok_status(absl::StatusCode::kAlreadyExists,
+                                      "Made by make_absl_status_capsule.");
+    if (return_ok_status) {
+      return capsule(static_cast<void*>(&ok_status), "::absl::Status");
+    }
+    return capsule(static_cast<void*>(&not_ok_status), "::absl::Status");
+  });
+
+  m.def("extract_code_message", [](const absl::Status& status) {
+    return pybind11::make_tuple(status.code(), std::string(status.message()));
+  });
+
   m.def("make_bad_capsule", [](bool pass_name) {
     // https://docs.python.org/3/c-api/capsule.html:
     // The pointer argument may not be NULL.

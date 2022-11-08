@@ -13,6 +13,15 @@ def docstring_signature(f):
   return f.__doc__.split('\n')[0]
 
 
+class AbslStatusCapsule:
+
+  def __init__(self, return_ok_status):
+    self.return_ok_status = return_ok_status
+
+  def as_absl_Status(self):  # pylint: disable=invalid-name
+    return status_example.make_absl_status_capsule(self.return_ok_status)
+
+
 class BadCapsule:
 
   def __init__(self, pass_name):
@@ -377,6 +386,34 @@ class StatusTest(parameterized.TestCase):
         str(ctx.exception),
         f'NotACapsule.as_absl_Status() returned an object ({nm})'
         f' that is not a capsule.')
+
+  @parameterized.parameters(False, True)
+  def test_status_caster_load_as_absl_status_success(self, return_ok_status):
+    code, msg = status_example.extract_code_message(
+        AbslStatusCapsule(return_ok_status))
+    if return_ok_status:
+      self.assertEqual(code, status.StatusCode.OK)
+      self.assertEqual(msg, '')
+    else:
+      self.assertEqual(code, status.StatusCode.ALREADY_EXISTS)
+      self.assertEqual(msg, 'Made by make_absl_status_capsule.')
+
+  @parameterized.parameters(False, True)
+  def test_status_caster_load_as_absl_status_bad_capsule(self, pass_name):
+    cap = BadCapsule(pass_name)
+    with self.assertRaises(TypeError):
+      status_example.extract_code_message(cap)
+
+  @parameterized.parameters(None, '', 0)
+  def test_status_caster_load_as_absl_status_not_a_capsule(self, not_a_capsule):
+    cap = NotACapsule(not_a_capsule)
+    with self.assertRaises(TypeError):
+      status_example.extract_code_message(cap)
+
+  @parameterized.parameters(None, '', 0)
+  def test_status_caster_load_no_as_absl_status(self, something_random):
+    with self.assertRaises(TypeError):
+      status_example.extract_code_message(something_random)
 
 
 class IntGetter(status_example.IntGetter):
