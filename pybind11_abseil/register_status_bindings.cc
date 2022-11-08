@@ -113,11 +113,46 @@ std::size_t boost_hash_combine(std::size_t lhs, std::size_t rhs) {
   return lhs;
 }
 
+handle ThisModule(handle m = nullptr) {
+  static handle this_module = nullptr;
+  if (m) {
+    this_module = m;
+  }
+  return this_module;
+}
+
+handle PyStatusNotOkTypeInUse() {
+  static handle type_in_use = nullptr;
+  if (type_in_use) {
+    return type_in_use;
+  }
+
+  object module_in_use;
+
+  // Import any module with a derived or alternative StatusNotOk type here
+  // and assign to module_in_use.
+
+  if (!module_in_use) {
+    module_in_use = reinterpret_borrow<object>(ThisModule());
+    if (!module_in_use) {
+      throw std::runtime_error(
+          "Internal error: ThisModule() undefined (" __FILE__ ":" +
+          std::to_string(__LINE__) + ")");
+    }
+  }
+  // Intentionally leak this Python reference:
+  // https://google.github.io/styleguide/cppguide.html#Static_and_Global_Variables
+  type_in_use = object(module_in_use.attr("StatusNotOk")).release();
+  return type_in_use;
+}
+
 }  // namespace
 
 namespace internal {
 
 void RegisterStatusBindings(module m) {
+  ThisModule(m);
+
   enum_<InitFromTag>(m, "InitFromTag")
       .value("capsule", InitFromTag::capsule)
       .value("capsule_direct_only", InitFromTag::capsule_direct_only)
@@ -389,25 +424,22 @@ void RegisterStatusBindings(module m) {
       )",
                  m.attr("__dict__"), m.attr("__dict__"));
 
-  // Intentionally leak this Python reference:
-  // https://google.github.io/styleguide/cppguide.html#Static_and_Global_Variables
-  static handle PyStatusNotOk = object(m.attr("StatusNotOk")).release();
-
   // Register a custom handler which converts a C++ StatusNotOk to a
   // PyStatusNotOk.
   register_exception_translator([](std::exception_ptr p) {
     try {
       if (p) std::rethrow_exception(p);
     } catch (const StatusNotOk& e) {
-      PyErr_SetObject(
-          PyStatusNotOk.ptr(),
-          PyStatusNotOk(google::NoThrowStatus<absl::Status>(e.status())).ptr());
+      PyErr_SetObject(PyStatusNotOkTypeInUse().ptr(),
+                      PyStatusNotOkTypeInUse()(
+                          google::NoThrowStatus<absl::Status>(e.status()))
+                          .ptr());
     }
   });
 
   m.def("BuildStatusNotOk", [](absl::StatusCode code, const std::string& msg) {
-    return PyStatusNotOk(google::NoThrowStatus<absl::Status>(
-        absl::Status(code, msg)));
+    return PyStatusNotOkTypeInUse()(
+        google::NoThrowStatus<absl::Status>(absl::Status(code, msg)));
   });
 }
 
