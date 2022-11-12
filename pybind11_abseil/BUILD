@@ -77,6 +77,7 @@ cc_library(
 
 cc_library(
     name = "raw_ptr_from_capsule",
+    srcs = ["raw_ptr_from_capsule.cc"],
     hdrs = ["raw_ptr_from_capsule.h"],
     visibility = ["//visibility:private"],
     deps = [
