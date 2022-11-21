@@ -1,10 +1,13 @@
 """Tests that the casters raise a TypeError if the status module is missing."""
 
-from absl.testing import absltest
+# In google3, `from absl.testing import absltest` imports the status module,
+# which breaks the requirement for this test that the status module is missing.
+import unittest
+
 from pybind11_abseil.tests import missing_import
 
 
-class MissingStatusImportTest(absltest.TestCase):
+class MissingStatusImportTest(unittest.TestCase):
 
   message_regex = 'Status module has not been imported.*'
 
@@ -18,4 +21,4 @@ class MissingStatusImportTest(absltest.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()
