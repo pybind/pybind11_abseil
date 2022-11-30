@@ -16,6 +16,7 @@
 #include "pybind11_abseil/absl_casters.h"
 #include "pybind11_abseil/init_from_tag.h"
 #include "pybind11_abseil/no_throw_status.h"
+#include "pybind11_abseil/ok_status_singleton_lib.h"
 #include "pybind11_abseil/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/status_caster.h"
 #include "pybind11_abseil/status_not_ok_exception.h"
@@ -278,7 +279,14 @@ void RegisterStatusBindings(module m) {
              return decode_utf8_replace(
                  absl::StrCat(s.message(), " [", code_str, "]"));
            })
-      .def_static("OkStatus", DoNotThrowStatus(&absl::OkStatus))
+      .def_static("OkStatus",
+                  []() {
+                    handle py_singleton(pybind11_abseil::PyOkStatusSingleton());
+                    if (!py_singleton) {
+                      throw error_already_set();
+                    }
+                    return py_singleton;
+                  })
       .def("raw_code", &absl::Status::raw_code)
       .def("CanonicalCode",
            [](const absl::Status& self) {
@@ -440,6 +448,12 @@ void RegisterStatusBindings(module m) {
   m.def("BuildStatusNotOk", [](absl::StatusCode code, const std::string& msg) {
     return PyStatusNotOkTypeInUse()(
         google::NoThrowStatus<absl::Status>(absl::Status(code, msg)));
+  });
+
+  m.def("_make_py_ok_status_singleton", []() {
+    return detail::type_caster_base<absl::Status>::cast(
+        pybind11_abseil::OkStatusSingleton(), return_value_policy::reference,
+        handle{});
   });
 }
 

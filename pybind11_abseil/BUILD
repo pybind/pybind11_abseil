@@ -25,6 +25,37 @@ pybind_library(
 )
 
 cc_library(
+    name = "ok_status_singleton_lib",
+    srcs = ["ok_status_singleton_lib.cc"],
+    hdrs = ["ok_status_singleton_lib.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_absl//absl/status",
+        "@local_config_python//:python_headers",  # buildcleaner: keep
+    ],
+)
+
+cc_library(
+    name = "ok_status_singleton_pyinit_google3",
+    srcs = ["ok_status_singleton_pyinit_google3.cc"],
+    visibility = ["//visibility:private"],
+    deps = [
+        ":ok_status_singleton_lib",
+        "@local_config_python//:python_headers",  # buildcleaner: keep
+    ],
+)
+
+cc_binary(
+    name = "ok_status_singleton.so",
+    srcs = ["ok_status_singleton_pyinit_relative.cc"],
+    linkshared = 1,
+    deps = [
+        ":ok_status_singleton_pyinit_google3",
+        "@local_config_python//:python_headers",  # buildcleaner: keep
+    ],
+)
+
+cc_library(
     name = "no_throw_status",
     hdrs = ["no_throw_status.h"],
 )
@@ -107,6 +138,7 @@ pybind_library(
         ":absl_casters",
         ":init_from_tag",
         ":no_throw_status",
+        ":ok_status_singleton_lib",
         ":raw_ptr_from_capsule",
         ":status_caster",
         ":status_not_ok_exception",

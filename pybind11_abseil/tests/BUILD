@@ -27,6 +27,14 @@ py_test(
     srcs_version = "PY3",
 )
 
+py_test(
+    name = "ok_status_singleton_test",
+    srcs = ["ok_status_singleton_test.py"],
+    data = ["//pybind11_abseil:ok_status_singleton.so"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+)
+
 pybind_extension(
     name = "missing_import",
     srcs = ["missing_import.cc"],
