@@ -102,6 +102,13 @@ absl::StatusOr<int> CallGetRedirectToPython(IntGetter* ptr, int i) {
 }
 
 PYBIND11_MODULE(status_example, m) {
+  m.attr("PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC") =
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC)
+      true;
+#else
+      false;
+#endif
+
   auto status_module = pybind11::google::ImportStatusModule();
   m.attr("StatusNotOk") = status_module.attr("StatusNotOk");
 
@@ -193,6 +200,21 @@ PYBIND11_MODULE(status_example, m) {
     return google::DoNotThrowStatus(
         absl::Status(static_cast<absl::StatusCode>(code), msg));
   });
+
+  m.def("return_ok_status", [](bool use_return_value_policy_clif_automatic) {
+    if (use_return_value_policy_clif_automatic) {
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC)
+      return cast(absl::OkStatus(), return_value_policy::_clif_automatic);
+#endif
+    }
+    return cast(absl::OkStatus());
+  });
+
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC)
+  m.def(
+      "return_ok_status_direct", []() { return absl::OkStatus(); },
+      return_value_policy::_clif_automatic);
+#endif
 }
 
 }  // namespace test

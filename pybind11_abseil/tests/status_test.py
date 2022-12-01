@@ -415,6 +415,19 @@ class StatusTest(parameterized.TestCase):
     with self.assertRaises(TypeError):
       status_example.extract_code_message(something_random)
 
+  def test_return_ok_status_return_value_policy_clif_automatic(self):
+    self.assertIsNone(status_example.return_ok_status(False))
+    if not status_example.PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC:
+      self.skipTest('return_value_policy::_clif_automatic not available')
+    obj = status_example.return_ok_status(True)
+    self.assertIs(obj, status.Status.OkStatus())
+
+  def test_return_ok_status_direct_return_value_policy_clif_automatic(self):
+    if not status_example.PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC:
+      self.skipTest('return_value_policy::_clif_automatic not available')
+    obj = status_example.return_ok_status_direct()
+    self.assertIs(obj, status.Status.OkStatus())
+
 
 class IntGetter(status_example.IntGetter):
 

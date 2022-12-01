@@ -81,6 +81,7 @@ pybind_library(
     deps = [
         ":check_status_module_imported",
         ":no_throw_status",
+        ":ok_status_singleton_lib",
         ":raw_ptr_from_capsule",
         ":status_not_ok_exception",
         "@com_google_absl//absl/status",

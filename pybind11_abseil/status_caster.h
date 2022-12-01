@@ -11,6 +11,7 @@
 #include "absl/status/status.h"
 #include "pybind11_abseil/check_status_module_imported.h"
 #include "pybind11_abseil/no_throw_status.h"
+#include "pybind11_abseil/ok_status_singleton_lib.h"
 #include "pybind11_abseil/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/status_not_ok_exception.h"
 
@@ -90,6 +91,11 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
   static handle cast_impl(CType&& src, return_value_policy policy,
                           handle parent, bool throw_exception) {
     google::internal::CheckStatusModuleImported();
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC)
+    if (src.ok() && policy == return_value_policy::_clif_automatic) {
+      return pybind11_abseil::PyOkStatusSingleton();
+    }
+#endif
     if (!throw_exception) {
       // Use the built-in/standard pybind11 caster.
       return type_caster_base<absl::Status>::cast(std::forward<CType>(src),
