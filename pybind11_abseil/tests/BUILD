@@ -54,6 +54,14 @@ py_test(
     srcs_version = "PY3",
 )
 
+py_test(
+    name = "status_test",
+    srcs = ["status_test.py"],
+    data = ["//pybind11_abseil:status.so"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+)
+
 pybind_extension(
     name = "status_example",
     srcs = ["status_example.cc"],
@@ -65,8 +73,8 @@ pybind_extension(
 )
 
 py_test(
-    name = "status_test",
-    srcs = ["status_test.py"],
+    name = "status_example_test",
+    srcs = ["status_example_test.py"],
     data = [
         ":status_example.so",
         "//pybind11_abseil:status.so",
