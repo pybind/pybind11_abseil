@@ -46,7 +46,7 @@ cc_library(
 
 cc_binary(
     name = "ok_status_singleton.so",
-    srcs = ["ok_status_singleton_pyinit_relative.cc"],
+    srcs = ["ok_status_singleton_py_extension_stub.cc"],
     linkshared = 1,
     deps = [
         ":ok_status_singleton_pyinit_google3",
@@ -160,7 +160,7 @@ pybind_library(
 
 cc_binary(
     name = "status.so",
-    srcs = ["status_pyinit_relative.cc"],
+    srcs = ["status_py_extension_stub.cc"],
     linkshared = 1,
     deps = [
         ":status_pyinit_google3",
