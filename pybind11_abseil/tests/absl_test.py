@@ -299,7 +299,7 @@ class AbslNumericSpanTest(parameterized.TestCase):
       self.assertEqual(e, 42)
 
   @parameterized.named_parameters(
-      ('float_numpy', np.zeros(5, dtype=np.float)),
+      ('float_numpy', np.zeros(5, dtype=float)),
       ('two_d_numpy', np.zeros(
           (5, 5), dtype=np.int32)), ('read_only', make_read_only_numpy_array()),
       ('strided_skip', make_srided_numpy_array(2)),
