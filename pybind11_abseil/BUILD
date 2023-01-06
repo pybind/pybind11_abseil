@@ -6,8 +6,6 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 pybind_library(
     name = "absl_casters",
     hdrs = ["absl_casters.h"],
