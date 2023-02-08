@@ -1,19 +1,10 @@
 # Pybind11 bindings for the Abseil C++ Common Libraries
 
-load("//tools/build_defs/license:license.bzl", "license")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 
 package(
-    default_applicable_licenses = ["//pybind11_abseil:license"],
     default_visibility = ["//visibility:public"],
 )
-
-license(
-    name = "license",
-    package_name = "pybind11_abseil",
-)
-
-licenses(["notice"])
 
 pybind_library(
     name = "absl_casters",
