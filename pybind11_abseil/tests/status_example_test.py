@@ -192,10 +192,15 @@ class StatusTest(parameterized.TestCase):
     with self.assertRaises(TypeError):
       status_example.extract_code_message(cap)
 
-  @parameterized.parameters(None, '', 0)
+  @parameterized.parameters('', 0)
   def test_status_caster_load_no_as_absl_status(self, something_random):
     with self.assertRaises(TypeError):
       status_example.extract_code_message(something_random)
+
+  def test_status_caster_load_none(self):
+    code, msg = status_example.extract_code_message(None)
+    self.assertEqual(code, status.StatusCode.OK)
+    self.assertEqual(msg, '')
 
   def test_return_ok_status_return_value_policy_clif_automatic(self):
     self.assertIsNone(status_example.return_ok_status(False))

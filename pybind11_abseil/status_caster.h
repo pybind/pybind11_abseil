@@ -72,6 +72,11 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
 
   bool load(handle src, bool convert) {
     if (type_caster_base<absl::Status>::load(src, convert)) {
+      // Behavior change 2023-02-09: previously `value` was simply left as
+      // `nullptr`.
+      if (!value) {
+        value = const_cast<absl::Status*>(pybind11_abseil::OkStatusSingleton());
+      }
       return true;
     }
     if (convert) {
