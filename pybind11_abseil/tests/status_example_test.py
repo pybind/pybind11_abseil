@@ -302,7 +302,8 @@ class StatusOrTest(absltest.TestCase):
     with self.assertRaises(ValueError):
       int_getter.Get(100)
     self.assertEqual(
-        status_example.call_get_redirect_to_python(int_getter, 5), 5)
+        status_example.call_get_redirect_to_python(int_getter, 5), 5
+    )
     with self.assertRaises(ValueError):
       status_example.call_get_redirect_to_python(int_getter, 100)
 

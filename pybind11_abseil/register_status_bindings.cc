@@ -264,9 +264,11 @@ void RegisterStatusBindings(module m) {
            (void(absl::Status::*)(const absl::Status&)) & absl::Status::Update,
            arg("other"))
       .def("to_string",
-           [](const absl::Status& s) {
+           [](const absl::Status& s, bool with_source_location) {
+             if (with_source_location) {
+             }
              return decode_utf8_replace(s.ToString());
-           })
+           }, kw_only{}, arg("with_source_location") = false)
       .def("status_not_ok_str",
            [](const absl::Status& s) {
              std::string code_str = absl::StatusCodeToString(s.code());
