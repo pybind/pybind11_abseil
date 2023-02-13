@@ -146,7 +146,6 @@ handle PyStatusNotOkTypeInUse() {
   type_in_use = object(module_in_use.attr("StatusNotOk")).release();
   return type_in_use;
 }
-
 }  // namespace
 
 namespace internal {
@@ -278,8 +277,15 @@ void RegisterStatusBindings(module m) {
                // assumption is violated.
                code_str = std::to_string(static_cast<int>(s.code()));
              }
-             return decode_utf8_replace(
-                 absl::StrCat(s.message(), " [", code_str, "]"));
+             auto output = absl::StrCat(s.message(), " [", code_str, "]");
+             return decode_utf8_replace(output);
+           })
+      .def("get_source_location_trace_str",
+           [](const absl::Status& s) -> std::string {
+             if (!s.ok()) {
+               {};
+             }
+             return {};
            })
       .def_static("OkStatus",
                   []() {
@@ -418,6 +424,9 @@ void RegisterStatusBindings(module m) {
 
         def __str__(self):
           return self._status.status_not_ok_str()
+
+        def get_source_location_trace_str(self):
+          return self._status.get_source_location_trace_str()
 
         def __eq__(self, other):
           if not isinstance(other, StatusNotOk):
