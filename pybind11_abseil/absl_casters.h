@@ -44,6 +44,8 @@
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/container/node_hash_map.h"
+#include "absl/container/node_hash_set.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/civil_time.h"
@@ -412,6 +414,13 @@ struct type_caster<absl::flat_hash_map<Key, Value, Hash, Equal, Alloc>>
     : map_caster<absl::flat_hash_map<Key, Value, Hash, Equal, Alloc>, Key,
                  Value> {};
 
+// Convert between absl::flat_hash_map and python dict.
+template <typename Key, typename Value, typename Hash, typename Equal,
+          typename Alloc>
+struct type_caster<absl::node_hash_map<Key, Value, Hash, Equal, Alloc>>
+    : map_caster<absl::node_hash_map<Key, Value, Hash, Equal, Alloc>, Key,
+                 Value> {};
+
 // Convert between absl::flat_hash_set and python set.
 template <typename Key, typename Hash, typename Equal, typename Alloc>
 struct type_caster<absl::flat_hash_set<Key, Hash, Equal, Alloc>>
@@ -421,6 +430,11 @@ struct type_caster<absl::flat_hash_set<Key, Hash, Equal, Alloc>>
 template <typename Key, typename Value, typename Compare, typename Alloc>
 struct type_caster<absl::btree_map<Key, Value, Compare, Alloc>>
     : map_caster<absl::btree_map<Key, Value, Compare, Alloc>, Key, Value> {};
+
+// Convert between absl::node_hash_set and python set.
+template <typename Key, typename Hash, typename Equal, typename Alloc>
+struct type_caster<absl::node_hash_set<Key, Hash, Equal, Alloc>>
+    : set_caster<absl::node_hash_set<Key, Hash, Equal, Alloc>, Key> {};
 
 // Convert between absl::string_view and python.
 //

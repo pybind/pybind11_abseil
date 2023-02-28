@@ -405,6 +405,18 @@ class AbslFlatHashMapTest(absltest.TestCase):
     self.assertTrue(absl_example.check_map(dict(expected), expected))
 
 
+class AbslNodeHashMapTest(absltest.TestCase):
+
+  def test_return_map(self):
+    keys_and_values = [(1, 2), (3, 4), (5, 6)]
+    expected = dict(keys_and_values)
+    self.assertEqual(expected, absl_example.make_node_hash_map(keys_and_values))
+
+  def test_pass_map(self):
+    expected = [(10, 20), (30, 40)]
+    self.assertTrue(absl_example.check_node_hash_map(dict(expected), expected))
+
+
 class AbslFlatHashSetTest(absltest.TestCase):
 
   def test_return_set(self):
@@ -415,6 +427,18 @@ class AbslFlatHashSetTest(absltest.TestCase):
   def test_pass_set(self):
     expected = [10, 20, 30, 40]
     self.assertTrue(absl_example.check_set(set(expected), expected))
+
+
+class AbslNodeHashSetTest(absltest.TestCase):
+
+  def test_return_set(self):
+    values = [1, 3, 7, 5]
+    expected = set(values)
+    self.assertEqual(expected, absl_example.make_node_hash_set(values))
+
+  def test_pass_set(self):
+    expected = [10, 20, 30, 40]
+    self.assertTrue(absl_example.check_node_hash_set(set(expected), expected))
 
 
 class AbslBTreeMapTest(absltest.TestCase):

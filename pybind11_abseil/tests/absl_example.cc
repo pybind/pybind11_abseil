@@ -165,6 +165,29 @@ bool CheckMap(const absl::flat_hash_map<int, int>& map,
   return true;
 }
 
+absl::node_hash_map<int, int> MakeNodeHashMap(
+    const std::vector<std::pair<int, int>>& keys_and_values) {
+  absl::node_hash_map<int, int> map;
+  for (const auto& kvp : keys_and_values) {
+    map.insert(kvp);
+  }
+  return map;
+}
+
+bool CheckNodeHashMap(const absl::node_hash_map<int, int>& map,
+                      const std::vector<std::pair<int, int>>& keys_and_values) {
+  for (const auto& kvp : keys_and_values) {
+    auto found = map.find(kvp.first);
+    if (found == map.end()) {
+      return false;
+    }
+    if (found->second != kvp.second) {
+      return false;
+    }
+  }
+  return true;
+}
+
 absl::flat_hash_set<int> MakeSet(const std::vector<int>& values) {
   return absl::flat_hash_set<int>(values.begin(), values.end());
 }
@@ -172,6 +195,16 @@ absl::flat_hash_set<int> MakeSet(const std::vector<int>& values) {
 bool CheckSet(const absl::flat_hash_set<int>& set,
               const std::vector<int>& values) {
   absl::flat_hash_set<int> check(values.begin(), values.end());
+  return set == check;
+}
+
+absl::node_hash_set<int> MakeNodeHashSet(const std::vector<int>& values) {
+  return absl::node_hash_set<int>(values.begin(), values.end());
+}
+
+bool CheckNodeHashSet(const absl::node_hash_set<int>& set,
+                      const std::vector<int>& values) {
+  absl::node_hash_set<int> check(values.begin(), values.end());
   return set == check;
 }
 
@@ -362,6 +395,11 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("make_map", &MakeMap, arg("keys_and_values"));
   m.def("check_map", &CheckMap, arg("map"), arg("keys_and_values"));
 
+  // absl::node_hash_map bindings
+  m.def("make_node_hash_map", &MakeNodeHashMap, arg("keys_and_values"));
+  m.def("check_node_hash_map", &CheckNodeHashMap, arg("map"),
+        arg("keys_and_values"));
+
   // absl::flat_hash_set bindings
   m.def("make_set", &MakeSet, arg("values"));
   m.def("check_set", &CheckSet, arg("set"), arg("values"));
@@ -369,6 +407,10 @@ PYBIND11_MODULE(absl_example, m) {
   // absl::btree_map bindings
   m.def("make_btree_map", &MakeBtreeMap, arg("keys_and_values"));
   m.def("check_btree_map", &CheckBtreeMap, arg("map"), arg("keys_and_values"));
+
+  // absl::node_hash_set bindings
+  m.def("make_node_hash_set", &MakeNodeHashSet, arg("values"));
+  m.def("check_node_hash_set", &CheckNodeHashSet, arg("set"), arg("values"));
 
   // absl::variant
   class_<A>(m, "A").def(init<int>()).def_readonly("a", &A::a);
