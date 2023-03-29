@@ -43,6 +43,22 @@ class StatusTest(parameterized.TestCase):
     self.assertTrue(
         status_example.check_status(test_status, status.StatusCode.CANCELLED))
 
+  def test_pass_statusor(self):
+    test_status = status.Status(status.StatusCode.CANCELLED, 'test')
+    self.assertTrue(
+        status_example.check_statusor(test_status, status.StatusCode.CANCELLED))
+    test_status = status.Status(status.StatusCode.OK, 'test')
+    with self.assertRaises(RuntimeError) as ctx:
+      status_example.check_statusor(test_status, status.StatusCode.CANCELLED)
+    self.assertEqual(
+        str(ctx.exception),
+        'An OK status is not a valid constructor argument to StatusOr<T>.')
+    with self.assertRaises(RuntimeError) as ctx:
+      status_example.check_statusor(None, status.StatusCode.CANCELLED)
+    self.assertEqual(
+        str(ctx.exception),
+        'An OK status is not a valid constructor argument to StatusOr<T>.')
+
   def test_return_status_return_type_from_doc(self):
     self.assertEndsWith(
         docstring_signature(status_example.return_status), ' -> None')

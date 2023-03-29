@@ -45,9 +45,20 @@ struct type_caster<absl::StatusOr<PayloadType>> {
   PYBIND11_TYPE_CASTER(absl::StatusOr<PayloadType>, PayloadCaster::name);
 
   bool load(handle src, bool convert) {
-    PayloadCaster base_caster;
-    if (base_caster.load(src, convert)) {
-      value = cast_op<PayloadType>(std::move(base_caster));
+    PayloadCaster payload_caster;
+    if (payload_caster.load(src, convert)) {
+      value = cast_op<PayloadType>(std::move(payload_caster));
+      return true;
+    }
+    StatusCaster status_caster;
+    if (status_caster.load(src, convert)) {
+      absl::Status status = cast_op<absl::Status>(std::move(status_caster));
+      if (status.ok()) {
+        throw cast_error(
+            "An OK status is not a valid constructor argument to StatusOr<T>.");
+      } else {
+        value = status;
+      }
       return true;
     }
     return false;

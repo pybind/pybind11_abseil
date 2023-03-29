@@ -34,6 +34,13 @@ bool CheckStatus(const absl::Status& status, absl::StatusCode code) {
   return status.code() == code;
 }
 
+bool CheckStatusOr(const absl::StatusOr<int>& statusor, absl::StatusCode code) {
+  if (statusor.ok()) {
+    return true;
+  }
+  return statusor.status().code() == code;
+}
+
 absl::Status ReturnStatus(absl::StatusCode code, const std::string& text = "") {
   return absl::Status(code, text);
 }
@@ -151,6 +158,7 @@ PYBIND11_MODULE(status_example, m) {
 
   // absl::Status bindings
   m.def("check_status", &CheckStatus, arg("status"), arg("code"));
+  m.def("check_statusor", &CheckStatusOr, arg("statusor"), arg("code"));
   m.def("return_status", &ReturnStatus, "Raise an error if code is not OK.",
         arg("code"), arg("text") = "");
   m.def("make_status", google::DoNotThrowStatus(&ReturnStatus),
