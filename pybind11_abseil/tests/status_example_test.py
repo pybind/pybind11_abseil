@@ -57,7 +57,7 @@ class StatusTest(parameterized.TestCase):
       status_example.check_statusor(None, status.StatusCode.CANCELLED)
     self.assertEqual(
         str(ctx.exception),
-        'An OK status is not a valid constructor argument to StatusOr<T>.')
+        'None is not a valid value for a StatusOr<T> argument.')
 
   def test_return_status_return_type_from_doc(self):
     self.assertEndsWith(

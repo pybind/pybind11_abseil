@@ -50,6 +50,10 @@ struct type_caster<absl::StatusOr<PayloadType>> {
       value = cast_op<PayloadType>(std::move(payload_caster));
       return true;
     }
+    if (src.is_none()) {
+      throw cast_error(
+          "None is not a valid value for a StatusOr<T> argument.");
+    }
     StatusCaster status_caster;
     if (status_caster.load(src, convert)) {
       absl::Status status = cast_op<absl::Status>(std::move(status_caster));
