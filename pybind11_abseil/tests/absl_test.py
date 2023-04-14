@@ -38,6 +38,13 @@ class AbslTimeTest(parameterized.TestCase):
     self.assertEqual(duration.seconds, 2)
     self.assertEqual(duration.microseconds, 5e5)
 
+  def test_infinite_duration(self):
+    duration = absl_example.make_infinite_duration()
+    self.assertEqual(duration, datetime.timedelta.max)
+    self.assertFalse(
+        absl_example.is_infinite_duration(absl_example.make_duration(123)))
+    self.assertTrue(absl_example.is_infinite_duration(duration))
+
   def test_pass_positive_duration(self):
     duration = datetime.timedelta(seconds=self.POSITIVE_SECS)
     self.assertTrue(absl_example.check_duration(duration, self.POSITIVE_SECS))

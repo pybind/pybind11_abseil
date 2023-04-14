@@ -133,9 +133,14 @@ struct type_caster<absl::Duration> {
           !hasattr(src, "microseconds")) {
         return false;
       }
-      value = absl::Hours(24 * GetInt64Attr(src, "days")) +
-              absl::Seconds(GetInt64Attr(src, "seconds")) +
-              absl::Microseconds(GetInt64Attr(src, "microseconds"));
+      auto py_duration_t = module::import("datetime").attr("timedelta");
+      if (src == object(py_duration_t.attr("max"))) {
+        value = absl::InfiniteDuration();
+      } else {
+        value = absl::Hours(24 * GetInt64Attr(src, "days")) +
+                absl::Seconds(GetInt64Attr(src, "seconds")) +
+                absl::Microseconds(GetInt64Attr(src, "microseconds"));
+      }
       return true;
     }
     return false;
@@ -144,9 +149,13 @@ struct type_caster<absl::Duration> {
   // Conversion part 2 (C++ -> Python)
   static handle cast(const absl::Duration& src, return_value_policy, handle) {
     absl::Duration remainder;
+    auto py_duration_t = module::import("datetime").attr("timedelta");
+    if (src == absl::InfiniteDuration()) {
+      auto py_duration = object(py_duration_t.attr("max"));
+      return py_duration.release();
+    }
     int64_t secs = absl::IDivDuration(src, absl::Seconds(1), &remainder);
     int64_t microsecs = absl::ToInt64Microseconds(remainder);
-    auto py_duration_t = module::import("datetime").attr("timedelta");
     auto py_duration =
         py_duration_t(arg("seconds") = secs, arg("microseconds") = microsecs);
     return py_duration.release();

@@ -25,6 +25,12 @@ namespace test {
 
 absl::Duration MakeDuration(double secs) { return absl::Seconds(secs); }
 
+absl::Duration MakeInfiniteDuration() { return absl::InfiniteDuration(); }
+
+bool IsInfiniteDuration(const absl::Duration& duration) {
+  return duration == absl::InfiniteDuration();
+}
+
 bool CheckDuration(const absl::Duration& duration, double secs) {
   return duration == MakeDuration(secs);
 }
@@ -325,6 +331,8 @@ static_assert(
 PYBIND11_MODULE(absl_example, m) {
   // absl::Time/Duration bindings.
   m.def("make_duration", &MakeDuration, arg("secs"));
+  m.def("make_infinite_duration", &MakeInfiniteDuration);
+  m.def("is_infinite_duration", &IsInfiniteDuration);
   m.def("check_duration", &CheckDuration, arg("duration"), arg("secs"));
   m.def("make_datetime", &MakeTime, arg("secs"));
   m.def("check_datetime", &CheckDatetime, arg("datetime"), arg("secs"));
