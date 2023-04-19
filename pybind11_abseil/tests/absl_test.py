@@ -194,8 +194,9 @@ class AbslTimeTest(parameterized.TestCase):
     truncated = self.TEST_DATETIME.replace(
         hour=0, minute=0, second=0, microsecond=0)
     self.assertEqual(
-        truncated,
-        absl_example.make_civilday(self.TEST_DATETIME_UTC.timestamp()))
+        truncated.date(),
+        absl_example.make_civilday(self.TEST_DATETIME_UTC.timestamp()),
+    )
 
   def test_pass_datetime_as_civilday(self):
     truncated = self.TEST_DATETIME_UTC.replace(
@@ -207,8 +208,9 @@ class AbslTimeTest(parameterized.TestCase):
     truncated = self.TEST_DATETIME.replace(
         day=1, hour=0, minute=0, second=0, microsecond=0)
     self.assertEqual(
-        truncated,
-        absl_example.make_civilmonth(self.TEST_DATETIME_UTC.timestamp()))
+        truncated.date(),
+        absl_example.make_civilmonth(self.TEST_DATETIME_UTC.timestamp()),
+    )
 
   def test_pass_datetime_as_civilmonth(self):
     truncated = self.TEST_DATETIME_UTC.replace(
@@ -221,8 +223,9 @@ class AbslTimeTest(parameterized.TestCase):
     truncated = self.TEST_DATETIME.replace(
         month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     self.assertEqual(
-        truncated,
-        absl_example.make_civilyear(self.TEST_DATETIME_UTC.timestamp()))
+        truncated.date(),
+        absl_example.make_civilyear(self.TEST_DATETIME_UTC.timestamp()),
+    )
 
   def test_pass_datetime_as_civilyear(self):
     truncated = self.TEST_DATETIME_UTC.replace(

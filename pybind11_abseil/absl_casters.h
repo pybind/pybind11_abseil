@@ -235,10 +235,10 @@ struct type_caster<absl::Time> {
   }
 };
 
-template <typename CivilTimeType>
-struct absl_civil_time_caster {
+template <typename CivilTimeUnitType>
+struct absl_civil_datetime_caster {
  public:
-  PYBIND11_TYPE_CASTER(CivilTimeType, const_name("CivilTimeType"));
+  PYBIND11_TYPE_CASTER(CivilTimeUnitType, const_name("CivilDateTime"));
 
   bool load(handle src, bool convert) {
     if (!convert || !hasattr(src, "year") || !hasattr(src, "month") ||
@@ -252,12 +252,14 @@ struct absl_civil_time_caster {
       minute = GetInt64Attr(src, "minute");
       second = GetInt64Attr(src, "second");
     }
-    value = CivilTimeType(GetInt64Attr(src, "year"), GetInt64Attr(src, "month"),
+    value =
+        CivilTimeUnitType(GetInt64Attr(src, "year"), GetInt64Attr(src, "month"),
                           GetInt64Attr(src, "day"), hour, minute, second);
     return true;
   }
 
-  static handle cast(const CivilTimeType& src, return_value_policy, handle) {
+  static handle cast(const CivilTimeUnitType& src, return_value_policy,
+                     handle) {
     auto py_datetime_t = module::import("datetime").attr("datetime");
     auto py_datetime = py_datetime_t(src.year(), src.month(), src.day(),
                                      src.hour(), src.minute(), src.second());
@@ -265,29 +267,53 @@ struct absl_civil_time_caster {
   }
 };
 
+template <typename CivilTimeUnitType>
+struct absl_civil_date_caster {
+ public:
+  PYBIND11_TYPE_CASTER(CivilTimeUnitType, const_name("CivilDate"));
+
+  bool load(handle src, bool convert) {
+    if (!convert || !hasattr(src, "year") || !hasattr(src, "month") ||
+        !hasattr(src, "day")) {
+      return false;
+    }
+    value =
+        CivilTimeUnitType(GetInt64Attr(src, "year"), GetInt64Attr(src, "month"),
+                          GetInt64Attr(src, "day"));
+    return true;
+  }
+
+  static handle cast(const CivilTimeUnitType& src, return_value_policy,
+                     handle) {
+    auto py_datetime_t = module::import("datetime").attr("date");
+    auto py_datetime = py_datetime_t(src.year(), src.month(), src.day());
+    return py_datetime.release();
+  }
+};
+
 template <>
 struct type_caster<absl::CivilSecond>
-    : public absl_civil_time_caster<absl::CivilSecond> {};
+    : public absl_civil_datetime_caster<absl::CivilSecond> {};
 
 template <>
 struct type_caster<absl::CivilMinute>
-    : public absl_civil_time_caster<absl::CivilMinute> {};
+    : public absl_civil_datetime_caster<absl::CivilMinute> {};
 
 template <>
 struct type_caster<absl::CivilHour>
-    : public absl_civil_time_caster<absl::CivilHour> {};
+    : public absl_civil_datetime_caster<absl::CivilHour> {};
 
 template <>
 struct type_caster<absl::CivilDay>
-    : public absl_civil_time_caster<absl::CivilDay> {};
+    : public absl_civil_date_caster<absl::CivilDay> {};
 
 template <>
 struct type_caster<absl::CivilMonth>
-    : public absl_civil_time_caster<absl::CivilMonth> {};
+    : public absl_civil_date_caster<absl::CivilMonth> {};
 
 template <>
 struct type_caster<absl::CivilYear>
-    : public absl_civil_time_caster<absl::CivilYear> {};
+    : public absl_civil_date_caster<absl::CivilYear> {};
 
 // Returns {true, a span referencing the data contained by src} without copying
 // or converting the data if possible. Otherwise returns {false, an empty span}.
