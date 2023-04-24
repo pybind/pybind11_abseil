@@ -98,6 +98,12 @@ bool CheckCivilYear(absl::CivilYear datetime, double secs) {
   return datetime == MakeCivilYear(secs);
 }
 
+absl::Duration RoundtripDuration(const absl::Duration& duration) {
+  return duration;
+}
+
+absl::Time RoundtripTime(const absl::Time& time) { return time; }
+
 absl::TimeZone RoundtripTimeZone(absl::TimeZone timezone) { return timezone; }
 
 // Since a span does not own its elements, we must create a class to own them
@@ -340,7 +346,8 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("absl_time_overloads", [](int) {  return "int"; });
   m.def("absl_time_overloads", [](float) { return "float"; });
 
-  // absl::TimeZone bindings
+  m.def("roundtrip_duration", &RoundtripDuration, arg("duration"));
+  m.def("roundtrip_time", &RoundtripTime, arg("time"));
   m.def("roundtrip_timezone", &RoundtripTimeZone, arg("timezone"));
 
   // absl::CivilTime bindings

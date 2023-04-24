@@ -15,6 +15,12 @@ import numpy as np
 from pybind11_abseil.tests import absl_example
 
 
+def dt_time(h=0, m=0, s=0, micros=0, tzoff=0):
+  return datetime.time(h, m, s, micros).replace(
+      tzinfo=datetime.timezone(datetime.timedelta(seconds=tzoff))
+  )
+
+
 class AbslTimeTest(parameterized.TestCase):
   SECONDS_IN_DAY = 24 * 60 * 60
   POSITIVE_SECS = 3 * SECONDS_IN_DAY + 2.5
@@ -241,6 +247,29 @@ class AbslTimeTest(parameterized.TestCase):
     self.assertEqual(expected_timezone, timezone)
     with self.assertRaises(TypeError):
       absl_example.roundtrip_timezone('Not a timezone')
+
+  @parameterized.parameters(
+      absl_example.roundtrip_duration, absl_example.roundtrip_time
+  )
+  def test_from_datetime_time(self, rt):
+    dt1 = rt(dt_time(h=13))
+    dt2 = rt(dt_time(h=15))
+    self.assertEqual((dt2 - dt1).seconds, 2 * 3600)
+    dt1 = rt(dt_time(m=12))
+    dt2 = rt(dt_time(m=16))
+    self.assertEqual((dt2 - dt1).seconds, 4 * 60)
+    dt1 = rt(dt_time(s=11))
+    dt2 = rt(dt_time(s=17))
+    self.assertEqual((dt2 - dt1).seconds, 6)
+    dt1 = rt(dt_time(micros=10))
+    dt2 = rt(dt_time(micros=18))
+    self.assertEqual((dt2 - dt1).microseconds, 8)
+    dt1 = rt(dt_time(tzoff=9))
+    dt2 = rt(dt_time(tzoff=19))
+    # Conversion from datetime.time to absl::Duration ignores tzinfo!
+    self.assertEqual(
+        (dt2 - dt1).seconds, 0 if rt is absl_example.roundtrip_duration else 10
+    )
 
 
 def make_read_only_numpy_array():

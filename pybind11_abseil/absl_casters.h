@@ -34,6 +34,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+// Must NOT appear before at least one pybind11 include.
+#include <datetime.h>  // Python datetime builtin.
+
 #include <cmath>
 #include <cstdint>
 #include <tuple>
@@ -107,6 +110,14 @@ struct type_caster<absl::TimeZone> {
   }
 };
 
+namespace internal {
+inline void EnsurePyDateTime_IMPORT() {
+  if (PyDateTimeAPI == nullptr) {
+    PyDateTime_IMPORT;
+  }
+}
+}  // namespace internal
+
 // Convert between absl::Duration and python datetime.timedelta.
 template <>
 struct type_caster<absl::Duration> {
@@ -117,33 +128,41 @@ struct type_caster<absl::Duration> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
+    // As early as possible to avoid mid-process surprises.
+    internal::EnsurePyDateTime_IMPORT();
     if (!convert) {
       return false;
     }
     if (PyFloat_Check(src.ptr())) {
       value = absl::Seconds(src.cast<double>());
       return true;
-    } else if (PyLong_Check(src.ptr())) {
+    }
+    if (PyLong_Check(src.ptr())) {
       value = absl::Seconds(src.cast<int64_t>());
       return true;
-    } else {
-      // Ensure that absl::Duration is converted from a Python
-      // datetime.timedelta.
-      if (!hasattr(src, "days") || !hasattr(src, "seconds") ||
-          !hasattr(src, "microseconds")) {
-        return false;
-      }
-      auto py_duration_t = module::import("datetime").attr("timedelta");
-      if (src == object(py_duration_t.attr("max"))) {
-        value = absl::InfiniteDuration();
-      } else {
-        value = absl::Hours(24 * GetInt64Attr(src, "days")) +
-                absl::Seconds(GetInt64Attr(src, "seconds")) +
-                absl::Microseconds(GetInt64Attr(src, "microseconds"));
-      }
+    }
+    if (PyTime_Check(src.ptr())) {
+      value = absl::Hours(PyDateTime_TIME_GET_HOUR(src.ptr())) +
+              absl::Minutes(PyDateTime_TIME_GET_MINUTE(src.ptr())) +
+              absl::Seconds(PyDateTime_TIME_GET_SECOND(src.ptr())) +
+              absl::Microseconds(PyDateTime_TIME_GET_MICROSECOND(src.ptr()));
       return true;
     }
-    return false;
+    // Ensure that absl::Duration is converted from a Python
+    // datetime.timedelta.
+    if (!hasattr(src, "days") || !hasattr(src, "seconds") ||
+        !hasattr(src, "microseconds")) {
+      return false;
+    }
+    auto py_duration_t = module::import("datetime").attr("timedelta");
+    if (src == object(py_duration_t.attr("max"))) {
+      value = absl::InfiniteDuration();
+    } else {
+      value = absl::Hours(24 * GetInt64Attr(src, "days")) +
+              absl::Seconds(GetInt64Attr(src, "seconds")) +
+              absl::Microseconds(GetInt64Attr(src, "microseconds"));
+    }
+    return true;
   }
 
   // Conversion part 2 (C++ -> Python)
@@ -172,13 +191,30 @@ struct type_caster<absl::Time> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
+    // As early as possible to avoid mid-process surprises.
+    internal::EnsurePyDateTime_IMPORT();
     if (convert) {
       if (PyLong_Check(src.ptr())) {
         value = absl::FromUnixSeconds(src.cast<int64_t>());
         return true;
-      } else if (PyFloat_Check(src.ptr())) {
+      }
+      if (PyFloat_Check(src.ptr())) {
         value = absl::time_internal::FromUnixDuration(absl::Seconds(
             src.cast<double>()));
+        return true;
+      }
+      if (PyTime_Check(src.ptr())) {
+        // Adapted from absl/python/time.cc
+        // Copyright 2018 The Abseil Authors.
+        timeval tv{PyDateTime_TIME_GET_HOUR(src.ptr()) * 3600 +
+                       PyDateTime_TIME_GET_MINUTE(src.ptr()) * 60 +
+                       PyDateTime_TIME_GET_SECOND(src.ptr()),
+                   PyDateTime_TIME_GET_MICROSECOND(src.ptr())};
+        value = absl::TimeFromTimeval(tv);
+        int utcoffset;
+        if (PyTzOffset(src.ptr(), &utcoffset)) {
+          value += absl::Seconds(utcoffset);
+        }
         return true;
       }
     }
@@ -232,6 +268,25 @@ struct type_caster<absl::Time> {
     double as_seconds = static_cast<double>(absl::ToUnixMicros(src)) / 1e6;
     auto py_datetime = py_from_timestamp(as_seconds, "tz"_a = py_timezone);
     return py_datetime.release();
+  }
+
+ private:
+  // Adapted from absl/python/time.cc
+  // Copyright 2018 The Abseil Authors.
+  bool PyTzOffset(PyObject* datetime, int* utcoffset) {
+    PyObject* offset = PyObject_CallMethod(datetime, "utcoffset", nullptr);
+
+    if (!offset || !PyDelta_Check(offset)) {
+      return false;
+    }
+
+    if (utcoffset) {
+      *utcoffset = PyDateTime_DELTA_GET_SECONDS(offset) +
+                   PyDateTime_DELTA_GET_DAYS(offset) * 24 * 3600;
+    }
+
+    Py_DECREF(offset);
+    return true;
   }
 };
 
