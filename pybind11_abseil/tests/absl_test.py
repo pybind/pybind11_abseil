@@ -248,10 +248,8 @@ class AbslTimeTest(parameterized.TestCase):
     with self.assertRaises(TypeError):
       absl_example.roundtrip_timezone('Not a timezone')
 
-  @parameterized.parameters(
-      absl_example.roundtrip_duration, absl_example.roundtrip_time
-  )
-  def test_from_datetime_time(self, rt):
+  def test_from_datetime_time(self):
+    rt = absl_example.roundtrip_duration
     dt1 = rt(dt_time(h=13))
     dt2 = rt(dt_time(h=15))
     self.assertEqual((dt2 - dt1).seconds, 2 * 3600)
@@ -267,9 +265,7 @@ class AbslTimeTest(parameterized.TestCase):
     dt1 = rt(dt_time(tzoff=9))
     dt2 = rt(dt_time(tzoff=19))
     # Conversion from datetime.time to absl::Duration ignores tzinfo!
-    self.assertEqual(
-        (dt2 - dt1).seconds, 0 if rt is absl_example.roundtrip_duration else 10
-    )
+    self.assertEqual((dt2 - dt1).seconds, 0)
 
 
 def make_read_only_numpy_array():

@@ -191,8 +191,6 @@ struct type_caster<absl::Time> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
-    // As early as possible to avoid mid-process surprises.
-    internal::EnsurePyDateTime_IMPORT();
     if (convert) {
       if (PyLong_Check(src.ptr())) {
         value = absl::FromUnixSeconds(src.cast<int64_t>());
@@ -201,20 +199,6 @@ struct type_caster<absl::Time> {
       if (PyFloat_Check(src.ptr())) {
         value = absl::time_internal::FromUnixDuration(absl::Seconds(
             src.cast<double>()));
-        return true;
-      }
-      if (PyTime_Check(src.ptr())) {
-        // Adapted from absl/python/time.cc
-        // Copyright 2018 The Abseil Authors.
-        timeval tv{PyDateTime_TIME_GET_HOUR(src.ptr()) * 3600 +
-                       PyDateTime_TIME_GET_MINUTE(src.ptr()) * 60 +
-                       PyDateTime_TIME_GET_SECOND(src.ptr()),
-                   PyDateTime_TIME_GET_MICROSECOND(src.ptr())};
-        value = absl::TimeFromTimeval(tv);
-        int utcoffset;
-        if (PyTzOffset(src.ptr(), &utcoffset)) {
-          value += absl::Seconds(utcoffset);
-        }
         return true;
       }
     }
@@ -268,25 +252,6 @@ struct type_caster<absl::Time> {
     double as_seconds = static_cast<double>(absl::ToUnixMicros(src)) / 1e6;
     auto py_datetime = py_from_timestamp(as_seconds, "tz"_a = py_timezone);
     return py_datetime.release();
-  }
-
- private:
-  // Adapted from absl/python/time.cc
-  // Copyright 2018 The Abseil Authors.
-  bool PyTzOffset(PyObject* datetime, int* utcoffset) {
-    PyObject* offset = PyObject_CallMethod(datetime, "utcoffset", nullptr);
-
-    if (!offset || !PyDelta_Check(offset)) {
-      return false;
-    }
-
-    if (utcoffset) {
-      *utcoffset = PyDateTime_DELTA_GET_SECONDS(offset) +
-                   PyDateTime_DELTA_GET_DAYS(offset) * 24 * 3600;
-    }
-
-    Py_DECREF(offset);
-    return true;
   }
 };
 
