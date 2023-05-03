@@ -111,11 +111,67 @@ struct type_caster<absl::TimeZone> {
 };
 
 namespace internal {
+
 inline void EnsurePyDateTime_IMPORT() {
   if (PyDateTimeAPI == nullptr) {
     PyDateTime_IMPORT;
   }
 }
+
+constexpr int64_t GetInt64PythonErrorIndicatorSet = INT64_MAX;
+
+inline int64_t GetTimestampMicrosFromDateTimeObj(PyObject* dt_obj) {
+  // Part 1: Integer seconds.
+  PyObject* dt_timestamp_py = PyObject_CallMethod(dt_obj, "timestamp", nullptr);
+  if (dt_timestamp_py == nullptr) {
+    return GetInt64PythonErrorIndicatorSet;
+  }
+  double dt_timestamp_dbl = PyFloat_AsDouble(dt_timestamp_py);
+  Py_DECREF(dt_timestamp_py);
+  if (PyErr_Occurred()) {
+    return GetInt64PythonErrorIndicatorSet;
+  }
+  // The fractional part is intentionally discarded here because
+  // IEEE 754 binary64 precision (aka double precision) is insufficient for
+  // loss-free representation of micro-second resolution timestamps in the
+  // [datetime.datetime.min, datetime.datetime.max] range:
+  // https://github.com/rwgk/stuff/blob/f688c13c6cf5cefa1b41013d2f636fd10e0ba091/python_datetime/datetime_timestamp_floating_point_behavior_output.txt
+  auto dt_timestamp_secs_int64 =
+      static_cast<int64_t>(std::floor(dt_timestamp_dbl));
+
+  // Part 2: Integer microseconds.
+  auto dt_microsecond = PyDateTime_DATE_GET_MICROSECOND(dt_obj);
+  static_assert(sizeof(dt_microsecond) >= 3,
+                "Decimal value 999999 needs at least 3 bytes.");
+
+  return dt_timestamp_secs_int64 * 1000000 +
+         static_cast<int64_t>(dt_microsecond);
+}
+
+// The latest and earliest dates Python's datetime module can represent.
+constexpr absl::Time::Breakdown kDatetimeInfiniteFuture = {
+    9999, 12, 31, 23, 59, 59, absl::Microseconds(999999)};
+constexpr absl::Time::Breakdown kDatetimeInfinitePast = {
+    1, 1, 1, 0, 0, 0, absl::ZeroDuration()};
+
+// NOTE: Python datetime tzinfo is deliberately ignored.
+// Rationale:
+// * datetime.datetime.min,max have tzinfo=None.
+// * In contrast, the conversions here return datetime.datetime.min,max with
+//   tzinfo replaced (UTC).
+// * It would be disruptive (and unproductive) to change the behavior of the
+//   conversions here.
+// * tzinfo for datetime.datetime.min,max is rather meaningless in general,
+//   but especially so when those are used as placeholders for infinity.
+inline bool is_special_datetime(const absl::Time::Breakdown& bd_py,
+                                const absl::Time::Breakdown& bd_special) {
+  return (bd_py.year == bd_special.year && bd_py.month == bd_special.month &&
+          bd_py.day == bd_special.day && bd_py.hour == bd_special.hour &&
+          bd_py.minute == bd_special.minute &&
+          bd_py.second == bd_special.second &&
+          bd_py.subsecond == bd_special.subsecond);
+}
+
 }  // namespace internal
 
 // Convert between absl::Duration and python datetime.timedelta.
@@ -191,6 +247,35 @@ struct type_caster<absl::Time> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
+    // As early as possible to avoid mid-process surprises.
+    internal::EnsurePyDateTime_IMPORT();
+    if (PyDateTime_Check(src.ptr())) {
+      absl::Time::Breakdown bd_py = {
+          PyDateTime_GET_YEAR(src.ptr()),
+          PyDateTime_GET_MONTH(src.ptr()),
+          PyDateTime_GET_DAY(src.ptr()),
+          PyDateTime_DATE_GET_HOUR(src.ptr()),
+          PyDateTime_DATE_GET_MINUTE(src.ptr()),
+          PyDateTime_DATE_GET_SECOND(src.ptr()),
+          absl::Microseconds(PyDateTime_DATE_GET_MICROSECOND(src.ptr()))};
+      if (internal::is_special_datetime(bd_py,
+                                        internal::kDatetimeInfiniteFuture)) {
+        value = absl::InfiniteFuture();
+        return true;
+      }
+      if (internal::is_special_datetime(bd_py,
+                                        internal::kDatetimeInfinitePast)) {
+        value = absl::InfinitePast();
+        return true;
+      }
+      int64_t dt_timestamp_micros =
+          internal::GetTimestampMicrosFromDateTimeObj(src.ptr());
+      if (dt_timestamp_micros == internal::GetInt64PythonErrorIndicatorSet) {
+        throw error_already_set();
+      }
+      value = absl::FromUnixMicros(dt_timestamp_micros);
+      return true;
+    }
     if (convert) {
       if (PyLong_Check(src.ptr())) {
         value = absl::FromUnixSeconds(src.cast<int64_t>());
@@ -246,12 +331,28 @@ struct type_caster<absl::Time> {
     // This function truncates fractional microseconds as the python datetime
     // objects cannot support a resolution higher than this.
     auto py_datetime_t = module::import("datetime").attr("datetime");
+    if (src == absl::InfiniteFuture()) {
+      // For compatibility with absl/python/time.cc
+      return replace_tzinfo_utc(py_datetime_t(9999, 12, 31, 23, 59, 59, 999999))
+          .release();
+    }
+    if (src == absl::InfinitePast()) {
+      // For compatibility with absl/python/time.cc
+      return replace_tzinfo_utc(py_datetime_t(1, 1, 1, 0, 0, 0, 0)).release();
+    }
     auto py_from_timestamp = py_datetime_t.attr("fromtimestamp");
     auto py_timezone_t = module::import("dateutil.tz").attr("gettz");
     auto py_timezone = py_timezone_t(absl::LocalTimeZone().name());
     double as_seconds = static_cast<double>(absl::ToUnixMicros(src)) / 1e6;
     auto py_datetime = py_from_timestamp(as_seconds, "tz"_a = py_timezone);
     return py_datetime.release();
+  }
+
+ private:
+  static object replace_tzinfo_utc(handle dt) {
+    auto py_timezone_utc =
+        module::import("datetime").attr("timezone").attr("utc");
+    return dt.attr("replace")(arg("tzinfo") = py_timezone_utc);
   }
 };
 

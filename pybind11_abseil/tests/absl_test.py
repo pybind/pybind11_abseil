@@ -132,6 +132,7 @@ class AbslTimeTest(parameterized.TestCase):
     time_local_naive = time_local_aware.replace(tzinfo=None)
     for time in (time_utc, time_local_aware, time_local_naive):
       self.assertTrue(absl_example.check_datetime(time, secs))
+      self.assertEqual(int(absl_example.roundtrip_time(time).timestamp()), secs)
 
   def test_pass_datetime_pre_unix_epoch(self):
     dt = datetime.datetime(1969, 7, 16, 10, 56, 7, microsecond=140)
@@ -266,6 +267,28 @@ class AbslTimeTest(parameterized.TestCase):
     dt2 = rt(dt_time(tzoff=19))
     # Conversion from datetime.time to absl::Duration ignores tzinfo!
     self.assertEqual((dt2 - dt1).seconds, 0)
+
+  def test_infinite_future(self):
+    inff = absl_example.make_infinite_future()
+    self.assertEqual(inff.replace(tzinfo=None), datetime.datetime.max)
+    self.assertTrue(absl_example.is_infinite_future(inff))
+    self.assertFalse(
+        absl_example.is_infinite_future(
+            inff - datetime.timedelta(microseconds=1)
+        )
+    )
+    self.assertLess(self.TEST_DATETIME_UTC, inff)
+
+  def test_infinite_past(self):
+    infp = absl_example.make_infinite_past()
+    self.assertEqual(infp.replace(tzinfo=None), datetime.datetime.min)
+    self.assertTrue(absl_example.is_infinite_past(infp))
+    self.assertFalse(
+        absl_example.is_infinite_future(
+            infp + datetime.timedelta(microseconds=1)
+        )
+    )
+    self.assertGreater(self.TEST_DATETIME_UTC, infp)
 
 
 def make_read_only_numpy_array():

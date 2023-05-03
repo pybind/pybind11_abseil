@@ -345,6 +345,12 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("absl_time_overloads", [](const absl::Time&) { return "absl::Time"; });
   m.def("absl_time_overloads", [](int) {  return "int"; });
   m.def("absl_time_overloads", [](float) { return "float"; });
+  m.def("make_infinite_future", []() { return absl::InfiniteFuture(); });
+  m.def("is_infinite_future",
+        [](const absl::Time& time) { return time == absl::InfiniteFuture(); });
+  m.def("make_infinite_past", []() { return absl::InfinitePast(); });
+  m.def("is_infinite_past",
+        [](const absl::Time& time) { return time == absl::InfinitePast(); });
 
   m.def("roundtrip_duration", &RoundtripDuration, arg("duration"));
   m.def("roundtrip_time", &RoundtripTime, arg("time"));
