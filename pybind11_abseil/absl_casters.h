@@ -64,27 +64,6 @@ inline int64_t GetInt64Attr(handle src, const char* name) {
   return src.attr(name).cast<int64_t>();
 }
 
-// Given a python date or datetime object, figure out an appropriate
-// absl::TimeZone with a fixed offset, or default to the local timezone.
-inline absl::TimeZone GetTimeZone(handle src) {
-  if (!hasattr(src, "tzinfo")) {
-    // datetime.date objects lack this property, so assume local.
-    return absl::LocalTimeZone();
-  }
-  object tzinfo = src.attr("tzinfo");
-  if (tzinfo.is_none()) {
-    // non-tz aware datetime, again assume local time.
-    return absl::LocalTimeZone();
-  }
-  object utc_offset = tzinfo.attr("utcoffset")(src);
-  if (utc_offset.is_none()) {
-    return absl::LocalTimeZone();
-  }
-  int64_t offset_seconds =
-      std::lround(utc_offset.attr("total_seconds")().cast<double>());
-  return absl::FixedTimeZone(offset_seconds);
-}
-
 template <>
 struct type_caster<absl::TimeZone> {
  public:
@@ -287,43 +266,13 @@ struct type_caster<absl::Time> {
         return true;
       }
     }
-    if (!hasattr(src, "year") || !hasattr(src, "month") ||
-        !hasattr(src, "day")) {
-      return false;
+    if (PyDate_Check(src.ptr())) {
+      value = absl::FromDateTime(
+          PyDateTime_GET_YEAR(src.ptr()), PyDateTime_GET_MONTH(src.ptr()),
+          PyDateTime_GET_DAY(src.ptr()), 0, 0, 0, absl::LocalTimeZone());
+      return true;
     }
-    if (hasattr(src, "timestamp")) {
-      // python datetime.datetime object
-      double timestamp = src.attr("timestamp")().cast<double>();
-      int64_t as_micros = static_cast<int64_t>(timestamp * 1e6);
-      value = absl::FromUnixMicros(as_micros);
-    }
-#if PY_MAJOR_VERSION < 3
-    else if (hasattr(src, "microsecond")) {  // NOLINT(readability/braces)
-      // python datetime.datetime object
-      // This doesn't rely on datetime.datetime.timestamp(), which is not
-      // available in Python 2.
-      auto utc = module::import("dateutil.tz").attr("UTC");
-      auto datetime = module_::import("datetime").attr("datetime");
-      auto gettz = module::import("dateutil.tz").attr("gettz");
-
-      auto epoch_dt = datetime.attr("fromtimestamp")(0, utc);
-      auto tz = (src.attr("tzinfo").is_none()) ? gettz() : src.attr("tzinfo");
-      auto src_with_tz = src.attr("replace")("tzinfo"_a = tz);
-
-      double timestamp =
-          (src_with_tz - epoch_dt).attr("total_seconds")().cast<double>();
-      int64_t as_micros = static_cast<int64_t>(timestamp * 1e6);
-      value = absl::FromUnixMicros(as_micros);
-    }
-#endif
-    else {  // NOLINT(readability/braces)
-      // python datetime.date object
-      absl::CivilDay civil_day(GetInt64Attr(src, "year"),
-                               GetInt64Attr(src, "month"),
-                               GetInt64Attr(src, "day"));
-      value = absl::FromCivil(civil_day, GetTimeZone(src));
-    }
-    return true;
+    return false;
   }
 
   // Conversion part 2 (C++ -> Python)
