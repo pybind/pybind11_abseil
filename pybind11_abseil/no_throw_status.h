@@ -12,6 +12,7 @@ namespace google {
 // encapsulate references, e.g. `NoThrowStatus<absl::Status&>`.
 template <typename StatusType>
 struct NoThrowStatus {
+  NoThrowStatus() = default;
   NoThrowStatus(StatusType status_in)
       : status(std::forward<StatusType>(status_in)) {}
   StatusType status;
