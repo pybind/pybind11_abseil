@@ -368,6 +368,16 @@ class AbslNumericSpanTest(parameterized.TestCase):
     with self.assertRaises(TypeError):
       absl_example.fill_span(42, values)
 
+  @parameterized.parameters(
+      ('complex64', absl_example.sum_span_complex64),
+      ('complex64', absl_example.sum_span_const_complex64),
+      ('complex128', absl_example.sum_span_complex128),
+      ('complex128', absl_example.sum_span_const_complex128),
+  )
+  def test_complex(self, numpy_type, sum_span_fn):
+    xs = np.array([x * 1j for x in range(10)]).astype(numpy_type)
+    self.assertEqual(sum_span_fn(xs), 45j)
+
 
 def make_native_list_of_objects():
   return [absl_example.ObjectForSpan(3), absl_example.ObjectForSpan(5)]

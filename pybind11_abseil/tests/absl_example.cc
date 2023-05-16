@@ -3,10 +3,12 @@
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+#include <pybind11/complex.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
+#include <complex>
 #include <cstddef>
 #include <vector>
 
@@ -263,6 +265,14 @@ void FillSpan(int value, absl::Span<int> output_span) {
   for (auto& i : output_span) i = value;
 }
 
+template <typename CmplxType, typename NonConstCmplxType =
+                                  typename std::remove_const<CmplxType>::type>
+NonConstCmplxType SumSpanComplex(absl::Span<CmplxType> input_span) {
+  NonConstCmplxType sum = 0;
+  for (auto& i : input_span) sum += i;
+  return sum;
+}
+
 struct ObjectForSpan {
   explicit ObjectForSpan(int v) : value(v) {}
   int value;
@@ -382,6 +392,11 @@ PYBIND11_MODULE(absl_example, m) {
   // Non-const spans can never be converted, so `output_span` could be marked as
   // `noconvert`, but that would be redundant (so test that it is not needed).
   m.def("fill_span", &FillSpan, arg("value"), arg("output_span"));
+  m.def("sum_span_complex64", &SumSpanComplex<std::complex<float>>);
+  m.def("sum_span_const_complex64", &SumSpanComplex<const std::complex<float>>);
+  m.def("sum_span_complex128", &SumSpanComplex<std::complex<double>>);
+  m.def("sum_span_const_complex128",
+        &SumSpanComplex<const std::complex<double>>, arg("input_span"));
 
   // Span of objects.
   class_<ObjectForSpan>(m, "ObjectForSpan")

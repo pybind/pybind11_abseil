@@ -38,6 +38,7 @@
 #include <datetime.h>  // Python datetime builtin.
 
 #include <cmath>
+#include <complex>
 #include <cstdint>
 #include <tuple>
 #include <type_traits>
@@ -385,10 +386,38 @@ template <>
 struct type_caster<absl::CivilYear>
     : public absl_civil_date_caster<absl::CivilYear> {};
 
+// Using internal namespace to avoid name collisons in case this code is
+// accepted upsteam (pybind11).
+namespace internal {
+
+template <typename T>
+static constexpr bool is_buffer_interface_compatible_type =
+    std::is_arithmetic<T>::value ||
+    std::is_same<T, std::complex<float>>::value ||
+    std::is_same<T, std::complex<double>>::value;
+
+template <typename T, typename SFINAE = void>
+struct format_descriptor_char2 {
+  static constexpr const char c = '\0';
+};
+
+template <typename T>
+struct format_descriptor_char2<std::complex<T>> : format_descriptor<T> {};
+
+template <typename T>
+inline bool buffer_view_matches_format_descriptor(const char* view_format) {
+  return view_format[0] == format_descriptor<T>::c ||
+         (view_format[0] == 'Z' &&
+          view_format[1] == format_descriptor_char2<T>::c);
+}
+
+}  // namespace internal
+
 // Returns {true, a span referencing the data contained by src} without copying
 // or converting the data if possible. Otherwise returns {false, an empty span}.
-template <typename T, typename std::enable_if<std::is_arithmetic<T>::value,
-                                              bool>::type = true>
+template <typename T, typename std::enable_if<
+                          internal::is_buffer_interface_compatible_type<T>,
+                          bool>::type = true>
 std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle src) {
   Py_buffer view;
   int flags = PyBUF_STRIDES | PyBUF_FORMAT;
@@ -396,7 +425,7 @@ std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle src) {
   if (PyObject_GetBuffer(src.ptr(), &view, flags) == 0) {
     auto cleanup = absl::MakeCleanup([&view] { PyBuffer_Release(&view); });
     if (view.ndim == 1 && view.strides[0] == sizeof(T) &&
-        view.format[0] == format_descriptor<T>::c) {
+        internal::buffer_view_matches_format_descriptor<T>(view.format)) {
       return {true, absl::MakeSpan(static_cast<T*>(view.buf), view.shape[0])};
     }
   } else {
@@ -405,9 +434,9 @@ std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle src) {
   }
   return {false, absl::Span<T>()};
 }
-// If T is not a numeric type, the buffer interface cannot be used.
-template <typename T, typename std::enable_if<!std::is_arithmetic<T>::value,
-                                              bool>::type = true>
+template <typename T, typename std::enable_if<
+                          !internal::is_buffer_interface_compatible_type<T>,
+                          bool>::type = true>
 constexpr std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle src) {
   return {false, absl::Span<T>()};
 }
