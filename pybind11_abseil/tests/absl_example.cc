@@ -273,6 +273,12 @@ NonConstCmplxType SumSpanComplex(absl::Span<CmplxType> input_span) {
   return sum;
 }
 
+std::string PassSpanPyObjectPtr(absl::Span<PyObject*> input_span) {
+  std::string result;
+  for (auto& i : input_span) result += str(i);
+  return result;
+}
+
 struct ObjectForSpan {
   explicit ObjectForSpan(int v) : value(v) {}
   int value;
@@ -397,6 +403,7 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("sum_span_complex128", &SumSpanComplex<std::complex<double>>);
   m.def("sum_span_const_complex128",
         &SumSpanComplex<const std::complex<double>>, arg("input_span"));
+  m.def("pass_span_pyobject_ptr", &PassSpanPyObjectPtr, arg("span"));
 
   // Span of objects.
   class_<ObjectForSpan>(m, "ObjectForSpan")

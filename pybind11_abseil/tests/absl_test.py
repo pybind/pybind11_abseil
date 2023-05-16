@@ -378,6 +378,10 @@ class AbslNumericSpanTest(parameterized.TestCase):
     xs = np.array([x * 1j for x in range(10)]).astype(numpy_type)
     self.assertEqual(sum_span_fn(xs), 45j)
 
+  def test_pass_span_pyobject_ptr(self):
+    arr = np.array([-3, 'four', 5.0], dtype=object)
+    self.assertEqual(absl_example.pass_span_pyobject_ptr(arr), '-3four5.0')
+
 
 def make_native_list_of_objects():
   return [absl_example.ObjectForSpan(3), absl_example.ObjectForSpan(5)]

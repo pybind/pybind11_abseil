@@ -33,6 +33,7 @@
 #include <pybind11/cast.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/type_caster_pyobject_ptr.h>
 
 // Must NOT appear before at least one pybind11 include.
 #include <datetime.h>  // Python datetime builtin.
@@ -392,9 +393,22 @@ namespace internal {
 
 template <typename T>
 static constexpr bool is_buffer_interface_compatible_type =
+    detail::is_same_ignoring_cvref<T, PyObject*>::value ||
     std::is_arithmetic<T>::value ||
     std::is_same<T, std::complex<float>>::value ||
     std::is_same<T, std::complex<double>>::value;
+
+template <typename T, typename SFINAE = void>
+struct format_descriptor_char1 : format_descriptor<T> {};
+
+template <typename T>
+struct format_descriptor_char1<
+    T,
+    detail::enable_if_t<detail::is_same_ignoring_cvref<T, PyObject*>::value>> {
+  static constexpr const char c = 'O';
+  static constexpr const char value[2] = {c, '\0'};
+  static std::string format() { return std::string(1, c); }
+};
 
 template <typename T, typename SFINAE = void>
 struct format_descriptor_char2 {
@@ -406,7 +420,7 @@ struct format_descriptor_char2<std::complex<T>> : format_descriptor<T> {};
 
 template <typename T>
 inline bool buffer_view_matches_format_descriptor(const char* view_format) {
-  return view_format[0] == format_descriptor<T>::c ||
+  return view_format[0] == format_descriptor_char1<T>::c ||
          (view_format[0] == 'Z' &&
           view_format[1] == format_descriptor_char2<T>::c);
 }
