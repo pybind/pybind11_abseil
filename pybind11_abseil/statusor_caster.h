@@ -42,7 +42,13 @@ struct type_caster<absl::StatusOr<PayloadType>> {
   using PayloadCaster = make_caster<PayloadType>;
   using StatusCaster = make_caster<absl::Status>;
 
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
+  using return_value_policy_t = const return_value_policy_pack&;
+  PYBIND11_TYPE_CASTER_RVPP(absl::StatusOr<PayloadType>, PayloadCaster::name);
+#else
+  using return_value_policy_t = return_value_policy;
   PYBIND11_TYPE_CASTER(absl::StatusOr<PayloadType>, PayloadCaster::name);
+#endif
 
   bool load(handle src, bool convert) {
     PayloadCaster payload_caster;
@@ -70,27 +76,27 @@ struct type_caster<absl::StatusOr<PayloadType>> {
 
   // Convert C++ -> Python.
   static handle cast(const absl::StatusOr<PayloadType>* src,
-                     return_value_policy policy, handle parent,
+                     return_value_policy_t policy, handle parent,
                      bool throw_exception = true) {
     if (!src) return none().release();
     return cast_impl(*src, policy, parent, throw_exception);
   }
 
   static handle cast(const absl::StatusOr<PayloadType>& src,
-                     return_value_policy policy, handle parent,
+                     return_value_policy_t policy, handle parent,
                      bool throw_exception = true) {
     return cast_impl(src, policy, parent, throw_exception);
   }
 
   static handle cast(absl::StatusOr<PayloadType>&& src,
-                     return_value_policy policy, handle parent,
+                     return_value_policy_t policy, handle parent,
                      bool throw_exception = true) {
     return cast_impl(std::move(src), policy, parent, throw_exception);
   }
 
  private:
   template <typename CType>
-  static handle cast_impl(CType&& src, return_value_policy policy,
+  static handle cast_impl(CType&& src, return_value_policy_t policy,
                           handle parent, bool throw_exception) {
     google::internal::CheckStatusModuleImported();
     if (src.ok()) {
