@@ -33,7 +33,6 @@
 #include <pybind11/cast.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/type_caster_pyobject_ptr.h>
 
 // Must NOT appear before at least one pybind11 include.
 #include <datetime.h>  // Python datetime builtin.
