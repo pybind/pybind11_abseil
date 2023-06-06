@@ -133,6 +133,7 @@ class AbslTimeTest(parameterized.TestCase):
     for time in (time_utc, time_local_aware, time_local_naive):
       self.assertTrue(absl_example.check_datetime(time, secs))
       self.assertEqual(int(absl_example.roundtrip_time(time).timestamp()), secs)
+    self.assertEqual(absl_example.roundtrip_time(time_utc), time_utc)
 
   def test_pass_datetime_pre_unix_epoch(self):
     dt = datetime.datetime(1969, 7, 16, 10, 56, 7, microsecond=140)

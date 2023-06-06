@@ -278,31 +278,25 @@ struct type_caster<absl::Time> {
 
   // Conversion part 2 (C++ -> Python)
   static handle cast(const absl::Time& src, return_value_policy, handle) {
+    // As early as possible to avoid mid-process surprises.
+    internal::EnsurePyDateTime_IMPORT();
     // This function truncates fractional microseconds as the python datetime
     // objects cannot support a resolution higher than this.
-    auto py_datetime_t = module::import("datetime").attr("datetime");
     if (src == absl::InfiniteFuture()) {
-      // For compatibility with absl/python/time.cc
-      return replace_tzinfo_utc(py_datetime_t(9999, 12, 31, 23, 59, 59, 999999))
-          .release();
+      return PyDateTimeAPI->DateTime_FromDateAndTime(
+          9999, 12, 31, 23, 59, 59, 999999, PyDateTimeAPI->TimeZone_UTC,
+          PyDateTimeAPI->DateTimeType);
     }
     if (src == absl::InfinitePast()) {
-      // For compatibility with absl/python/time.cc
-      return replace_tzinfo_utc(py_datetime_t(1, 1, 1, 0, 0, 0, 0)).release();
+      return PyDateTimeAPI->DateTime_FromDateAndTime(
+          1, 1, 1, 0, 0, 0, 0, PyDateTimeAPI->TimeZone_UTC,
+          PyDateTimeAPI->DateTimeType);
     }
-    auto py_from_timestamp = py_datetime_t.attr("fromtimestamp");
-    auto py_timezone_t = module::import("dateutil.tz").attr("gettz");
-    auto py_timezone = py_timezone_t(absl::LocalTimeZone().name());
-    double as_seconds = static_cast<double>(absl::ToUnixMicros(src)) / 1e6;
-    auto py_datetime = py_from_timestamp(as_seconds, "tz"_a = py_timezone);
-    return py_datetime.release();
-  }
-
- private:
-  static object replace_tzinfo_utc(handle dt) {
-    auto py_timezone_utc =
-        module::import("datetime").attr("timezone").attr("utc");
-    return dt.attr("replace")(arg("tzinfo") = py_timezone_utc);
+    absl::Time::Breakdown t = src.In(absl::UTCTimeZone());
+    return PyDateTimeAPI->DateTime_FromDateAndTime(
+        t.year, t.month, t.day, t.hour, t.minute, t.second,
+        static_cast<int>(t.subsecond / absl::Microseconds(1)),
+        PyDateTimeAPI->TimeZone_UTC, PyDateTimeAPI->DateTimeType);
   }
 };
 
