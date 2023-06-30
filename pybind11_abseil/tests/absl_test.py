@@ -5,14 +5,37 @@
 """Tests for absl pybind11 casters."""
 
 import array
+import contextlib
 import datetime
+import os
+import threading
+import time
+from typing import Iterator
 
 from absl.testing import absltest
 from absl.testing import parameterized
-from dateutil import tz
 import numpy as np
 
 from pybind11_abseil.tests import absl_example
+
+
+_TZ_LOCK = threading.Lock()
+
+
+@contextlib.contextmanager
+def override_local_timezone(tzname: str) -> Iterator[None]:  # pylint: disable=invalid-name
+  with _TZ_LOCK:
+    orig_tz = os.environ.get('TZ', None)
+    try:
+      os.environ['TZ'] = tzname
+      time.tzset()
+      yield
+    finally:
+      if orig_tz is None:
+        del os.environ['TZ']
+      else:
+        os.environ['TZ'] = orig_tz
+      time.tzset()
 
 
 def dt_time(h=0, m=0, s=0, micros=0, tzoff=0):
@@ -26,10 +49,7 @@ class AbslTimeTest(parameterized.TestCase):
   POSITIVE_SECS = 3 * SECONDS_IN_DAY + 2.5
   NEGATIVE_SECS = -3 * SECONDS_IN_DAY + 2.5
   TEST_DATETIME = datetime.datetime(2000, 1, 2, 3, 4, 5, int(5e5))
-  # Linter error relevant for pytz only.
-  # pylint: disable=g-tzinfo-replace
-  TEST_DATETIME_UTC = TEST_DATETIME.replace(tzinfo=tz.tzutc())
-  # pylint: enable=g-tzinfo-replace
+  TEST_DATETIME_UTC = TEST_DATETIME.replace(tzinfo=datetime.timezone.utc)
   TEST_DATE = datetime.date(2000, 1, 2)
 
   def test_return_positive_duration(self):
@@ -74,9 +94,6 @@ class AbslTimeTest(parameterized.TestCase):
 
   def test_return_datetime(self):
     secs = self.TEST_DATETIME.timestamp()
-    local_tz = tz.gettz()
-    # pylint: disable=g-tzinfo-datetime
-    # Warning about tzinfo applies to pytz, but we are using dateutil.tz
     expected_datetime = datetime.datetime(
         year=self.TEST_DATETIME.year,
         month=self.TEST_DATETIME.month,
@@ -85,8 +102,7 @@ class AbslTimeTest(parameterized.TestCase):
         minute=self.TEST_DATETIME.minute,
         second=self.TEST_DATETIME.second,
         microsecond=self.TEST_DATETIME.microsecond,
-        tzinfo=local_tz)
-    # pylint: enable=g-tzinfo-datetime
+    ).astimezone()  # returns timezone aware datetime in local time
     # datetime handling code will set the local timezone on C++ times for want
     # of a better alternative
     self.assertEqual(expected_datetime, absl_example.make_datetime(secs))
@@ -101,22 +117,18 @@ class AbslTimeTest(parameterized.TestCase):
     self.assertTrue(absl_example.check_datetime(self.TEST_DATETIME, secs))
 
   def test_pass_datetime_with_timezone(self):
-    pacific_tz = tz.gettz('America/Los_Angeles')
-    # pylint: disable=g-tzinfo-datetime
-    # Warning about tzinfo applies to pytz, but we are using dateutil.tz
-    dt_with_tz = datetime.datetime(
-        year=2020, month=2, day=1, hour=20, tzinfo=pacific_tz)
-    # pylint: enable=g-tzinfo-datetime
-    secs = dt_with_tz.timestamp()
-    self.assertTrue(absl_example.check_datetime(dt_with_tz, secs))
+    with override_local_timezone('America/Los_Angeles'):
+      dt_with_tz = datetime.datetime(
+          year=2020, month=2, day=1, hour=20
+      ).astimezone()
+      secs = dt_with_tz.timestamp()
+      self.assertTrue(absl_example.check_datetime(dt_with_tz, secs))
 
   def test_pass_datetime_dst_with_timezone(self):
-    pacific_tz = tz.gettz('America/Los_Angeles')
-    # pylint: disable=g-tzinfo-datetime
-    dst_end = datetime.datetime(2020, 11, 1, 2, 0, 0, tzinfo=pacific_tz)
-    # pylint: enable=g-tzinfo-datetime
-    secs = dst_end.timestamp()
-    self.assertTrue(absl_example.check_datetime(dst_end, secs))
+    with override_local_timezone('America/Los_Angeles'):
+      dst_end = datetime.datetime(2020, 11, 1, 2, 0, 0).astimezone()
+      secs = dst_end.timestamp()
+      self.assertTrue(absl_example.check_datetime(dst_end, secs))
 
   def test_pass_datetime_dst(self):
     dst_end = datetime.datetime(2020, 11, 1, 2, 0, 0)
@@ -125,15 +137,17 @@ class AbslTimeTest(parameterized.TestCase):
 
   @parameterized.named_parameters(('before', -1), ('flip', 0), ('after', 1))
   def test_dst_datetime_from_timestamp(self, offs):
-    secs_flip = 1604224799  # 2020-11-01T02:00:00-08:00
-    secs = secs_flip + offs
-    time_utc = datetime.datetime.fromtimestamp(secs, tz.tzutc())
-    time_local_aware = time_utc.astimezone(tz.gettz())
-    time_local_naive = time_local_aware.replace(tzinfo=None)
-    for time in (time_utc, time_local_aware, time_local_naive):
-      self.assertTrue(absl_example.check_datetime(time, secs))
-      self.assertEqual(int(absl_example.roundtrip_time(time).timestamp()), secs)
-    self.assertEqual(absl_example.roundtrip_time(time_utc), time_utc)
+    with override_local_timezone('America/Los_Angeles'):
+      secs_flip = 1604224799  # 2020-11-01T01:59:59-08:00
+      secs = secs_flip + offs
+      time_utc = datetime.datetime.fromtimestamp(secs, tz=datetime.timezone.utc)
+      time_local_aware = time_utc.astimezone()
+      for date_time in (time_utc, time_local_aware):
+        self.assertTrue(absl_example.check_datetime(date_time, secs))
+        self.assertEqual(
+            int(absl_example.roundtrip_time(date_time).timestamp()), secs
+        )
+      self.assertEqual(absl_example.roundtrip_time(time_utc), time_utc)
 
   def test_pass_datetime_pre_unix_epoch(self):
     dt = datetime.datetime(1969, 7, 16, 10, 56, 7, microsecond=140)
