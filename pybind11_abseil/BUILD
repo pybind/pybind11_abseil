@@ -81,8 +81,8 @@ pybind_library(
         ":check_status_module_imported",
         ":no_throw_status",
         ":ok_status_singleton_lib",
-        ":raw_ptr_from_capsule",
         ":status_not_ok_exception",
+        "//pybind11_abseil/cpp_capsule_tools:raw_ptr_from_capsule",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
     ],
@@ -106,19 +106,6 @@ cc_library(
     visibility = ["//visibility:private"],
 )
 
-cc_library(
-    name = "raw_ptr_from_capsule",
-    srcs = ["raw_ptr_from_capsule.cc"],
-    hdrs = ["raw_ptr_from_capsule.h"],
-    visibility = ["//visibility:private"],
-    deps = [
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
-    ],
-)
-
 pybind_library(
     name = "utils_pybind11_absl",
     srcs = ["utils_pybind11_absl.cc"],
@@ -139,10 +126,10 @@ pybind_library(
         ":init_from_tag",
         ":no_throw_status",
         ":ok_status_singleton_lib",
-        ":raw_ptr_from_capsule",
         ":status_caster",
         ":status_not_ok_exception",
         ":utils_pybind11_absl",
+        "//pybind11_abseil/cpp_capsule_tools:raw_ptr_from_capsule",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",

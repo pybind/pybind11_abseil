@@ -14,10 +14,10 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "pybind11_abseil/absl_casters.h"
+#include "pybind11_abseil/cpp_capsule_tools/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/init_from_tag.h"
 #include "pybind11_abseil/no_throw_status.h"
 #include "pybind11_abseil/ok_status_singleton_lib.h"
-#include "pybind11_abseil/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/status_caster.h"
 #include "pybind11_abseil/status_not_ok_exception.h"
 #include "pybind11_abseil/utils_pybind11_absl.h"
@@ -103,7 +103,7 @@ void def_status_factory(
 
 absl::StatusOr<absl::Status*> StatusRawPtrFromCapsule(
     const object& obj, bool enable_as_capsule_method = true) {
-  return pybind11_abseil::raw_ptr_from_capsule::RawPtrFromCapsule<absl::Status>(
+  return pybind11_abseil::cpp_capsule_tools::RawPtrFromCapsule<absl::Status>(
       obj.ptr(), "::absl::Status",
       enable_as_capsule_method ? "as_absl_Status" : nullptr);
 }

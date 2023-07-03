@@ -6,6 +6,25 @@ load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 licenses(["notice"])
 
 pybind_extension(
+    name = "cpp_capsule_tools_testing",
+    srcs = ["cpp_capsule_tools_testing.cc"],
+    deps = [
+        "//pybind11_abseil/cpp_capsule_tools:make_shared_ptr_capsule",
+        "//pybind11_abseil/cpp_capsule_tools:raw_ptr_from_capsule",
+        "//pybind11_abseil/cpp_capsule_tools:shared_ptr_from_capsule",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+py_test(
+    name = "cpp_capsule_tools_testing_test",
+    srcs = ["cpp_capsule_tools_testing_test.py"],
+    data = [":cpp_capsule_tools_testing.so"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+)
+
+pybind_extension(
     name = "absl_example",
     srcs = ["absl_example.cc"],
     deps = [

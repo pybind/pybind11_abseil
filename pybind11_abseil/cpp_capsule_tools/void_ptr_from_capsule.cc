@@ -1,13 +1,16 @@
-#include "pybind11_abseil/raw_ptr_from_capsule.h"
+#include "pybind11_abseil/cpp_capsule_tools/void_ptr_from_capsule.h"
 
 #include <Python.h>
+
+#include <string>
+#include <utility>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 
 namespace pybind11_abseil {
-namespace raw_ptr_from_capsule {
+namespace cpp_capsule_tools {
 
 namespace {
 
@@ -15,7 +18,7 @@ namespace {
 // requirement.
 // Equivalent to obj.__class__.__name__ (or obj.__name__ if obj is a class).
 const char* obj_class_name(PyObject* obj) {
-  if (Py_TYPE(obj) == &PyType_Type) {
+  if (PyType_Check(obj)) {
     return reinterpret_cast<PyTypeObject*>(obj)->tp_name;
   }
   return Py_TYPE(obj)->tp_name;
@@ -29,8 +32,8 @@ std::string quoted_name_or_null_indicator(
 
 }  // namespace
 
-absl::StatusOr<void*> VoidPtrFromCapsule(PyObject* py_obj, const char* name,
-                                         const char* as_capsule_method_name) {
+absl::StatusOr<std::pair<PyObject*, void*>> VoidPtrFromCapsule(
+    PyObject* py_obj, const char* name, const char* as_capsule_method_name) {
   // Note: https://docs.python.org/3/c-api/capsule.html:
   //       The pointer argument may not be NULL.
   if (PyCapsule_CheckExact(py_obj)) {
@@ -42,7 +45,7 @@ absl::StatusOr<void*> VoidPtrFromCapsule(PyObject* py_obj, const char* name,
           quoted_name_or_null_indicator(PyCapsule_GetName(py_obj)), " but ",
           quoted_name_or_null_indicator(name), " is expected."));
     }
-    return void_ptr;
+    return std::pair<PyObject*, void*>(nullptr, void_ptr);
   }
   if (as_capsule_method_name == nullptr) {
     return absl::InvalidArgumentError(
@@ -91,8 +94,7 @@ absl::StatusOr<void*> VoidPtrFromCapsule(PyObject* py_obj, const char* name,
   }
   void* void_ptr = PyCapsule_GetPointer(from_method, name);
   if (!PyErr_Occurred()) {
-    Py_DECREF(from_method);
-    return void_ptr;
+    return std::pair<PyObject*, void*>(from_method, void_ptr);
   }
   PyErr_Clear();
   std::string capsule_name =
@@ -104,5 +106,5 @@ absl::StatusOr<void*> VoidPtrFromCapsule(PyObject* py_obj, const char* name,
                    quoted_name_or_null_indicator(name), " is expected."));
 }
 
-}  // namespace raw_ptr_from_capsule
+}  // namespace cpp_capsule_tools
 }  // namespace pybind11_abseil

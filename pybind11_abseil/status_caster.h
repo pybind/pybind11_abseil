@@ -10,9 +10,9 @@
 
 #include "absl/status/status.h"
 #include "pybind11_abseil/check_status_module_imported.h"
+#include "pybind11_abseil/cpp_capsule_tools/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/no_throw_status.h"
 #include "pybind11_abseil/ok_status_singleton_lib.h"
-#include "pybind11_abseil/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/status_not_ok_exception.h"
 
 namespace pybind11 {
@@ -81,7 +81,7 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
     }
     if (convert) {
       absl::StatusOr<void*> raw_ptr =
-          pybind11_abseil::raw_ptr_from_capsule::RawPtrFromCapsule<void>(
+          pybind11_abseil::cpp_capsule_tools::RawPtrFromCapsule<void>(
               src.ptr(), "::absl::Status", "as_absl_Status");
       if (raw_ptr.ok()) {
         value = raw_ptr.value();
