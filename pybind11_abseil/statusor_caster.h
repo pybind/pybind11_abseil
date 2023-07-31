@@ -101,8 +101,13 @@ struct type_caster<absl::StatusOr<PayloadType>> {
     google::internal::CheckStatusModuleImported();
     if (src.ok()) {
       // Convert and return the payload.
-      return PayloadCaster::cast(std::forward<CType>(src).value(), policy,
-                                 parent);
+    #if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
+      auto policy_for_payload = policy.get(0);
+    #else
+      auto policy_for_payload = policy;
+    #endif
+      return PayloadCaster::cast(std::forward<CType>(src).value(),
+                                 policy_for_payload, parent);
     } else {
       // Convert and return the error.
       return StatusCaster::cast(std::forward<CType>(src).status(),
