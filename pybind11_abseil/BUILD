@@ -1,7 +1,7 @@
 # Pybind11 bindings for the Abseil C++ Common Libraries
 
-load("//third_party/bazel_rules/rules_python/python:py_extension.bzl", "py_extension")
-load("//third_party/bazel_rules/rules_python/python:py_library.bzl", "py_library")
+# Placeholder: load py_extension
+# Placeholder: load py_library
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 
 package(
