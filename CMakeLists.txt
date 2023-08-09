@@ -13,8 +13,8 @@ find_package(PythonLibs REQUIRED)
 
 FetchContent_declare(
     abseil-cpp
-    URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz
-    URL_HASH SHA256=59d2976af9d6ecf001a81a35749a6e551a335b949d34918cfade07737b9d93c5
+    URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.tar.gz
+    URL_HASH SHA256=dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4
 )
 
 FetchContent_declare(
