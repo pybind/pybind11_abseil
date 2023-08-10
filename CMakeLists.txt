@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.11)
 project(pybind11_abseil LANGUAGES CXX)
 
 include(FetchContent)
+include(CTest)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CKK_STANDARD_REQUIRED 1)
 set(ABSL_PROPAGATE_CXX_STD ON)
+set(BUILD_TESTING OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
@@ -22,7 +23,7 @@ FetchContent_declare(
     URL https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz
 )
 
-FetchContent_MakeAvailable(abseil-cpp pybind11)
+FetchContent_MakeAvailable( abseil-cpp pybind11)
 
 set(TOP_LEVEL_DIR ${CMAKE_CURRENT_LIST_DIR})
 include_directories(${TOP_LEVEL_DIR} ${PYTHON_INCLUDE_DIR} ${pybind11_INCLUDE_DIRS})

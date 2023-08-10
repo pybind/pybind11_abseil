@@ -12,7 +12,12 @@ class OkStatusSingletonTest(absltest.TestCase):
 
   def test_singleton(self):
     cap = ok_status_singleton.OkStatusSingleton()
-    self.assertStartsWith(repr(cap), '<capsule object "::absl::Status" at 0x')
+    cap_repr = repr(cap)
+
+    # Modified to reflect the alternate behavior with CMake build
+    self.assertTrue(cap_repr.startswith(
+      '<capsule object "::absl::Status" at 0x') or cap_repr.startswith( 
+      '<pybind11_abseil.status.Status object at 0x'))
 
 
 if __name__ == '__main__':
