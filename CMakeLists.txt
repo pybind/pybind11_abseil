@@ -25,7 +25,7 @@ FetchContent_declare(
     URL https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz
 )
 
-FetchContent_MakeAvailable( abseil-cpp pybind11)
+FetchContent_MakeAvailable(abseil-cpp pybind11)
 
 set(TOP_LEVEL_DIR ${CMAKE_CURRENT_LIST_DIR})
 include_directories(${TOP_LEVEL_DIR} ${PYTHON_INCLUDE_DIR} ${pybind11_INCLUDE_DIRS})
