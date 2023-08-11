@@ -63,5 +63,8 @@ jobs:
           sudo apt-get install python3-pip -y
           sudo pip3 install virtualenv
 
+      - name: Show nproc
+        run: echo nproc=$(nproc)
+
       - name: Build and run tests
         run: bash ./scripts/build_and_run_tests_${{matrix.build_tool}}.sh -j $(nproc)
