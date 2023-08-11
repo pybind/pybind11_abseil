@@ -29,7 +29,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Install Bazel
-        if: {{matrix.build_tool}} == bazel
+        if: matrix.build_tool == 'bazel'
         # Install Bazel, see https://docs.bazel.build/versions/master/install-ubuntu.html#step-1-install-required-packages
         run: |
           sudo apt install curl gnupg
@@ -39,15 +39,15 @@ jobs:
           sudo apt update && sudo apt install bazel -y
 
       - name: Show bazel version
-        if: {{matrix.build_tool}} == bazel
+        if: matrix.build_tool == 'bazel'
         run: bazel --version
 
       - name: Update cmake
-        if: {{matrix.build_tool}} == cmake
+        if: matrix.build_tool == 'cmake'
         uses: jwlawson/actions-setup-cmake@v1.14
 
       - name: Show cmake version
-        if: {{matrix.build_tool}} == cmake
+        if: matrix.build_tool == 'cmake'
         run: cmake --version
 
       - name: Install virtualenv
