@@ -191,7 +191,7 @@ struct type_caster<absl::Duration> {
       return false;
     }
     auto py_duration_t = module::import("datetime").attr("timedelta");
-    if (src == object(py_duration_t.attr("max"))) {
+    if (src.is(py_duration_t.attr("max"))) {
       value = absl::InfiniteDuration();
     } else {
       value = absl::Hours(24 * GetInt64Attr(src, "days")) +
