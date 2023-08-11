@@ -17,7 +17,12 @@ in the .cc file with your bindings:
 #include "pybind11_abseil/absl_casters.h"
 ```
 
+
 ## Installation
+
+pybind11_abseil can be built with Bazel or CMake. Instructions for both are below.
+
+### Bazel
 
 You will need to depend on `pybind11`, `pybind11_bazel`(see
 [doc](https://github.com/pybind/pybind11_bazel#installation), and on
@@ -52,6 +57,25 @@ Then, in your BUILD file:
 
 ```
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+```
+
+### CMake
+
+In your project, add a FetchContent for pybind11_abseil. This will also fetch the
+appropriate versions of Abseil and pybind11 which your project can use
+(eliminating the need for submoduling Abseil or using find_package).
+
+Add the following to your CMakeLists.txt:
+```
+include(FetchContent)
+
+FetchContent_Declare {
+  pybind11_abseil
+  GIT_REPOSITORY https://github.com/pybind/pybind11_abseil.git
+  GIT_TAG master
+}
+
+FetchContent_MakeAvailable(pybind11 abseil-cpp pybind11_abseil)
 ```
 
 ## absl::Duration
