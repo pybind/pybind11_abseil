@@ -88,14 +88,14 @@ mkdir tmp_build
 cd tmp_build
 
 # C++14
-cmake ../ -DCMAKE_CXX_STANDARD=14
+cmake ../ -DCMAKE_CXX_STANDARD=14 -DCMAKE_VERBOSE_MAKEFILE=ON
 make 
 ctest --output-on-failure
 
 rm -r ./*
 
 # C++17
-cmake ../ -DCMAKE_CXX_STANDARD=17
+cmake ../ -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE=ON
 make 
 ctest --output-on-failure
 
