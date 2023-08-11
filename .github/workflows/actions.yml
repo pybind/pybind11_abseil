@@ -10,10 +10,13 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  PIP_BREAK_SYSTEM_PACKAGES: 1
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  build:
+  unix:
     strategy:
       matrix:
         runs-on: [ubuntu-latest]
@@ -24,11 +27,13 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Show env
+        run: env
 
-      # Runs a single command using the runners shell
-      - name: Install Bazel
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Install bazel
         if: matrix.build_tool == 'bazel'
         # Install Bazel, see https://docs.bazel.build/versions/master/install-ubuntu.html#step-1-install-required-packages
         run: |
@@ -49,6 +54,9 @@ jobs:
       - name: Show cmake version
         if: matrix.build_tool == 'cmake'
         run: cmake --version
+
+      - name: Show platform info
+        run: python -m platform
 
       - name: Install virtualenv
         run: |
