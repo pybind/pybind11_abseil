@@ -10,11 +10,11 @@ set -e  # exit when any command fails
 
 MYDIR="$(dirname "$(realpath "$0")")"
 
-BAZEL=$(which bazel || true)
-if [[ -z $BAZEL || ! -x $BAZEL ]]
+CMAKE=$(which cmake || true)
+if [[ -z $CMAKE || ! -x $CMAKE ]]
 then
   echo -e -n '\e[1m\e[93m'
-  echo -n 'Bazel not found (bazel (https://bazel.build/) is needed to '
+  echo -n 'CMake not found (cmake is needed to '
   echo -n 'compile & test). '
   echo -e 'Exiting...\e[0m'
   exit 1
@@ -80,5 +80,24 @@ export PYTHON_LIB_PATH=`python3 -c "import sysconfig; print(sysconfig.get_path('
 echo "Using PYTHON_BIN_PATH: $PYTHON_BIN_PATH"
 echo "Using PYTHON_LIB_PATH: $PYTHON_LIB_PATH"
 
-BAZEL_CXXOPTS="-std=c++14" bazel test ...  --test_output=errors
-BAZEL_CXXOPTS="-std=c++17" bazel test ...  --test_output=errors
+if [ -e tmp_build ]; then
+  rm -r tmp_build
+fi
+
+mkdir tmp_build
+cd tmp_build
+
+# C++14
+cmake ../ -DCMAKE_CXX_STANDARD=14 -DCMAKE_VERBOSE_MAKEFILE=ON
+make "$@"
+ctest --output-on-failure
+
+rm -r ./*
+
+# C++17
+cmake ../ -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE=ON
+make "$@"
+ctest --output-on-failure
+
+cd ../
+rm -r tmp_build

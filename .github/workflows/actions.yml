@@ -10,20 +10,31 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  PIP_BREAK_SYSTEM_PACKAGES: 1
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  build:
+  unix:
+    strategy:
+      matrix:
+        runs-on: [ubuntu-latest]
+        build_tool: [bazel, cmake]
 
-    runs-on: ubuntu-latest
+    name: "${{matrix.runs-on}} ${{matrix.build_tool}}"
+    runs-on: ${{matrix.runs-on}}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Show env
+        run: env
 
-      # Runs a single command using the runners shell
-      - name: Install Bazel
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Install bazel
+        if: matrix.build_tool == 'bazel'
         # Install Bazel, see https://docs.bazel.build/versions/master/install-ubuntu.html#step-1-install-required-packages
         run: |
           sudo apt install curl gnupg
@@ -32,11 +43,28 @@ jobs:
           echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
           sudo apt update && sudo apt install bazel -y
 
+      - name: Show bazel version
+        if: matrix.build_tool == 'bazel'
+        run: bazel --version
+
+      - name: Update cmake
+        if: matrix.build_tool == 'cmake'
+        uses: jwlawson/actions-setup-cmake@v1.14
+
+      - name: Show cmake version
+        if: matrix.build_tool == 'cmake'
+        run: cmake --version
+
+      - name: Show platform info
+        run: python -m platform
+
       - name: Install virtualenv
         run: |
           sudo apt-get install python3-pip -y
           sudo pip3 install virtualenv
 
-      # Runs a set of commands using the runners shell
-      - name: Run tests
-        run: bash ./scripts/build_and_run_tests.sh
+      - name: Show nproc
+        run: echo nproc=$(nproc)
+
+      - name: Build and run tests
+        run: bash ./scripts/build_and_run_tests_${{matrix.build_tool}}.sh -j $(nproc)
