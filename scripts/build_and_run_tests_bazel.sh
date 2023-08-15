@@ -82,5 +82,3 @@ echo "Using PYTHON_LIB_PATH: $PYTHON_LIB_PATH"
 
 BAZEL_CXXOPTS="-std=c++14" bazel test ... --test_output=errors "$@"
 BAZEL_CXXOPTS="-std=c++17" bazel test ... --test_output=errors "$@"
-
-
