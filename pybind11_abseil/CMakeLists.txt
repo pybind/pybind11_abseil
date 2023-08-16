@@ -3,6 +3,7 @@ add_subdirectory(cpp_capsule_tools)
 # absl_casters ============================================================
 add_library(absl_casters INTERFACE)
 add_library(pybind11_abseil::absl_casters ALIAS absl_casters)
+list(APPEND to_install absl_casters)
 
 target_include_directories(absl_casters
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -25,6 +26,7 @@ target_link_libraries(
 add_library(ok_status_singleton_lib STATIC ok_status_singleton_lib.cc)
 add_library(pybind11_abseil::ok_status_singleton_lib ALIAS
             ok_status_singleton_lib)
+list(APPEND to_install ok_status_singleton_lib)
 
 target_include_directories(ok_status_singleton_lib
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -43,6 +45,7 @@ target_link_libraries(ok_status_singleton_pyinit_google3
 
 add_library(ok_status_singleton SHARED ok_status_singleton_py_extension_stub.cc)
 add_library(pybind11_abseil::ok_status_singleton ALIAS ok_status_singleton)
+list(APPEND to_install ok_status_singleton)
 
 target_include_directories(ok_status_singleton
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -56,6 +59,7 @@ target_link_libraries(ok_status_singleton
 
 add_library(no_throw_status INTERFACE)
 add_library(pybind11_abseil::no_throw_status ALIAS no_throw_status)
+list(APPEND to_install no_throw_status)
 
 target_include_directories(no_throw_status
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -65,6 +69,7 @@ target_include_directories(no_throw_status
 add_library(status_not_ok_exception INTERFACE)
 add_library(pybind11_abseil::status_not_ok_exception ALIAS
             status_not_ok_exception)
+list(APPEND to_install status_not_ok_exception)
 
 target_include_directories(status_not_ok_exception
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -81,6 +86,7 @@ target_link_libraries(check_status_module_imported INTERFACE absl::status)
 
 add_library(status_caster INTERFACE)
 add_library(pybind11_abseil::status_caster ALIAS status_caster)
+list(APPEND to_install status_caster)
 
 target_include_directories(status_caster
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -99,6 +105,7 @@ target_link_libraries(
 
 add_library(statusor_caster INTERFACE)
 add_library(pybind11_abseil::statusor_caster ALIAS statusor_caster)
+list(APPEND to_install statusor_caster)
 
 target_include_directories(statusor_caster
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -111,6 +118,7 @@ target_link_libraries(
 
 add_library(init_from_tag INTERFACE)
 add_library(pybind11_abseil::init_from_tag ALIAS init_from_tag)
+list(APPEND to_install init_from_tag)
 
 target_include_directories(init_from_tag
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -149,6 +157,7 @@ target_link_libraries(status_pyinit_google3 PUBLIC register_status_bindings)
 
 add_library(status SHARED status_py_extension_stub.cc)
 add_library(pybind11_abseil::status ALIAS status)
+list(APPEND to_install status)
 
 target_include_directories(status INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
 
@@ -160,6 +169,7 @@ target_link_libraries(status PUBLIC status_pyinit_google3 absl::status)
 
 add_library(import_status_module STATIC import_status_module.cc)
 add_library(pybind11_abseil::import_status_module ALIAS import_status_module)
+list(APPEND to_install import_status_module)
 
 target_include_directories(import_status_module
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -170,6 +180,7 @@ target_link_libraries(import_status_module PUBLIC status)
 
 add_library(status_casters INTERFACE)
 add_library(pybind11_abseil::status_casters ALIAS status_casters)
+list(APPEND to_install status_casters)
 
 target_include_directories(status_casters
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
@@ -178,3 +189,15 @@ target_link_libraries(status_casters INTERFACE import_status_module
                                                status_caster statusor_caster)
 
 add_subdirectory(tests)
+
+if(CMAKE_INSTALL_PYDIR)
+
+  install(
+    TARGETS ${to_install}
+    EXPORT pybind11_abseilTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
+  )
+
+endif()
