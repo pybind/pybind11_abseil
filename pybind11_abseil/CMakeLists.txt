@@ -182,7 +182,7 @@ add_subdirectory(tests)
 if(CMAKE_INSTALL_PYDIR)
 
   install(
-    TARGETS status
+    TARGETS status ok_status_singleton
     EXPORT pybind11_abseilTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
