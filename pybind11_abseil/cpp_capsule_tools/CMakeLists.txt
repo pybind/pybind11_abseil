@@ -39,7 +39,6 @@ add_library(shared_ptr_from_capsule INTERFACE)
 add_library(pybind11_abseil::cpp_capsule_tools::shared_ptr_from_capsule ALIAS
             shared_ptr_from_capsule)
 
-
 target_include_directories(shared_ptr_from_capsule
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
 
