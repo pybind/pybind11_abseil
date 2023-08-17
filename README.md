@@ -75,6 +75,10 @@ FetchContent_Declare {
 FetchContent_MakeAvailable(pybind11 abseil-cpp pybind11_abseil)
 ```
 
+To install the package so that it is accessible from system Python, run cmake
+with the flag `-DCMAKE_INSTALL_PYDIR` set to a directory on your PYTHONPATH and
+subsequently run `make install`.
+
 ## absl::Duration
 
 `absl::Duration` objects are converted to/ from python datetime.timedelta objects.

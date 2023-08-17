@@ -178,3 +178,14 @@ target_link_libraries(status_casters INTERFACE import_status_module
                                                status_caster statusor_caster)
 
 add_subdirectory(tests)
+
+if(CMAKE_INSTALL_PYDIR)
+
+  install(
+    TARGETS status ok_status_singleton
+    EXPORT pybind11_abseilTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil)
+
+endif()
