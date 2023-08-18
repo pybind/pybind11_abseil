@@ -77,7 +77,8 @@ FetchContent_MakeAvailable(pybind11 abseil-cpp pybind11_abseil)
 
 To install the package so that it is accessible from system Python, run cmake
 with the flag `-DCMAKE_INSTALL_PYDIR` set to a directory on your PYTHONPATH and
-subsequently run `make install`.
+subsequently run `make install`. This also works on projects that include
+pybind11_abseil via FetchContent.
 
 ## absl::Duration
 
