@@ -180,12 +180,20 @@ target_link_libraries(status_casters INTERFACE import_status_module
 add_subdirectory(tests)
 
 if(CMAKE_INSTALL_PYDIR)
-
+  # Copying to two target directories for simplicity. It is currently unknown
+  # how to determine here which copy is actually being used.
   install(
     TARGETS status ok_status_singleton
     EXPORT pybind11_abseilTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
     RUNTIME DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil)
+
+  install(
+    TARGETS status ok_status_singleton
+    EXPORT pybind11_abseil_cppTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 endif()
