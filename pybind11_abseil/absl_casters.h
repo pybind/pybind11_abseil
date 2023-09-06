@@ -71,7 +71,7 @@ struct type_caster<absl::TimeZone> {
   PYBIND11_TYPE_CASTER(absl::TimeZone, const_name("absl::TimeZone"));
 
   // Conversion part 1 (Python->C++)
-  bool load(handle src, bool convert) {
+  bool load(handle src, bool /*convert*/) {
     if (PyUnicode_Check(src.ptr())) {
       if (LoadTimeZone(PyUnicode_AsUTF8(src.ptr()), &value)) {
         return true;
@@ -415,7 +415,7 @@ std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle src) {
 template <typename T, typename std::enable_if<
                           !internal::is_buffer_interface_compatible_type<T>,
                           bool>::type = true>
-constexpr std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle src) {
+constexpr std::tuple<bool, absl::Span<T>> LoadSpanFromBuffer(handle /*src*/) {
   return {false, absl::Span<T>()};
 }
 
@@ -578,8 +578,8 @@ struct type_caster<absl::Cord> {
   }
 
   // Conversion part 2 (C++ -> Python)
-  static handle cast(const absl::Cord& src, return_value_policy policy,
-                     handle parent) {
+  static handle cast(const absl::Cord& src, return_value_policy /*policy*/,
+                     handle /*parent*/) {
     return bytes(std::string(src)).release();
   }
 };
