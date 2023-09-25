@@ -197,6 +197,10 @@ To use the Status[Or] casters:
 1. Call `pybind11::google::ImportStatusModule();` in your `PYBIND11_MODULE`
    definition.
 
+(For use outside google3:
+The path used for the `status` module may be changed by altering the value of
+`PYBIND11_ABSEIL_STATUS_MODULE_PATH` defined in `import_status_module.h`.)
+
 By default, an ok status will be converted into `None`, and a non-ok status will
 raise a `status.StatusNotOk` exception. This has a `status` attribute which can
 be used to access the status object and check the code/ message.
@@ -319,50 +323,3 @@ if status.StatusCode(status_code) == status.StatusCode.OK:  # Correct.
 if status_code == int(status.StatusCode.OK):  # Also correct.
   ...
 ```
-
-### Aliasing parts of the status module
-
-The need to import the `status` module can be eliminated by aliasing the parts
-of the status module that are needed in your own module:
-
-```cpp
-PYBIND11_MODULE(test_bindings, m) {
-  auto status_module = pybind11::google::ImportStatusModule();
-  m.attr("StatusNotOk") = status_module.attr("StatusNotOk");
-
-  ...
-}
-```
-
-Python:
-
-```python
-import test_bindings
-
-try:
-  return_status()
-except test_bindings.StatusNotOk as e:
-  print(e.status)
-
-```
-
-### Importing the status module
-
-The status module uses the same import mechansim as the proto module; see [its
-documentation](../pybind11_protobuf/README.md#importing-the-proto-module)
-for details. For now there is a `#ifdef` to allow `ImportStatusModule` to work
-with python 2 rather than giving an error, but this will be removed eventually.
-
-If modifying the following functions, make the same changes in the
-corresponding proto functions:
-- ImportStatusModule
-- IsStatusModuleImported
-- CheckStatusModuleImported
-
-### Use Outside of Google3
-
-The path used for the status module may be changed by altering the value of
-`PYBIND11_ABSEIL_STATUS_MODULE_PATH` defined in `status_casters.h`. This uses
-the same mechanism as the proto module, so see [its documentation
-](../pybind11_protobuf/README.md?cl=head#use-outside-of-google3)
-for details.
