@@ -280,13 +280,6 @@ void RegisterStatusBindings(module m) {
              auto output = absl::StrCat(s.message(), " [", code_str, "]");
              return decode_utf8_replace(output);
            })
-      .def("get_source_location_trace_str",
-           [](const absl::Status& s) -> std::string {
-             if (!s.ok()) {
-               {};
-             }
-             return {};
-           })
       .def_static("OkStatus",
                   []() {
                     handle py_singleton(pybind11_abseil::PyOkStatusSingleton());
@@ -296,14 +289,6 @@ void RegisterStatusBindings(module m) {
                     return py_singleton;
                   })
       .def("raw_code", &absl::Status::raw_code)
-      .def("CanonicalCode",
-           [](const absl::Status& self) {
-             return static_cast<int>(self.code());
-           })
-      .def("error_message",
-           [](const absl::Status& self) {
-             return decode_utf8_replace(self.message());
-           })
       .def("IgnoreError", &absl::Status::IgnoreError)
       .def("SetPayload",
            [](absl::Status& self, absl::string_view type_url,
@@ -425,9 +410,6 @@ void RegisterStatusBindings(module m) {
         def __str__(self):
           return self._status.status_not_ok_str()
 
-        def get_source_location_trace_str(self):
-          return self._status.get_source_location_trace_str()
-
         def __eq__(self, other):
           if not isinstance(other, StatusNotOk):
             return NotImplemented
@@ -435,8 +417,6 @@ void RegisterStatusBindings(module m) {
           rhs = Status(InitFromTag.capsule, other._status)
           return lhs == rhs
 
-        # NOTE: The absl::SourceLocation is lost.
-        #       It is impossible to serialize-deserialize.
         def __reduce_ex__(self, protocol):
           del protocol
           return (type(self), (self._status,))

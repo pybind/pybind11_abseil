@@ -64,8 +64,6 @@ class StatusTest(parameterized.TestCase):
     ok_status = status.Status.OkStatus()
     self.assertEqual(ok_status.to_string(), 'OK')
     self.assertEqual(ok_status.raw_code(), 0)
-    self.assertEqual(ok_status.CanonicalCode(), 0)
-    self.assertEqual(ok_status.error_message(), '')
     self.assertIsNone(ok_status.IgnoreError())
 
   def test_error_message_malformed_utf8(self):
@@ -73,7 +71,6 @@ class StatusTest(parameterized.TestCase):
     stx80 = status.invalid_argument_error(malformed_utf8)
     self.assertEqual(stx80.message(), '�')
     self.assertEqual(stx80.message_bytes(), malformed_utf8)
-    self.assertEqual(stx80.error_message(), '�')
     self.assertEqual(stx80.to_string(), 'INVALID_ARGUMENT: �')
     self.assertEqual(str(stx80), 'INVALID_ARGUMENT: �')
     e = status.StatusNotOk(stx80)
