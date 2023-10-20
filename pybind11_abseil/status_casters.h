@@ -14,11 +14,16 @@
 // For details, see the README.md.
 //
 // Author: Ken Oslund (kenoslund@)
+
+// This header declares template specializations, and thus its use may
+// not be visible to inclusion analysis tools, but we must retain it.
+// IWYU pragma: always_keep
+
 #ifndef PYBIND11_ABSEIL_STATUS_CASTERS_H_
 #define PYBIND11_ABSEIL_STATUS_CASTERS_H_
 
-#include "pybind11_abseil/status_caster.h"
-#include "pybind11_abseil/statusor_caster.h"
-#include "pybind11_abseil/import_status_module.h"
+#include "pybind11_abseil/status_caster.h"  // IWYU pragma: export
+#include "pybind11_abseil/statusor_caster.h"  // IWYU pragma: export
+#include "pybind11_abseil/import_status_module.h"  // IWYU pragma: export
 
 #endif  // PYBIND11_ABSEIL_STATUS_CASTERS_H_
