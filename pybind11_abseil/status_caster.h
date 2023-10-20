@@ -52,7 +52,7 @@ struct type_caster<google::NoThrowStatus<StatusType>> {
 template <>
 struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
  public:
-  static constexpr auto name = _("None");
+  static constexpr auto name = const_name("None");
   //  Convert C++ -> Python.
   static handle cast(const absl::Status* src, return_value_policy policy,
                      handle parent, bool throw_exception = true) {

@@ -459,7 +459,8 @@ struct type_caster<absl::Span<T>> {
     return *this;
   }
 
-  static constexpr auto name = _("Span[") + make_caster<T>::name + _("]");
+  static constexpr auto name =
+      const_name("Span[") + make_caster<T>::name + const_name("]");
 
   // We do not allow moving because 1) spans are super lightweight, so there's
   // no advantage to moving and 2) the span cannot exist without the caster,

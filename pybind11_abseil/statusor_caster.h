@@ -20,8 +20,9 @@ namespace detail {
 template <typename PayloadType>
 struct NoThrowStatusType<absl::StatusOr<PayloadType>> {
   using NoThrowAbslStatus = type_caster_base<absl::Status>;
-  static constexpr auto name = _("Union[") + NoThrowAbslStatus::name + _(", ") +
-                               make_caster<PayloadType>::name + _("]");
+  static constexpr auto name = const_name("Union[") + NoThrowAbslStatus::name +
+                               const_name(", ") +
+                               make_caster<PayloadType>::name + const_name("]");
 };
 
 // Convert absl::StatusOr<T>.
