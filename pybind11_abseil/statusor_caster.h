@@ -1,4 +1,7 @@
 // Author: Ken Oslund (kenoslund@)
+
+// IWYU pragma: always_keep // See pybind11/docs/type_caster_iwyu.rst
+
 #ifndef PYBIND11_ABSEIL_STATUSOR_CASTER_H_
 #define PYBIND11_ABSEIL_STATUSOR_CASTER_H_
 

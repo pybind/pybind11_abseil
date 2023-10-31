@@ -27,9 +27,7 @@
 //
 // Author: Ken Oslund
 
-// This header declares template specializations, and thus its use may
-// not be visible to inclusion analysis tools, but we must retain it.
-// IWYU pragma: always_keep
+// IWYU pragma: always_keep // See pybind11/docs/type_caster_iwyu.rst
 
 #ifndef PYBIND11_ABSEIL_ABSL_CASTERS_H_
 #define PYBIND11_ABSEIL_ABSL_CASTERS_H_
