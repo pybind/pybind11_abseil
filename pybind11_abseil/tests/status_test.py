@@ -42,12 +42,12 @@ class StatusTest(parameterized.TestCase):
 
   def test_status_nok_ok_str(self):
     with self.assertRaises(AttributeError) as cm:
-      status.StatusNotOk('')
+      status.StatusNotOk('')  # pytype: disable=wrong-arg-types
     self.assertEqual(str(cm.exception), "'str' object has no attribute 'ok'")
 
   def test_status_nok_ok_none(self):
     with self.assertRaises(AssertionError) as cm:
-      status.StatusNotOk(None)
+      status.StatusNotOk(None)  # pytype: disable=wrong-arg-types
     self.assertEqual(str(cm.exception), '')
 
   def test_canonical_error(self):
