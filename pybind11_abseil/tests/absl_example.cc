@@ -279,6 +279,18 @@ std::string PassSpanPyObjectPtr(absl::Span<PyObject*> input_span) {
   return result;
 }
 
+std::string PassSpanBool(absl::Span<bool> input_span) {
+  std::string result;
+  for (const auto& i : input_span) result += (i ? "t" : "f");
+  return result;
+}
+
+std::string PassSpanConstBool(absl::Span<const bool> input_span) {
+  std::string result;
+  for (const auto& i : input_span) result += (i ? "T" : "F");
+  return result;
+}
+
 struct ObjectForSpan {
   explicit ObjectForSpan(int v) : value(v) {}
   int value;
@@ -404,6 +416,8 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("sum_span_const_complex128",
         &SumSpanComplex<const std::complex<double>>, arg("input_span"));
   m.def("pass_span_pyobject_ptr", &PassSpanPyObjectPtr, arg("span"));
+  m.def("pass_span_bool", &PassSpanBool, arg("span"));
+  m.def("pass_span_const_bool", &PassSpanConstBool, arg("span"));
 
   // Span of objects.
   class_<ObjectForSpan>(m, "ObjectForSpan")

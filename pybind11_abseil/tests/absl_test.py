@@ -312,7 +312,7 @@ def make_read_only_numpy_array():
   return values
 
 
-def make_srided_numpy_array(stride):
+def make_strided_numpy_array(stride):
   return np.zeros(10, dtype=np.int32)[::stride]
 
 
@@ -373,10 +373,10 @@ class AbslNumericSpanTest(parameterized.TestCase):
 
   @parameterized.named_parameters(
       ('float_numpy', np.zeros(5, dtype=float)),
-      ('two_d_numpy', np.zeros(
-          (5, 5), dtype=np.int32)), ('read_only', make_read_only_numpy_array()),
-      ('strided_skip', make_srided_numpy_array(2)),
-      ('strided_reverse', make_srided_numpy_array(-1)),
+      ('two_d_numpy', np.zeros((5, 5), dtype=np.int32)),
+      ('read_only', make_read_only_numpy_array()),
+      ('strided_skip', make_strided_numpy_array(2)),
+      ('strided_reverse', make_strided_numpy_array(-1)),
       ('non_supported_type', np.zeros(5, dtype=np.unicode_)),
       ('native_list', [0] * 5))
   def test_fill_span_fails_from(self, values):
@@ -396,6 +396,28 @@ class AbslNumericSpanTest(parameterized.TestCase):
   def test_pass_span_pyobject_ptr(self):
     arr = np.array([-3, 'four', 5.0], dtype=object)
     self.assertEqual(absl_example.pass_span_pyobject_ptr(arr), '-3four5.0')
+
+  @parameterized.parameters(
+      ([], ''),
+      ([False], 'f'),
+      ([True], 't'),
+      ([False, True, True, False], 'fttf'),
+  )
+  def test_pass_span_bool(self, bools, expected):
+    arr = np.array(bools, dtype=bool)
+    s = absl_example.pass_span_bool(arr)
+    self.assertEqual(s, expected)
+
+  @parameterized.parameters(
+      ([], ''),
+      ([False], 'F'),
+      ([True], 'T'),
+      ([False, True, True, False], 'FTTF'),
+  )
+  def test_pass_span_const_bool(self, bools, expected):
+    arr = np.array(bools, dtype=bool)
+    s = absl_example.pass_span_const_bool(arr)
+    self.assertEqual(s, expected)
 
 
 def make_native_list_of_objects():
