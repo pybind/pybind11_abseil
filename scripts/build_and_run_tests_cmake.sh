@@ -84,20 +84,22 @@ if [ -e tmp_build ]; then
   rm -r tmp_build
 fi
 
+set -x
+
 mkdir tmp_build
 cd tmp_build
 
 # C++14
 cmake ../ -DCMAKE_CXX_STANDARD=14 -DCMAKE_VERBOSE_MAKEFILE=ON
 make "$@"
-ctest --output-on-failure
+ctest --output-on-failure --extra-verbose
 
 rm -r ./*
 
 # C++17
 cmake ../ -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE=ON
 make "$@"
-ctest --output-on-failure
+ctest --output-on-failure --extra-verbose
 
 cd ../
 rm -r tmp_build
