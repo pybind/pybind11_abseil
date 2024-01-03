@@ -24,6 +24,10 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(abseil-cpp pybind11)
 
+if(DEFINED PYTHON_EXECUTABLE AND NOT DEFINED Python_EXECUTABLE)
+  set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
+endif()
+
 set(TOP_LEVEL_DIR ${CMAKE_CURRENT_LIST_DIR})
 include_directories(${TOP_LEVEL_DIR} ${PYTHON_INCLUDE_DIR}
                     ${pybind11_INCLUDE_DIRS})

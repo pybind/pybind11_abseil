@@ -1,3 +1,7 @@
+if(DEFINED PYTHON_EXECUTABLE AND NOT DEFINED Python_EXECUTABLE)
+  set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
+endif()
+
 # void_ptr_from_capsule ========================================================
 
 add_library(void_ptr_from_capsule STATIC void_ptr_from_capsule.cc)

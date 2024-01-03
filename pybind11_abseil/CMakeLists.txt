@@ -1,3 +1,7 @@
+if(DEFINED PYTHON_EXECUTABLE AND NOT DEFINED Python_EXECUTABLE)
+  set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
+endif()
+
 add_subdirectory(cpp_capsule_tools)
 
 # absl_casters ============================================================
