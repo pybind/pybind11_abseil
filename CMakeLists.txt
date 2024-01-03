@@ -12,8 +12,6 @@ set(BUILD_TESTING OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
-find_package(PythonLibs REQUIRED)
-
 FetchContent_Declare(
   abseil-cpp
   URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz
