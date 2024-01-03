@@ -12,8 +12,6 @@ set(BUILD_TESTING OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
-find_package(PythonLibs REQUIRED)
-
 FetchContent_Declare(
   abseil-cpp
   URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz
@@ -22,7 +20,7 @@ FetchContent_Declare(
 
 FetchContent_Declare(
   pybind11
-  URL https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz)
+  URL https://github.com/pybind/pybind11/archive/7d538a42750c8580eeaac10e505840a3694b04c8.tar.gz)
 
 FetchContent_MakeAvailable(abseil-cpp pybind11)
 

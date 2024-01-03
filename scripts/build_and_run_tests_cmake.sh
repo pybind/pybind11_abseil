@@ -6,7 +6,7 @@
 # - builds and runs tests
 
 set -e  # exit when any command fails
-# set -x  # Prints all executed command
+set -x  # Prints all executed commands
 
 MYDIR="$(dirname "$(realpath "$0")")"
 
@@ -87,17 +87,17 @@ fi
 mkdir tmp_build
 cd tmp_build
 
-# C++14
-cmake ../ -DCMAKE_CXX_STANDARD=14 -DCMAKE_VERBOSE_MAKEFILE=ON
-make "$@"
-ctest --output-on-failure
-
-rm -r ./*
-
 # C++17
 cmake ../ -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE=ON
 make "$@"
-ctest --output-on-failure
+ctest --output-on-failure --extra-verbose
+
+rm -r ./*
+
+# C++20
+cmake ../ -DCMAKE_CXX_STANDARD=20 -DCMAKE_VERBOSE_MAKEFILE=ON
+make "$@"
+ctest --output-on-failure --extra-verbose
 
 cd ../
 rm -r tmp_build
