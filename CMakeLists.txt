@@ -22,7 +22,7 @@ FetchContent_Declare(
 
 FetchContent_Declare(
   pybind11
-  URL https://github.com/pybind/pybind11/archive/refs/tags/v2.9.2.tar.gz)
+  URL https://github.com/pybind/pybind11/archive/68322895df3d02c94deba6f3a3f531dd5b566cee.tar.gz)
 
 FetchContent_MakeAvailable(abseil-cpp pybind11)
 
