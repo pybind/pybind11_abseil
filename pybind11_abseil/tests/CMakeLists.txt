@@ -1,5 +1,9 @@
 # cpp_capsule_tools_testing ====================================================
 
+if(DEFINED PYTHON_EXECUTABLE AND NOT DEFINED Python_EXECUTABLE)
+  set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
+endif()
+
 pybind11_add_module(cpp_capsule_tools_testing SHARED
                     cpp_capsule_tools_testing.cc)
 
