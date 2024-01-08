@@ -1,3 +1,4 @@
+add_subdirectory(compat)
 add_subdirectory(cpp_capsule_tools)
 
 # absl_casters ============================================================
