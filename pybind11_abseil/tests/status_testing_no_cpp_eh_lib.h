@@ -10,6 +10,7 @@
 #include <functional>
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 
@@ -42,6 +43,37 @@ inline PyObject *CallCallbackWithStatusOrObjectReturn(
 
 inline absl::Status GenerateErrorStatusNotOk() {
   return absl::AlreadyExistsError("Something went wrong, again.");
+}
+
+inline absl::StatusOr<PyObject *> ReturnStatusOrPyObjectPtr(bool is_ok) {
+  if (is_ok) {
+    return PyLong_FromLongLong(2314L);
+  }
+  return absl::InvalidArgumentError("!is_ok");
+}
+
+inline std::string PassStatusOrPyObjectPtr(
+    const absl::StatusOr<PyObject *> &obj) {
+  if (!obj.ok()) {
+    return "!obj.ok()@" + std::string(obj.status().message());
+  }
+  if (PyTuple_CheckExact(obj.value())) {
+    return "is_tuple";
+  }
+  return "!is_tuple";
+}
+
+inline std::string CallCallbackWithStatusOrPyObjectPtrReturn(
+    const std::function<absl::StatusOr<PyObject *>(std::string)> &cb,
+    std::string cb_arg) {
+  // Implicitly take ownership of Python reference:
+  absl::StatusOr<PyObject *> cb_result = cb(cb_arg);
+  std::string result = PassStatusOrPyObjectPtr(cb_result);
+  if (cb_result.ok()) {
+    ABSL_CHECK_NE(Py_REFCNT(cb_result.value()), 0);
+    Py_DECREF(cb_result.value());  // Release owned reference.
+  }
+  return result;
 }
 
 }  // namespace status_testing_no_cpp_eh

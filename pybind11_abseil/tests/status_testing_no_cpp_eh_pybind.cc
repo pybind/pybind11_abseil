@@ -23,6 +23,19 @@ PYBIND11_MODULE(status_testing_no_cpp_eh_pybind, m) {
         &CallCallbackWithStatusOrObjectReturn,
         pybind11::return_value_policy::take_ownership);
   m.def("GenerateErrorStatusNotOk", &GenerateErrorStatusNotOk);
+
+  m.attr("PYBIND11_HAS_RETURN_VALUE_POLICY_PACK") =
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
+      true;
+#else
+      false;
+#endif
+
+  m.def("ReturnStatusOrPyObjectPtr", &ReturnStatusOrPyObjectPtr,
+        pybind11::return_value_policy::take_ownership);
+  m.def("PassStatusOrPyObjectPtr", &PassStatusOrPyObjectPtr);
+  m.def("CallCallbackWithStatusOrPyObjectPtrReturn",
+        &CallCallbackWithStatusOrPyObjectPtrReturn);
 }
 
 }  // namespace status_testing_no_cpp_eh

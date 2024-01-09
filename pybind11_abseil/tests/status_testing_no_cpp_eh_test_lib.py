@@ -7,6 +7,8 @@
 from absl.testing import absltest
 from absl.testing import parameterized
 
+from pybind11_abseil import status
+
 # Exercises status_from_core_py_exc.cc:StatusFromFetchedExc()
 TAB_StatusFromFetchedExc = (
     (MemoryError, 'RESOURCE_EXHAUSTED: MemoryError'),
@@ -128,9 +130,6 @@ class StatusOrPyObjectPtrTest(absltest.TestCase):
     self.tm = self.getTestModule()  # pytype: disable=attribute-error
 
   def testStatusOrObject(self):  # pylint: disable=invalid-name
-    if getattr(self.tm, '__pyclif_codegen_mode__', None) != 'c_api':
-      self.skipTest('TODO(cl/578064081)')
-    # No leak (manually verified under cl/485274434).
     while True:
       lst = [1, 2, 3, 4]
 
@@ -142,4 +141,59 @@ class StatusOrPyObjectPtrTest(absltest.TestCase):
         res = self.tm.CallCallbackWithStatusOrObjectReturn(cb)
         self.assertListEqual(res, lst)
         self.assertIs(res, lst)
-      return  # Comment out for manual leak checking (use `top` command).
+      break  # Comment out for manual leak checking (use `top` command).
+      # Manual verification: cl/485274434, cl/578064081
+
+  def testReturnStatusOrPyObjectPtr(self):  # pylint: disable=invalid-name
+    obj = self.tm.ReturnStatusOrPyObjectPtr(True)
+    self.assertEqual(obj, 2314)
+    with self.assertRaises(status.StatusNotOk) as ctx:
+      self.tm.ReturnStatusOrPyObjectPtr(False)
+    self.assertEqual(str(ctx.exception), '!is_ok [INVALID_ARGUMENT]')
+    while True:
+      self.tm.ReturnStatusOrPyObjectPtr(True)
+      break  # Comment out for manual leak checking (use `top` command).
+      # Manual verification: cl/578064081
+    while True:
+      with self.assertRaises(status.StatusNotOk) as ctx:
+        self.tm.ReturnStatusOrPyObjectPtr(False)
+      break  # Comment out for manual leak checking (use `top` command).
+      # Manual verification: cl/578064081
+
+  def testPassStatusOrPyObjectPtr(self):  # pylint: disable=invalid-name
+    pass_fn = self.tm.PassStatusOrPyObjectPtr
+    self.assertEqual(pass_fn(()), 'is_tuple')
+    self.assertEqual(pass_fn([]), '!is_tuple')
+    while True:
+      pass_fn([])
+      break  # Comment out for manual leak checking (use `top` command).
+      # Manual verification: cl/578064081
+
+  def testCallCallbackWithStatusOrPyObjectPtrReturn(self):  # pylint: disable=invalid-name
+    def cb(arg):
+      if arg == 'tup':
+        return ()
+      if arg == 'lst':
+        return []
+      raise ValueError(f'Unknown arg: {repr(arg)}')
+
+    cc_fn = self.tm.CallCallbackWithStatusOrPyObjectPtrReturn
+    res = cc_fn(cb, 'tup')
+    self.assertEqual(res, 'is_tuple')
+    res = cc_fn(cb, 'lst')
+    self.assertEqual(res, '!is_tuple')
+
+    if (
+        hasattr(self.tm, '__pyclif_codegen_mode__')
+        or self.tm.PYBIND11_HAS_RETURN_VALUE_POLICY_PACK
+    ):
+      res = cc_fn(cb, 'exc')
+      self.assertEqual(res, "!obj.ok()@ValueError: Unknown arg: 'exc'")
+      while True:
+        cc_fn(cb, 'exc')
+        break  # Comment out for manual leak checking (use `top` command).
+        # Manual verification: cl/578064081
+    else:
+      with self.assertRaises(ValueError) as ctx:
+        cc_fn(cb, 'exc')
+      self.assertEqual(str(ctx.exception), "Unknown arg: 'exc'")

@@ -27,6 +27,7 @@ cc_library(
     name = "status_testing_no_cpp_eh_lib",
     hdrs = ["status_testing_no_cpp_eh_lib.h"],
     deps = [
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@local_config_python//:python_headers",  # buildcleaner: keep
@@ -47,6 +48,7 @@ pybind_extension(
 py_library(
     name = "status_testing_no_cpp_eh_test_lib",
     srcs = ["status_testing_no_cpp_eh_test_lib.py"],
+    data = ["//pybind11_abseil:status.so"],
 )
 
 pybind_extension(

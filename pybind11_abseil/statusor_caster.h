@@ -146,7 +146,14 @@ struct func_wrapper<absl::StatusOr<PayloadType>, Args...> : func_wrapper_base {
       object py_result =
           hfunc.f.call_with_policies(rvpp, std::forward<Args>(args)...);
       try {
-        return py_result.template cast<absl::StatusOr<PayloadType>>();
+        auto cpp_result =
+            py_result.template cast<absl::StatusOr<PayloadType>>();
+        // Intentionally not `if constexpr`: runtime overhead is insignificant.
+        if (is_same_ignoring_cvref<PayloadType, PyObject*>::value) {
+          // Ownership of the Python reference was transferred to cpp_result.
+          py_result.release();
+        }
+        return cpp_result;
       } catch (cast_error& e) {
         return absl::Status(absl::StatusCode::kInvalidArgument, e.what());
       }
