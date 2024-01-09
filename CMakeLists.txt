@@ -16,8 +16,6 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
-find_package(Python3 COMPONENTS interpreter development)
-
 FetchContent_Declare(
   abseil-cpp
   URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz
