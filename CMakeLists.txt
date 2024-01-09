@@ -11,6 +11,9 @@ set(ABSL_PROPAGATE_CXX_STD ON)
 set(BUILD_TESTING OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+cmake_policy(SET CMP0135 NEW)
+
+find_package(Python3 COMPONENTS interpreter development)
 
 FetchContent_Declare(
   abseil-cpp
@@ -20,12 +23,12 @@ FetchContent_Declare(
 
 FetchContent_Declare(
   pybind11
-  URL https://github.com/pybind/pybind11/archive/7d538a42750c8580eeaac10e505840a3694b04c8.tar.gz)
+  URL https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz)
 
 FetchContent_MakeAvailable(abseil-cpp pybind11)
 
 set(TOP_LEVEL_DIR ${CMAKE_CURRENT_LIST_DIR})
-include_directories(${TOP_LEVEL_DIR} ${PYTHON_INCLUDE_DIR}
+include_directories(${TOP_LEVEL_DIR}
                     ${pybind11_INCLUDE_DIRS})
 
 add_subdirectory(pybind11_abseil)

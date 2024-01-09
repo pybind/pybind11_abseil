@@ -8,6 +8,10 @@ target_link_libraries(
                                    shared_ptr_from_capsule absl::statusor)
 # cpp_capsule_tools_testing_test ===============================================
 
+if(NOT DEFINED PYTHON_EXECUTABLE)
+  set(PYTHON_EXECUTABLE ${PYBIND11_PYTHON_EXECUTABLE_LAST})
+endif()
+
 add_test(
   NAME cpp_capsule_tools_testing_test
   COMMAND
