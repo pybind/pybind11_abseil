@@ -1,6 +1,5 @@
 # Tests and examples for pybind11_abseil.
 
-# LOAD(pytype_strict_contrib_test)
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 
 licenses(["notice"])
@@ -22,6 +21,32 @@ py_test(
     data = [":cpp_capsule_tools_testing.so"],
     python_version = "PY3",
     srcs_version = "PY3",
+)
+
+cc_library(
+    name = "status_testing_no_cpp_eh_lib",
+    hdrs = ["status_testing_no_cpp_eh_lib.h"],
+    deps = [
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@local_config_python//:python_headers",  # buildcleaner: keep
+    ],
+)
+
+pybind_extension(
+    name = "status_testing_no_cpp_eh_pybind",
+    srcs = ["status_testing_no_cpp_eh_pybind.cc"],
+    deps = [
+        ":status_testing_no_cpp_eh_lib",
+        "//pybind11_abseil:import_status_module",
+        "//pybind11_abseil:status_caster",
+        "//pybind11_abseil:statusor_caster",
+    ],
+)
+
+py_library(
+    name = "status_testing_no_cpp_eh_test_lib",
+    srcs = ["status_testing_no_cpp_eh_test_lib.py"],
 )
 
 pybind_extension(

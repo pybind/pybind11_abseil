@@ -91,6 +91,7 @@ target_link_libraries(
   INTERFACE check_status_module_imported
             no_throw_status
             ok_status_singleton_lib
+            status_from_py_exc
             status_not_ok_exception
             raw_ptr_from_capsule
             absl::status
@@ -105,8 +106,9 @@ target_include_directories(statusor_caster
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
 
 target_link_libraries(
-  statusor_caster INTERFACE check_status_module_imported no_throw_status
-                            status_caster absl::status absl::statusor)
+  statusor_caster
+  INTERFACE check_status_module_imported no_throw_status status_caster
+            status_from_py_exc absl::status absl::statusor)
 
 # init_from_tag ================================================================
 

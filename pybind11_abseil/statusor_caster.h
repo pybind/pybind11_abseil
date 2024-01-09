@@ -5,7 +5,9 @@
 #ifndef PYBIND11_ABSEIL_STATUSOR_CASTER_H_
 #define PYBIND11_ABSEIL_STATUSOR_CASTER_H_
 
+#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/type_caster_pyobject_ptr.h>
 
 #include <stdexcept>
 #include <type_traits>
@@ -14,6 +16,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "pybind11_abseil/check_status_module_imported.h"
+#include "pybind11_abseil/compat/status_from_py_exc.h"
 #include "pybind11_abseil/no_throw_status.h"
 #include "pybind11_abseil/status_caster.h"
 
@@ -120,6 +123,45 @@ struct type_caster<absl::StatusOr<PayloadType>> {
     }
   }
 };
+
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
+
+// This code requires https://github.com/google/pywrapcc
+// IMPORTANT:
+//     KEEP
+//         type_caster<absl::StatusOr<PayloadType>>
+//         func_wrapper<absl::StatusOr<PayloadType>, Args...>
+//     IN THE SAME HEADER FILE
+//     to avoid surprising behavior differences and ODR violations.
+
+namespace type_caster_std_function_specializations {
+
+template <typename PayloadType, typename... Args>
+struct func_wrapper<absl::StatusOr<PayloadType>, Args...> : func_wrapper_base {
+  using func_wrapper_base::func_wrapper_base;
+  // NOTE: `noexcept` to guarantee that no C++ exception will ever escape.
+  absl::StatusOr<PayloadType> operator()(Args... args) const noexcept {
+    gil_scoped_acquire acq;
+    try {
+      object py_result =
+          hfunc.f.call_with_policies(rvpp, std::forward<Args>(args)...);
+      try {
+        return py_result.template cast<absl::StatusOr<PayloadType>>();
+      } catch (cast_error& e) {
+        return absl::Status(absl::StatusCode::kInvalidArgument, e.what());
+      }
+    }
+    // See comment for the corresponding `catch` in status_caster.h.
+    catch (error_already_set& e) {
+      e.restore();
+      return pybind11_abseil::compat::StatusFromPyExcGivenErrOccurred();
+    }
+  }
+};
+
+}  // namespace type_caster_std_function_specializations
+
+#endif
 
 }  // namespace detail
 }  // namespace pybind11

@@ -5,6 +5,7 @@
 #ifndef PYBIND11_ABSEIL_STATUS_CASTER_H_
 #define PYBIND11_ABSEIL_STATUS_CASTER_H_
 
+#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 
 #include <stdexcept>
@@ -13,6 +14,7 @@
 
 #include "absl/status/status.h"
 #include "pybind11_abseil/check_status_module_imported.h"
+#include "pybind11_abseil/compat/status_from_py_exc.h"
 #include "pybind11_abseil/cpp_capsule_tools/raw_ptr_from_capsule.h"
 #include "pybind11_abseil/no_throw_status.h"
 #include "pybind11_abseil/ok_status_singleton_lib.h"
@@ -117,6 +119,49 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
     }
   }
 };
+
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
+
+// This code requires https://github.com/google/pywrapcc
+// IMPORTANT:
+//     KEEP
+//         type_caster<absl::Status>
+//         func_wrapper<absl::Status, Args...>
+//     IN THE SAME HEADER FILE
+//     to avoid surprising behavior differences and ODR violations.
+
+namespace type_caster_std_function_specializations {
+
+template <typename... Args>
+struct func_wrapper<absl::Status, Args...> : func_wrapper_base {
+  using func_wrapper_base::func_wrapper_base;
+  // NOTE: `noexcept` to guarantee that no C++ exception will ever escape.
+  absl::Status operator()(Args... args) const noexcept {
+    gil_scoped_acquire acq;
+    try {
+      object py_result =
+          hfunc.f.call_with_policies(rvpp, std::forward<Args>(args)...);
+      try {
+        return py_result.template cast<absl::Status>();
+      } catch (cast_error& e) {
+        return absl::Status(absl::StatusCode::kInvalidArgument, e.what());
+      }
+    }
+    // All exceptions derived from std::exception are handled here:
+    // https://github.com/pybind/pybind11/blob/aec6cc5406edb076f5a489c2d7f84bb07052c4a3/include/pybind11/detail/internals.h#L363-L420
+    // Design choice for safety: Intentionally no `catch (...)`:
+    // Occurrence of such exceptions in this context is considered a bug in
+    // user code. The `noexcept` above will lead to process termination.
+    catch (error_already_set& e) {
+      e.restore();
+      return pybind11_abseil::compat::StatusFromPyExcGivenErrOccurred();
+    }
+  }
+};
+
+}  // namespace type_caster_std_function_specializations
+
+#endif
 
 }  // namespace detail
 }  // namespace pybind11
