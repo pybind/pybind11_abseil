@@ -8,15 +8,19 @@ target_link_libraries(
                                    shared_ptr_from_capsule absl::statusor)
 # cpp_capsule_tools_testing_test ===============================================
 
-if(NOT DEFINED PYTHON_EXECUTABLE)
-  set(PYTHON_EXECUTABLE ${PYBIND11_PYTHON_EXECUTABLE_LAST})
+if(NOT DEFINED Python_EXECUTABLE)
+  if(NOT DEFINED PYBIND11_PYTHON_EXECUTABLE_LAST)
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
+  else()
+    set(Python_EXECUTABLE ${PYBIND11_PYTHON_EXECUTABLE_LAST})
+  endif()
 endif()
 
 add_test(
   NAME cpp_capsule_tools_testing_test
   COMMAND
     ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-    ${PYTHON_EXECUTABLE}
+    ${Python_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp_capsule_tools_testing_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -39,7 +43,7 @@ target_link_libraries(
 add_test(
   NAME absl_test
   COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/absl_test.py
+          ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/absl_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # ok_status_singleton_test =====================================================
@@ -48,7 +52,7 @@ add_test(
   NAME ok_status_singleton_test
   COMMAND
     ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ok_status_singleton_test.py
+    ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ok_status_singleton_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # missing_import ===============================================================
@@ -66,7 +70,7 @@ add_test(
   NAME missing_import_test
   COMMAND
     ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/missing_import_test.py
+    ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/missing_import_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # status_test ==================================================================
@@ -74,7 +78,7 @@ add_test(
 add_test(
   NAME status_test
   COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/status_test.py
+          ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/status_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # status_example ===============================================================
@@ -89,5 +93,5 @@ add_test(
   NAME status_example_test
   COMMAND
     ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/status_example_test.py
+    ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/status_example_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
