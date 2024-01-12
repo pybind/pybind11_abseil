@@ -176,12 +176,14 @@ add_library(status_casters INTERFACE)
 add_library(pybind11_abseil::status_casters ALIAS status_casters)
 
 target_include_directories(status_casters
-                           INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
+  INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
 
 target_link_libraries(status_casters INTERFACE import_status_module
-                                               status_caster statusor_caster)
+  status_caster statusor_caster)
 
-add_subdirectory(tests)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 if(CMAKE_INSTALL_PYDIR)
   # Copying to two target directories for simplicity. It is currently unknown
