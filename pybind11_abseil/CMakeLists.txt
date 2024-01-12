@@ -150,14 +150,15 @@ target_link_libraries(status_pyinit_google3 PUBLIC register_status_bindings)
 
 # status ====================================================================
 
-add_library(status SHARED status_py_extension_stub.cc)
-add_library(pybind11_abseil::status ALIAS status)
+add_library(status_py_extension_stub SHARED status_py_extension_stub.cc)
+set_target_properties(status_py_extension_stub PROPERTIES LIBRARY_OUTPUT_NAME "status")
+add_library(pybind11_abseil::status ALIAS status_py_extension_stub)
 
-target_include_directories(status INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
+target_include_directories(status_py_extension_stub INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
 
-set_target_properties(status PROPERTIES PREFIX "")
+set_target_properties(status_py_extension_stub PROPERTIES PREFIX "")
 
-target_link_libraries(status PUBLIC status_pyinit_google3 absl::status)
+target_link_libraries(status_py_extension_stub PUBLIC status_pyinit_google3 absl::status)
 
 # import_status_module =========================================================
 
@@ -167,7 +168,7 @@ add_library(pybind11_abseil::import_status_module ALIAS import_status_module)
 target_include_directories(import_status_module
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
 
-target_link_libraries(import_status_module PUBLIC status)
+target_link_libraries(import_status_module PUBLIC status_py_extension_stub)
 
 # status_casters ===============================================================
 
@@ -186,14 +187,14 @@ if(CMAKE_INSTALL_PYDIR)
   # Copying to two target directories for simplicity. It is currently unknown
   # how to determine here which copy is actually being used.
   install(
-    TARGETS status ok_status_singleton
+    TARGETS status_py_extension_stub ok_status_singleton
     EXPORT pybind11_abseilTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
     RUNTIME DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil)
 
   install(
-    TARGETS status ok_status_singleton
+    TARGETS status_py_extension_stub ok_status_singleton
     EXPORT pybind11_abseil_cppTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
