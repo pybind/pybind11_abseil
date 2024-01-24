@@ -130,11 +130,16 @@ inline int64_t GetTimestampMicrosFromDateTimeObj(PyObject* dt_obj) {
          static_cast<int64_t>(dt_microsecond);
 }
 
+
 // The latest and earliest dates Python's datetime module can represent.
-constexpr absl::Time::Breakdown kDatetimeInfiniteFuture = {
-    9999, 12, 31, 23, 59, 59, absl::Microseconds(999999)};
-constexpr absl::Time::Breakdown kDatetimeInfinitePast = {
-    1, 1, 1, 0, 0, 0, absl::ZeroDuration()};
+constexpr absl::TimeZone::CivilInfo kDatetimeInfiniteFuture {
+    absl::CivilSecond (9999, 12, 31, 23, 59, 59),
+    absl::Microseconds(999999)
+};
+constexpr absl::TimeZone::CivilInfo kDatetimeInfinitePast {
+    absl::CivilSecond (1, 1, 1, 0, 0, 0),
+    absl::ZeroDuration()
+};
 
 // NOTE: Python datetime tzinfo is deliberately ignored.
 // Rationale:
@@ -145,13 +150,10 @@ constexpr absl::Time::Breakdown kDatetimeInfinitePast = {
 //   conversions here.
 // * tzinfo for datetime.datetime.min,max is rather meaningless in general,
 //   but especially so when those are used as placeholders for infinity.
-inline bool is_special_datetime(const absl::Time::Breakdown& bd_py,
-                                const absl::Time::Breakdown& bd_special) {
-  return (bd_py.year == bd_special.year && bd_py.month == bd_special.month &&
-          bd_py.day == bd_special.day && bd_py.hour == bd_special.hour &&
-          bd_py.minute == bd_special.minute &&
-          bd_py.second == bd_special.second &&
-          bd_py.subsecond == bd_special.subsecond);
+inline bool is_special_datetime(const absl::TimeZone::CivilInfo& civil_cmp,
+  const absl::TimeZone::CivilInfo& civil_special) {
+    return civil_cmp.cs == civil_special.cs &&
+      civil_cmp.subsecond == civil_special.subsecond;
 }
 
 }  // namespace internal
@@ -232,23 +234,26 @@ struct type_caster<absl::Time> {
     // As early as possible to avoid mid-process surprises.
     internal::EnsurePyDateTime_IMPORT();
     if (PyDateTime_Check(src.ptr())) {
-      absl::Time::Breakdown bd_py = {
-          PyDateTime_GET_YEAR(src.ptr()),
-          PyDateTime_GET_MONTH(src.ptr()),
-          PyDateTime_GET_DAY(src.ptr()),
-          PyDateTime_DATE_GET_HOUR(src.ptr()),
-          PyDateTime_DATE_GET_MINUTE(src.ptr()),
-          PyDateTime_DATE_GET_SECOND(src.ptr()),
-          absl::Microseconds(PyDateTime_DATE_GET_MICROSECOND(src.ptr()))};
-      if (internal::is_special_datetime(bd_py,
-                                        internal::kDatetimeInfiniteFuture)) {
-        value = absl::InfiniteFuture();
-        return true;
+         absl::TimeZone::CivilInfo civil = {
+            absl::CivilSecond(
+              PyDateTime_GET_YEAR(src.ptr()),
+              PyDateTime_GET_MONTH(src.ptr()),
+              PyDateTime_GET_DAY(src.ptr()),
+              PyDateTime_DATE_GET_HOUR(src.ptr()),
+              PyDateTime_DATE_GET_MINUTE(src.ptr()),
+              PyDateTime_DATE_GET_SECOND(src.ptr())),
+              absl::Microseconds(PyDateTime_DATE_GET_MICROSECOND(src.ptr()))
+        };
+
+      if (internal::is_special_datetime(civil,
+        internal::kDatetimeInfiniteFuture)) {
+          value = absl::InfiniteFuture();
+          return true;
       }
-      if (internal::is_special_datetime(bd_py,
-                                        internal::kDatetimeInfinitePast)) {
-        value = absl::InfinitePast();
-        return true;
+      if (internal::is_special_datetime(civil,
+        internal::kDatetimeInfinitePast)) {
+          value = absl::InfinitePast();
+          return true;
       }
       int64_t dt_timestamp_micros =
           internal::GetTimestampMicrosFromDateTimeObj(src.ptr());
@@ -270,9 +275,11 @@ struct type_caster<absl::Time> {
       }
     }
     if (PyDate_Check(src.ptr())) {
-      value = absl::FromDateTime(
-          PyDateTime_GET_YEAR(src.ptr()), PyDateTime_GET_MONTH(src.ptr()),
-          PyDateTime_GET_DAY(src.ptr()), 0, 0, 0, absl::LocalTimeZone());
+      value = absl::FromCivil(absl::CivilSecond(PyDateTime_GET_YEAR(src.ptr()),
+                                            PyDateTime_GET_MONTH(src.ptr()),
+                                            PyDateTime_GET_DAY(src.ptr()),
+                                            0, 0, 0),
+                              absl::LocalTimeZone());
       return true;
     }
     return false;
@@ -294,10 +301,11 @@ struct type_caster<absl::Time> {
           1, 1, 1, 0, 0, 0, 0, PyDateTimeAPI->TimeZone_UTC,
           PyDateTimeAPI->DateTimeType);
     }
-    absl::Time::Breakdown t = src.In(absl::UTCTimeZone());
+    absl::TimeZone::CivilInfo info = absl::UTCTimeZone().At(src);
     return PyDateTimeAPI->DateTime_FromDateAndTime(
-        t.year, t.month, t.day, t.hour, t.minute, t.second,
-        static_cast<int>(t.subsecond / absl::Microseconds(1)),
+        info.cs.year(), info.cs.month(), info.cs.day(), info.cs.hour(),
+        info.cs.minute(), info.cs.second(),
+        static_cast<int>(info.subsecond / absl::Microseconds(1)),
         PyDateTimeAPI->TimeZone_UTC, PyDateTimeAPI->DateTimeType);
   }
 };
