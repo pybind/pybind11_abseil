@@ -447,7 +447,7 @@ std::tuple<bool, absl::Span<T>> LoadSpanOpaqueVector(handle src) {
 template <typename T,
           typename std::enable_if<
               std::is_same<std::remove_cv_t<T>, bool>::value, int>::type = 0>
-std::tuple<bool, absl::Span<T>> LoadSpanOpaqueVector(handle src) {
+std::tuple<bool, absl::Span<T>> LoadSpanOpaqueVector(handle /*src*/) {
   // std::vector<bool> is special and cannot directly be converted to a Span
   // (see https://en.cppreference.com/w/cpp/container/vector_bool).
   return {false, absl::Span<T>()};
