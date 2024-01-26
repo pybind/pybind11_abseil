@@ -13,6 +13,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 add_subdirectory(cmake/dependencies dependencies)
 
 set(TOP_LEVEL_DIR ${CMAKE_CURRENT_LIST_DIR})
