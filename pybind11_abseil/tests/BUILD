@@ -1,6 +1,7 @@
 # Tests and examples for pybind11_abseil.
 
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+load("@pypi//:requirements.bzl", "requirement")
 
 licenses(["notice"])
 
@@ -21,6 +22,7 @@ py_test(
     data = [":cpp_capsule_tools_testing.so"],
     python_version = "PY3",
     srcs_version = "PY3",
+    deps = [requirement("absl_py")],
 )
 
 cc_library(
@@ -30,7 +32,7 @@ cc_library(
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 
@@ -49,6 +51,7 @@ py_library(
     name = "status_testing_no_cpp_eh_test_lib",
     srcs = ["status_testing_no_cpp_eh_test_lib.py"],
     data = ["//pybind11_abseil:status.so"],
+    deps = [requirement("absl_py")],
 )
 
 pybind_extension(
@@ -71,6 +74,10 @@ py_test(
     data = [":absl_example.so"],
     python_version = "PY3",
     srcs_version = "PY3",
+    deps = [
+        requirement("absl_py"),
+        requirement("numpy"),
+    ],
 )
 
 py_test(
@@ -79,6 +86,7 @@ py_test(
     data = ["//pybind11_abseil:ok_status_singleton.so"],
     python_version = "PY3",
     srcs_version = "PY3",
+    deps = [requirement("absl_py")],
 )
 
 pybind_extension(
@@ -106,6 +114,7 @@ py_test(
     data = ["//pybind11_abseil:status.so"],
     python_version = "PY3",
     srcs_version = "PY3",
+    deps = [requirement("absl_py")],
 )
 
 pybind_extension(
@@ -127,4 +136,5 @@ py_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    deps = [requirement("absl_py")],
 )

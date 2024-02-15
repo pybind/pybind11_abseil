@@ -32,7 +32,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@com_google_absl//absl/status",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 
@@ -42,7 +42,7 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":ok_status_singleton_lib",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 
@@ -52,7 +52,7 @@ cc_binary(
     linkshared = 1,
     deps = [
         ":ok_status_singleton_pyinit_google3",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 
@@ -155,7 +155,7 @@ cc_binary(
     linkshared = 1,
     deps = [
         ":status_pyinit_google3",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 

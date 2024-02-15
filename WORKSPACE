@@ -8,6 +8,13 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 #    On Mac, run curl -L https://github.com/<...>.tar.gz | shasum -a 256
 #    and update the sha256 with the result.
 
+################################################################################
+#
+# WORKSPACE is being deprecated in favor of the new Bazelmod dependency system
+# It will be removed at some point in the future.
+#
+################################################################################
+
 ## `bazel_skylib` (PINNED)
 http_archive(
     name = "bazel_skylib",  # 2023-05-31T19:24:07Z
@@ -26,6 +33,61 @@ http_archive(
         "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz"
     ],
 )
+
+http_archive(
+    name = "rules_python",
+    sha256 = "c68bdc4fbec25de5b5493b8819cfc877c4ea299c0dcb15c244c5a00208cde311",
+    strip_prefix = "rules_python-0.31.0",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.31.0/rules_python-0.31.0.tar.gz",
+)
+
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_multi_toolchains")
+
+py_repositories()
+
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
+
+DEFAULT_PYTHON = "3.11"
+
+python_register_multi_toolchains(
+    name = "python",
+    default_version = DEFAULT_PYTHON,
+    python_versions = [
+      "3.12",
+      "3.11",
+      "3.10",
+      "3.9",
+      "3.8"
+    ],
+)
+
+load("@python//:pip.bzl", "multi_pip_parse")
+
+multi_pip_parse(
+    name = "pypi",
+    default_version = DEFAULT_PYTHON,
+    python_interpreter_target = {
+        "3.12": "@python_3_12_host//:python",
+        "3.11": "@python_3_11_host//:python",
+        "3.10": "@python_3_10_host//:python",
+        "3.9": "@python_3_9_host//:python",
+        "3.8": "@python_3_8_host//:python",
+    },
+    requirements_lock = {
+        "3.12": "//pybind11_abseil/requirements:requirements_lock_3_12.txt",
+        "3.11": "//pybind11_abseil/requirements:requirements_lock_3_11.txt",
+        "3.10": "//pybind11_abseil/requirements:requirements_lock_3_10.txt",
+        "3.9": "//pybind11_abseil/requirements:requirements_lock_3_9.txt",
+        "3.8": "//pybind11_abseil/requirements:requirements_lock_3_8.txt",
+    },
+)
+
+load("@pypi//:requirements.bzl", "install_deps")
+
+install_deps()
+
 
 ## `pybind11_bazel` (FLOATING)
 # https://github.com/pybind/pybind11_bazel
@@ -52,6 +114,3 @@ http_archive(
   # sha256 = "832e2f309c57da9c1e6d4542dedd34b24e4192ecb4d62f6f4866a737454c9970",
   # urls = ["https://github.com/pybind/pybind11/archive/refs/tags/v2.10.4.tar.gz"],
 )
-
-load("@pybind11_bazel//:python_configure.bzl", "python_configure")
-python_configure(name = "local_config_python")

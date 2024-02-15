@@ -13,7 +13,7 @@ cc_library(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 
@@ -24,7 +24,7 @@ cc_library(
     deps = [
         ":void_ptr_from_capsule",
         "@com_google_absl//absl/status:statusor",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 
@@ -33,7 +33,7 @@ cc_library(
     hdrs = ["make_shared_ptr_capsule.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 
@@ -44,6 +44,6 @@ cc_library(
     deps = [
         ":void_ptr_from_capsule",
         "@com_google_absl//absl/status:statusor",
-        "@local_config_python//:python_headers",  # buildcleaner: keep
+        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )

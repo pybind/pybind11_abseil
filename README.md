@@ -23,6 +23,21 @@ pybind11_abseil can be built with Bazel or CMake. Instructions for both are belo
 
 ### Bazel
 
+#### Bzlmod
+
+You can depend on the Bazel module and dependencies via a single command in your MODULE.bazel:
+
+```
+bazel_dep(
+    name = "pybind11_abseil",
+    version = "selected_version",
+)
+```
+
+#### WORKSPACE
+
+Bazel workspace support is deprecated and will be removed at a later date.
+
 You will need to depend on `pybind11`, `pybind11_bazel`(see
 [doc](https://github.com/pybind/pybind11_bazel#installation), and on
 `pybind11_abseil`, e.g.
