@@ -25,12 +25,24 @@ pybind11_abseil can be built with Bazel or CMake. Instructions for both are belo
 
 #### Bzlmod
 
-You can depend on the Bazel module and dependencies via a single command in your MODULE.bazel:
+You can depend on the Bazel module and dependencies via one of the following commands in your MODULE.bazel:
 
+To depend on a release:
 ```
 bazel_dep(
     name = "pybind11_abseil",
-    version = "selected_version",
+    version = "<selected_version>",
+)
+```
+
+To depend on floating master:
+```
+git_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "pybind11_abseil",
+    remote = "https://github.com/pybind/pybind11_abseil.git",
+    branch = "master",
 )
 ```
 
