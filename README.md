@@ -37,7 +37,7 @@ To depend on a release:
 ```
 bazel_dep(
     name = "pybind11_abseil",
-    version = "<selected_version>",
+    version = "202402.0",
 )
 ```
 
