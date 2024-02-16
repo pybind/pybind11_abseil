@@ -23,6 +23,12 @@ pybind11_abseil can be built with Bazel or CMake. Instructions for both are belo
 
 ### Bazel
 
+In your BUILD file:
+
+```
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+```
+
 #### Bzlmod
 
 You can depend on the Bazel module and dependencies via one of the following commands in your MODULE.bazel:
@@ -37,13 +43,27 @@ bazel_dep(
 
 To depend on floating master:
 ```
-git_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-git_repository(
-    name = "pybind11_abseil",
-    remote = "https://github.com/pybind/pybind11_abseil.git",
-    branch = "master",
+http_archive(
+  name = "pybind11_bazel",
+  strip_prefix = "pybind11_bazel-master",
+  urls = ["https://github.com/pybind/pybind11_bazel/archive/refs/heads/master.tar.gz"],
 )
+
+http_archive(
+  name = "pybind11",
+  build_file = "@pybind11_bazel//:pybind11.BUILD",
+  strip_prefix = "pybind11-master",
+  urls = ["https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz"],
+)
+
+http_archive(
+  name = "pybind11_abseil",
+  strip_prefix = "pybind11_abseil_master"
+  urls = ["https://github.com/pybind/pybind11_abseil/refs/heads/master.tar.gz"],
+)
+
 ```
 
 #### WORKSPACE
@@ -55,34 +75,23 @@ You will need to depend on `pybind11`, `pybind11_bazel`(see
 `pybind11_abseil`, e.g.
 
 ```
-git_repository(
-    name = "pybind11_bazel",
-    remote = "https://github.com/pybind/pybind11_bazel.git",
-    branch = "master",
+http_archive(
+  name = "pybind11_bazel",
+  strip_prefix = "pybind11_bazel-master",
+  urls = ["https://github.com/pybind/pybind11_bazel/archive/refs/heads/master.tar.gz"],
 )
 
 http_archive(
   name = "pybind11",
   build_file = "@pybind11_bazel//:pybind11.BUILD",
-  strip_prefix = "pybind11-2.6.2",
-  sha256 = "8ff2fff22df038f5cd02cea8af56622bc67f5b64534f1b83b9f133b8366acff2",
-  urls = ["https://github.com/pybind/pybind11/archive/v2.6.2.tar.gz"],
+  strip_prefix = "pybind11-master",
 )
 
-load("@pybind11_bazel//:python_configure.bzl", "python_configure")
-python_configure(name = "local_config_python")
-
-git_repository(
-    name = "pybind11_abseil",
-    remote = "https://github.com/pybind/pybind11_abseil.git",
-    branch = "master",
+http_archive(
+  name = "pybind11_abseil",
+  strip_prefix = "pybind11_abseil_master",
+  urls = ["https://github.com/pybind/pybind11_abseil/refs/heads/master.tar.gz"],
 )
-```
-
-Then, in your BUILD file:
-
-```
-load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 ```
 
 ### CMake
