@@ -53,7 +53,7 @@ http_archive(
 
 http_archive(
   name = "pybind11",
-  build_file = "@pybind11_bazel//:pybind11.BUILD",
+  build_file = "@pybind11_bazel//:pybind11-BUILD.bazel",
   strip_prefix = "pybind11-master",
   urls = ["https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz"],
 )
@@ -83,7 +83,7 @@ http_archive(
 
 http_archive(
   name = "pybind11",
-  build_file = "@pybind11_bazel//:pybind11.BUILD",
+  build_file = "@pybind11_bazel//:pybind11-BUILD.bazel",
   strip_prefix = "pybind11-master",
 )
 
