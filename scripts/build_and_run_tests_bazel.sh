@@ -26,6 +26,8 @@ export PYTHON_LIB_PATH=`python3 -c "import sysconfig; print(sysconfig.get_path('
 echo "Using PYTHON_BIN_PATH: $PYTHON_BIN_PATH"
 echo "Using PYTHON_LIB_PATH: $PYTHON_LIB_PATH"
 
+bazel clean --expunge
+
 BAZEL_CXXOPTS="-std=c++17" bazel test ... --test_output=errors "$@" --enable_bzlmod
 BAZEL_CXXOPTS="-std=c++20" bazel test ... --test_output=errors "$@" --enable_bzlmod
 
