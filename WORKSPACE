@@ -10,12 +10,13 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 ################################################################################
 #
-# WORKSPACE is being deprecated in favor of the new Bazelmod dependency system
+# WORKSPACE is being deprecated in favor of the new Bzlmod dependency system.
 # It will be removed at some point in the future.
 #
 ################################################################################
 
 ## `bazel_skylib` (PINNED)
+# Needed for Abseil.
 http_archive(
     name = "bazel_skylib",  # 2023-05-31T19:24:07Z
     sha256 = "08c0386f45821ce246bbbf77503c973246ed6ee5c3463e41efc197fa9bc3a7f4",
