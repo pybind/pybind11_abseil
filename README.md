@@ -61,7 +61,7 @@ http_archive(
 http_archive(
   name = "pybind11_abseil",
   strip_prefix = "pybind11_abseil-master"
-  urls = ["https://github.com/pybind/pybind11_abseil/refs/heads/master.tar.gz"],
+  urls = ["https://github.com/pybind/pybind11_abseil/archive/refs/heads/master.tar.gz"],
 )
 
 ```
@@ -85,12 +85,13 @@ http_archive(
   name = "pybind11",
   build_file = "@pybind11_bazel//:pybind11-BUILD.bazel",
   strip_prefix = "pybind11-master",
+  urls = ["https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz"],
 )
 
 http_archive(
   name = "pybind11_abseil",
   strip_prefix = "pybind11_abseil-master",
-  urls = ["https://github.com/pybind/pybind11_abseil/refs/heads/master.tar.gz"],
+  urls = ["https://github.com/pybind/pybind11_abseil/archive/refs/heads/master.tar.gz"],
 )
 ```
 
