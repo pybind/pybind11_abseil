@@ -151,6 +151,13 @@ pybind_library(
 cc_binary(
     name = "status.so",
     srcs = ["status_py_extension_stub.cc"],
+    linkopts = select({
+        "@platforms//os:osx": [
+            "-undefined",
+            "dynamic_lookup",
+        ],
+        "//conditions:default": ["-Wl,-Bsymbolic"],
+    }),
     linkshared = 1,
     deps = [
         ":status_pyinit_google3",
