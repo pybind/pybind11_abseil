@@ -48,6 +48,13 @@ cc_library(
 cc_binary(
     name = "ok_status_singleton.so",
     srcs = ["ok_status_singleton_py_extension_stub.cc"],
+    linkopts = select({
+        "@platforms//os:osx": [
+            "-undefined",
+            "dynamic_lookup",
+        ],
+        "//conditions:default": ["-Wl,-Bsymbolic"],
+    }),
     linkshared = 1,
     deps = [
         ":ok_status_singleton_pyinit_google3",
