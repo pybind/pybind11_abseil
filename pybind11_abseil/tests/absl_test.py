@@ -487,11 +487,23 @@ class AbslCordTest(absltest.TestCase):
   TEST_STRING = 'absl_Cord'
   TEST_BYTES = b'absl_Cord'
 
-  def test_return_absl_cord(self):
+  def test_return_absl_cord_rvp_not_specified(self):
     self.assertSequenceEqual(
         absl_example.return_absl_cord(self.TEST_STRING), self.TEST_BYTES)
     self.assertSequenceEqual(
         absl_example.return_absl_cord(self.TEST_BYTES), self.TEST_BYTES)
+
+  def test_return_absl_cord_rvp_clif_automatic(self):
+    if not absl_example.PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC:
+      self.skipTest('return_value_policy::_clif_automatic not available')
+    self.assertSequenceEqual(
+        absl_example.return_absl_cord_clif_automatic(self.TEST_STRING),
+        self.TEST_STRING,
+    )
+    self.assertSequenceEqual(
+        absl_example.return_absl_cord_clif_automatic(self.TEST_BYTES),
+        self.TEST_STRING,
+    )
 
   def test_pass_absl_cord(self):
     self.assertTrue(

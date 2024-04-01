@@ -627,8 +627,13 @@ struct type_caster<absl::Cord> {
   }
 
   // Conversion part 2 (C++ -> Python)
-  static handle cast(const absl::Cord& src, return_value_policy /*policy*/,
+  static handle cast(const absl::Cord& src, return_value_policy policy,
                      handle /*parent*/) {
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC)
+    if (policy == return_value_policy::_clif_automatic) {
+      return str(std::string(src)).release();
+    }
+#endif
     return bytes(std::string(src)).release();
   }
 };

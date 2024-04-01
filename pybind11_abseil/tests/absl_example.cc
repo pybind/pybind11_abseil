@@ -363,6 +363,13 @@ static_assert(
     !std::is_const<const int*>::value);  // int is const, pointer is not.
 
 PYBIND11_MODULE(absl_example, m) {
+  m.attr("PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC") =
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC)
+      true;
+#else
+      false;
+#endif
+
   // absl::Time/Duration bindings.
   m.def("make_duration", &MakeDuration, arg("secs"));
   m.def("make_infinite_duration", &MakeInfiniteDuration);
@@ -440,6 +447,11 @@ PYBIND11_MODULE(absl_example, m) {
   // absl::Cord bindings.
   m.def("check_absl_cord", &CheckAbslCord, arg("view"), arg("values"));
   m.def("return_absl_cord", &ReturnAbslCord, arg("values"));
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_CLIF_AUTOMATIC)
+  m.def("return_absl_cord_clif_automatic", [](const std::string& values) {
+    return cast(ReturnAbslCord(values), return_value_policy::_clif_automatic);
+  });
+#endif
 
   // absl::optional bindings.
   m.def("check_optional", &CheckOptional, arg("optional") = absl::nullopt,
