@@ -122,7 +122,7 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
 
 #if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
 
-// This code requires https://github.com/google/pywrapcc
+// This code requires https://github.com/google/pybind11k
 // IMPORTANT:
 //     KEEP
 //         type_caster<absl::Status>
