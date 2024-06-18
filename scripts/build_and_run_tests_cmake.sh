@@ -71,7 +71,7 @@ function cleanup {
 trap cleanup EXIT
 
 echo -e "\e[33mInstalling the requirements (use --noinstall to skip).\e[0m"
-pip3 install --upgrade -r ./pybind11_abseil/requirements/requirements.in
+pip3 install --upgrade -r $(python3 -c 'import sys; print("./pybind11_abseil/requirements/requirements_lock_%d_%d.txt" % (sys.version_info[:2]))')
 
 echo "Building and testing in $PWD using 'python' (version $PYVERSION)."
 
