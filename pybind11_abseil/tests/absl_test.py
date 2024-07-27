@@ -377,7 +377,7 @@ class AbslNumericSpanTest(parameterized.TestCase):
       ('read_only', make_read_only_numpy_array()),
       ('strided_skip', make_strided_numpy_array(2)),
       ('strided_reverse', make_strided_numpy_array(-1)),
-      ('non_supported_type', np.zeros(5, dtype=np.unicode_)),
+      ('non_supported_type', np.zeros(5, dtype=np.str_)),
       ('native_list', [0] * 5))
   def test_fill_span_fails_from(self, values):
     with self.assertRaises(TypeError):
