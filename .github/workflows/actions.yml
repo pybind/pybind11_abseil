@@ -18,6 +18,7 @@ jobs:
 
   unix:
     strategy:
+      fail-fast: false
       matrix:
         runs-on: [ubuntu-latest]
         build_tool: [bazel, cmake]
