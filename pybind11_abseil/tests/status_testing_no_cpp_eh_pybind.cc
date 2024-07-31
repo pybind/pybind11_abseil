@@ -16,13 +16,6 @@ namespace status_testing_no_cpp_eh {
 PYBIND11_MODULE(status_testing_no_cpp_eh_pybind, m) {
   pybind11::google::ImportStatusModule();
 
-  m.attr("defined_PYBIND11_HAS_TYPE_CASTER_STD_FUNCTION_SPECIALIZATIONS") =
-#if defined(PYBIND11_HAS_TYPE_CASTER_STD_FUNCTION_SPECIALIZATIONS)
-      true;
-#else
-      false;
-#endif
-
   m.def("CallCallbackWithStatusReturn", &CallCallbackWithStatusReturn);
   m.def("CallCallbackWithStatusOrIntReturn",
         &CallCallbackWithStatusOrIntReturn);
@@ -31,8 +24,8 @@ PYBIND11_MODULE(status_testing_no_cpp_eh_pybind, m) {
         pybind11::return_value_policy::take_ownership);
   m.def("GenerateErrorStatusNotOk", &GenerateErrorStatusNotOk);
 
-  m.attr("defined_PYBIND11_HAS_RETURN_VALUE_POLICY_PACK") =
-#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
+  m.attr("defined_PYBIND11_HAS_TYPE_CASTER_STD_FUNCTION_SPECIALIZATIONS") =
+#if defined(PYBIND11_HAS_TYPE_CASTER_STD_FUNCTION_SPECIALIZATIONS)
       true;
 #else
       false;
