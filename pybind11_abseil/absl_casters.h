@@ -392,6 +392,8 @@ struct type_caster<absl::CivilYear>
 
 namespace internal {
 
+inline void dummy_function() {}
+
 template <typename T>
 static constexpr bool is_buffer_interface_compatible_type =
     detail::is_same_ignoring_cvref<T, PyObject*>::value ||
