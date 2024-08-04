@@ -199,6 +199,9 @@ class StatusTest(parameterized.TestCase):
   @parameterized.parameters(False, True)
   def test_status_caster_load_as_absl_status_bad_capsule(self, pass_name):
     cap = BadCapsule(pass_name)
+    self.skipTest(
+        'Incompatible with PYBIND11_HAS_TRY_AS_VOID_PTR_CAPSULE_GET_POINTER'
+    )
     with self.assertRaises(TypeError):
       status_example.extract_code_message(cap)
 
