@@ -29,19 +29,9 @@ bazel_dep(
     version = "0.0.8"
 )
 
-http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-  name = "pybind11_bazel",
-  strip_prefix = "pybind11_bazel-master",
-  urls = ["https://github.com/pybind/pybind11_bazel/archive/refs/heads/master.tar.gz"],
-)
-
-http_archive(
-  name = "pybind11",
-  build_file = "@pybind11_bazel//:pybind11-BUILD.bazel",
-  strip_prefix = "pybind11-master",
-  urls = ["https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz"],
+bazel_dep(
+    name = "pybind11_bazel",
+    version = "2.11.1.bzl.2",
 )
 
 #### DEV ONLY DEPENDENCIES BELOW HERE ####

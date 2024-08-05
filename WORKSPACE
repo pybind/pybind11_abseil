@@ -90,19 +90,20 @@ load("@pypi//:requirements.bzl", "install_deps")
 install_deps()
 
 
-## `pybind11_bazel` (FLOATING)
+## `pybind11_bazel` (PINNED)
 # https://github.com/pybind/pybind11_bazel
 http_archive(
   name = "pybind11_bazel",
-  strip_prefix = "pybind11_bazel-master",
-  urls = ["https://github.com/pybind/pybind11_bazel/archive/refs/heads/master.tar.gz"],
+  strip_prefix = "pybind11_bazel-2.11.1.bzl.2",
+  sha256 = "e2ba5f81f3bf6a3fc0417448d49389cc7950bebe48c42c33dfeb4dd59859b9a4",
+  urls = ["https://github.com/pybind/pybind11_bazel/releases/download/v2.11.1.bzl.2/pybind11_bazel-2.11.1.bzl.2.tar.gz"],
 )
 
 ## `pybind11` (FLOATING)
 # https://github.com/pybind/pybind11
 http_archive(
   name = "pybind11",
-  build_file = "@pybind11_bazel//:pybind11-BUILD.bazel",
+  build_file = "@pybind11_bazel//:pybind11.BUILD",
   strip_prefix = "pybind11-master",
   urls = ["https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz"],
   # For easy local testing with pybind11 releases:
