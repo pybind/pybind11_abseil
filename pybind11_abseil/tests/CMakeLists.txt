@@ -95,3 +95,5 @@ add_test(
     ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
     ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/status_example_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+# OMITTED (help appreciated): status_testing_no_cpp_eh_test

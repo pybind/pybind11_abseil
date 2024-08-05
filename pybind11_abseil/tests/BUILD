@@ -54,6 +54,15 @@ py_library(
     deps = [requirement("absl_py")],
 )
 
+py_test(
+    name = "status_testing_no_cpp_eh_test",
+    srcs = ["status_testing_no_cpp_eh_test.py"],
+    data = [":status_testing_no_cpp_eh_pybind.so"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [":status_testing_no_cpp_eh_test_lib"],
+)
+
 pybind_extension(
     name = "absl_example",
     srcs = ["absl_example.cc"],

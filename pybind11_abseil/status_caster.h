@@ -120,7 +120,8 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
   }
 };
 
-#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK) && \
+    defined(PYBIND11_HAS_TYPE_CASTER_STD_FUNCTION_SPECIALIZATIONS)
 
 // This code requires https://github.com/google/pybind11k
 // IMPORTANT:
