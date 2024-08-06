@@ -120,10 +120,8 @@ struct type_caster<absl::Status> : public type_caster_base<absl::Status> {
   }
 };
 
-#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK) && \
-    defined(PYBIND11_HAS_TYPE_CASTER_STD_FUNCTION_SPECIALIZATIONS)
+#if defined(PYBIND11_HAS_TYPE_CASTER_STD_FUNCTION_SPECIALIZATIONS)
 
-// This code requires https://github.com/google/pybind11k
 // IMPORTANT:
 //     KEEP
 //         type_caster<absl::Status>
@@ -141,7 +139,11 @@ struct func_wrapper<absl::Status, Args...> : func_wrapper_base {
     gil_scoped_acquire acq;
     try {
       object py_result =
+#if defined(PYBIND11_HAS_RETURN_VALUE_POLICY_PACK)
           hfunc.f.call_with_policies(rvpp, std::forward<Args>(args)...);
+#else
+          hfunc.f(std::forward<Args>(args)...);
+#endif
       try {
         return py_result.template cast<absl::Status>();
       } catch (cast_error& e) {

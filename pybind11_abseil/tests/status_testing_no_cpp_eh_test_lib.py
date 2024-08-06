@@ -185,7 +185,7 @@ class StatusOrPyObjectPtrTest(absltest.TestCase):
 
     if (
         hasattr(self.tm, '__pyclif_codegen_mode__')
-        or self.tm.defined_PYBIND11_HAS_RETURN_VALUE_POLICY_PACK
+        or self.tm.defined_PYBIND11_HAS_TYPE_CASTER_STD_FUNCTION_SPECIALIZATIONS
     ):
       res = cc_fn(cb, 'exc')
       self.assertEqual(res, "!obj.ok()@ValueError: Unknown arg: 'exc'")
