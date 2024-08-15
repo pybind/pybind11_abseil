@@ -42,6 +42,7 @@
 #include <cmath>
 #include <complex>
 #include <cstdint>
+#include <cstring>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -634,7 +635,15 @@ struct type_caster<absl::Cord> {
       return str(std::string(src)).release();
     }
 #endif
-    return bytes(std::string(src)).release();
+    bytes data(nullptr, src.size());
+    // Cord::CopyToArray is not always available so we need to copy
+    // the cord manually.
+    char* ptr = PyBytes_AS_STRING(data.ptr());
+    for (absl::string_view chunk : src.Chunks()) {
+      std::memcpy(ptr, chunk.data(), chunk.size());
+      ptr += chunk.size();
+    }
+    return data.release();
   }
 };
 
