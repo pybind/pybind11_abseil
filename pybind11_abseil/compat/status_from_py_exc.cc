@@ -56,7 +56,7 @@ PyObject* PyStatusNotOkOrNone() {
   static PyObject* kImportedObj = nullptr;
   if (kImportedObj == nullptr) {
     kImportedObj = py_base_utilities::ImportObjectOrReturnNone(
-        "google3.third_party.pybind11_abseil.status", "StatusNotOk");
+        "pybind11_abseil.status", "StatusNotOk");
   }
   return kImportedObj;
 }

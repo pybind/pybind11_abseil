@@ -53,10 +53,10 @@ class StatusReturnTest(parameterized.TestCase):
       expected = 'OK'
     else:
       expected = (
-          'INVALID_ARGUMENT: Unable to cast Python instance of type <class'
-          " 'list'> to C++ type 'absl::Status'"
+          r"INVALID_ARGUMENT: Unable to cast Python instance of type <class"
+          r" 'list'> to C\+\+ type 'absl::(\w*::)?Status'"
       )
-    self.assertEqual(self.tm.CallCallbackWithStatusReturn(cb), expected)
+    self.assertRegex(self.tm.CallCallbackWithStatusReturn(cb), expected)
 
   def testAssertionErrorBare(self):  # pylint: disable=invalid-name
 
@@ -117,10 +117,10 @@ class StatusOrReturnTest(parameterized.TestCase):
       expected = 'INVALID_ARGUMENT: TypeError: expecting int'
     else:
       expected = (
-          'INVALID_ARGUMENT: Unable to cast Python instance of type <class'
-          " 'str'> to C++ type 'absl::StatusOr<int>'"
+          r"INVALID_ARGUMENT: Unable to cast Python instance of type <class"
+          r" 'str'> to C\+\+ type 'absl::(\w*::)?StatusOr<int>'"
       )
-    self.assertEqual(self.tm.CallCallbackWithStatusOrIntReturn(cb), expected)
+    self.assertRegex(self.tm.CallCallbackWithStatusOrIntReturn(cb), expected)
 
 
 class StatusOrPyObjectPtrTest(absltest.TestCase):
