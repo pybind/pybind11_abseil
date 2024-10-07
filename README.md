@@ -60,7 +60,7 @@ http_archive(
 
 http_archive(
   name = "pybind11_abseil",
-  strip_prefix = "pybind11_abseil-master"
+  strip_prefix = "pybind11_abseil-master",
   urls = ["https://github.com/pybind/pybind11_abseil/archive/refs/heads/master.tar.gz"],
 )
 
