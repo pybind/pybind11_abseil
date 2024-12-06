@@ -1,6 +1,6 @@
 # Tests and examples for pybind11_abseil.
 
-load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 load("@pypi//:requirements.bzl", "requirement")
 
 licenses(["notice"])
@@ -25,14 +25,13 @@ py_test(
     deps = [requirement("absl_py")],
 )
 
-cc_library(
+pybind_library(
     name = "status_testing_no_cpp_eh_lib",
     hdrs = ["status_testing_no_cpp_eh_lib.h"],
     deps = [
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
-        "@rules_python//python/cc:current_py_cc_headers",  # buildcleaner: keep
     ],
 )
 
