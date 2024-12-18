@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.16)
 project(pybind11_abseil LANGUAGES CXX)
 
 include(FetchContent)
