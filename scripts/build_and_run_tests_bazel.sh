@@ -24,5 +24,5 @@ bazel clean --expunge # Force a deep update
 BAZEL_CXXOPTS="-std=c++17" bazel test ... --test_output=errors "$@" --enable_bzlmod
 BAZEL_CXXOPTS="-std=c++20" bazel test ... --test_output=errors "$@" --enable_bzlmod
 
-BAZEL_CXXOPTS="-std=c++17" bazel test ... --test_output=errors "$@" --noenable_bzlmod
-BAZEL_CXXOPTS="-std=c++20" bazel test ... --test_output=errors "$@" --noenable_bzlmod
+BAZEL_CXXOPTS="-std=c++17" bazel test ... --test_output=errors "$@" --noenable_bzlmod --enable_workspace
+BAZEL_CXXOPTS="-std=c++20" bazel test ... --test_output=errors "$@" --noenable_bzlmod --enable_workspace
