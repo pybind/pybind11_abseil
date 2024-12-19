@@ -1,21 +1,14 @@
+# ref: https://github.com/actions/runner-images
 name: build_and_test
 
 # Controls when the action will run.
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 env:
   PIP_BREAK_SYSTEM_PACKAGES: 1
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-
   unix:
     strategy:
       fail-fast: false
