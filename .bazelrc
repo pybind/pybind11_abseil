@@ -1,0 +1,18 @@
+# Enable logging rc options.
+common --announce_rc
+
+# Enable verbose failures for testing only.
+build --verbose_failures
+
+# Abseil requires C++14 at minimum.
+build --enable_platform_specific_config
+build:linux --cxxopt=-std=c++14
+build:macos --cxxopt=-std=c++14
+build:windows --cxxopt=/std:c++14
+
+# Enable logging error output.
+test --test_output=errors
+test --test_summary=detailed
+
+# https://bazel.build/configure/best-practices#bazelrc-file
+try-import %workspace%/user.bazelrc
