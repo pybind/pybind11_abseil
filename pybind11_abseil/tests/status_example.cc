@@ -136,9 +136,14 @@ PYBIND11_MODULE(status_example, m) {
   m.def("make_bad_capsule", [](bool pass_name) {
     // https://docs.python.org/3/c-api/capsule.html:
     // The pointer argument may not be NULL.
+#if (defined(_WIN64) || defined(_WIN32))
+    // see C2466 cannot allocate an array of constant size 0
+    int* dummy_pointee = nullptr;
+#else
     int dummy_pointee[] = {};  // This will become a dangling pointer when this
     // function returns: We don't want the pointer to be used. Hopefully if it
     // is used unintentionally, one of the sanitizers will flag it.
+#endif
     return capsule(static_cast<void*>(dummy_pointee),
                    pass_name ? "NotGood" : nullptr);
   });
