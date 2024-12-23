@@ -19,7 +19,7 @@ fi
 
 echo "Building and testing in $PWD using 'python' (version $PYVERSION)."
 
-bazel clean --expunge # Force a dep update
+bazel clean --expunge # Force a deep update
 
 BAZEL_CXXOPTS="-std=c++17" bazel test ... --test_output=errors "$@" --enable_bzlmod
 BAZEL_CXXOPTS="-std=c++20" bazel test ... --test_output=errors "$@" --enable_bzlmod
