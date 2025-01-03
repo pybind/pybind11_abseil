@@ -27,7 +27,26 @@ git_repository(
     remote = "https://github.com/bazelbuild/platforms.git",
 )
 
-## `abseil-cpp`
+git_repository(
+    name = "rules_java",
+    commit = "767e4410850453a10ccf89aa1cededf9de05c72e",
+    #tag = "8.6.3",
+    remote = "https://github.com/bazelbuild/rules_java.git",
+)
+
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+rules_java_dependencies()
+
+# note that the following line is what is minimally required from protobuf for the java rules
+# consider using the protobuf_deps() public API from @com_google_protobuf//:protobuf_deps.bzl
+load("@com_google_protobuf//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
+proto_bazel_features(name = "proto_bazel_features")
+
+# register toolchains
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+rules_java_toolchains()
+
+## abseil-cpp
 # https://github.com/abseil/abseil-cpp
 ## Abseil-cpp
 git_repository(
