@@ -23,27 +23,20 @@ jobs:
     steps:
       - name: Show env
         run: env
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Install bazel
+      - name: Setup bazel
         if: matrix.build_tool == 'bazel'
-        # Install Bazel, see https://docs.bazel.build/versions/master/install-ubuntu.html#step-1-install-required-packages
-        run: |
-          sudo apt install curl gnupg
-          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
-          sudo mv bazel.gpg /etc/apt/trusted.gpg.d/
-          echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-          sudo apt update && sudo apt install bazel -y
+        uses: bazel-contrib/setup-bazel@0.8.4
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
 
       - name: Show bazel version
         if: matrix.build_tool == 'bazel'
         run: bazel --version
-
-      - name: Update cmake
-        if: matrix.build_tool == 'cmake'
-        uses: jwlawson/actions-setup-cmake@v1.14
 
       - name: Show cmake version
         if: matrix.build_tool == 'cmake'
