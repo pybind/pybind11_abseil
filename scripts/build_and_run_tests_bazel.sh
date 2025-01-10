@@ -21,6 +21,9 @@ echo "Building and testing in $PWD using 'python' (version $PYVERSION)."
 
 bazel clean --expunge # Force a deep update
 
+# Can't use BAZEL_CXXOPTS since it will be override by the bazelrc cxxopt need
+# to use --cxxopt on the command line instead which will override the bazelrc
+# cxxopt config.
 bazel test --cxxopt=-std=c++14 ... --test_output=errors "$@" --enable_bzlmod
 bazel test --cxxopt=-std=c++17 ... --test_output=errors "$@" --enable_bzlmod
 bazel test --cxxopt=-std=c++20 ... --test_output=errors "$@" --enable_bzlmod
