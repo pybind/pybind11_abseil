@@ -27,6 +27,7 @@ Github-CI:
 [amd64_windows_cmake_link]: ./../../actions/workflows/amd64_windows_cmake.yml
 
 [![build_and_test](./../../actions/workflows/actions.yml/badge.svg)](./../../actions/workflows/actions.yml)
+[![ubuntu-build](./../../actions/workflows/ubuntu-build.yml/badge.svg)](./../../actions/workflows/ubuntu-build.yml)
 
 [TOC]
 
