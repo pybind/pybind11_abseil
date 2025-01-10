@@ -344,6 +344,15 @@ std::vector<absl::variant<A*, B*>> Identity(
   return value;
 }
 
+bool CheckVariant(const absl::variant<absl::monostate, int> optional, bool given, int value) {
+  if (!given && !absl::holds_alternative<int>(optional)) return true;
+  if (given && absl::holds_alternative<int>(optional) && absl::get<int>(optional) == value) return true;
+  return false;
+}
+
+absl::variant<absl::monostate, int> MakeVariant() { return {}; }
+absl::variant<absl::monostate, int> MakeVariant(int value) { return value; }
+
 }  // namespace test
 }  // namespace pybind11
 
@@ -487,6 +496,12 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("VariantToInt", &VariantToInt);
   m.def("Identity", &Identity);
   m.def("IdentityWithCopy", &IdentityWithCopy);
+
+  m.def("check_variant", &CheckVariant, arg("optional") = absl::variant<absl::monostate, int>{},
+        arg("given") = false, arg("value") = 0);
+  m.def("make_variant", (absl::variant<absl::monostate, int>(*)()) & MakeVariant);
+  m.def("make_variant", (absl::variant<absl::monostate, int>(*)(int)) & MakeVariant,
+        arg("value"));
 }
 
 }  // namespace test
