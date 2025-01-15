@@ -1,33 +1,6 @@
 # Pybind11 bindings for the Abseil C++ Common Libraries
 
-Github-CI:
-| OS \ Build system | Bazel | CMake |
-|:------- | :---: | :---: |
-| Linux (`amd64`) | [![Build Status][amd64_linux_bazel_status]][amd64_linux_bazel_link] | [![Build Status][amd64_linux_cmake_status]][amd64_linux_cmake_link] |
-| MacOS (`amd64`) | [![Build Status][amd64_macos_bazel_status]][amd64_macos_bazel_link] | [![Build Status][amd64_macos_cmake_status]][amd64_macos_cmake_link] |
-| MacOS (`arm64`)     | [![Build Status][arm64_macos_bazel_status]][arm64_macos_bazel_link] | [![Build Status][arm64_macos_cmake_status]][arm64_macos_cmake_link] |
-| Windows (`amd64`) | [![Build Status][amd64_windows_bazel_status]][amd64_windows_bazel_link] | [![Build Status][amd64_windows_cmake_status]][amd64_windows_cmake_link] |
-
-[amd64_linux_bazel_status]: ./../../actions/workflows/amd64_linux_bazel.yml/badge.svg
-[amd64_linux_bazel_link]: ./../../actions/workflows/amd64_linux_bazel.yml
-[amd64_macos_bazel_status]: ./../../actions/workflows/amd64_macos_bazel.yml/badge.svg
-[amd64_macos_bazel_link]: ./../../actions/workflows/amd64_macos_bazel.yml
-[arm64_macos_bazel_status]: ./../../actions/workflows/arm64_macos_bazel.yml/badge.svg
-[arm64_macos_bazel_link]: ./../../actions/workflows/arm64_macos_bazel.yml
-[amd64_windows_bazel_status]: ./../../actions/workflows/amd64_windows_bazel.yml/badge.svg
-[amd64_windows_bazel_link]: ./../../actions/workflows/amd64_windows_bazel.yml
-
-[amd64_linux_cmake_status]: ./../../actions/workflows/amd64_linux_cmake.yml/badge.svg
-[amd64_linux_cmake_link]: ./../../actions/workflows/amd64_linux_cmake.yml
-[amd64_macos_cmake_status]: ./../../actions/workflows/amd64_macos_cmake.yml/badge.svg
-[amd64_macos_cmake_link]: ./../../actions/workflows/amd64_macos_cmake.yml
-[arm64_macos_cmake_status]: ./../../actions/workflows/arm64_macos_cmake.yml/badge.svg
-[arm64_macos_cmake_link]: ./../../actions/workflows/arm64_macos_cmake.yml
-[amd64_windows_cmake_status]: ./../../actions/workflows/amd64_windows_cmake.yml/badge.svg
-[amd64_windows_cmake_link]: ./../../actions/workflows/amd64_windows_cmake.yml
-
-[![build_and_test](./../../actions/workflows/actions.yml/badge.svg)](./../../actions/workflows/actions.yml)
-[![ubuntu-build](./../../actions/workflows/ubuntu-build.yml/badge.svg)](./../../actions/workflows/ubuntu-build.yml)
+![build_and_test](https://github.com/pybind/pybind11_abseil/workflows/build_and_test/badge.svg)
 
 [TOC]
 

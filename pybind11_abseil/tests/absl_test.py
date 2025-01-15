@@ -612,21 +612,6 @@ class AbslVariantTest(absltest.TestCase):
       else:
         self.assertNotEqual(objs, vector)
 
-  def test_pass_default_nullopt(self):
-    self.assertTrue(absl_example.check_variant())
-
-  def test_pass_value(self):
-    self.assertTrue(absl_example.check_variant(5, True, 5))
-
-  def test_pass_none(self):
-    self.assertTrue(absl_example.check_variant(None, False))
-
-  def test_return_value(self):
-    self.assertEqual(absl_example.make_variant(5), 5)
-
-  def test_return_none(self):
-    self.assertIsNone(absl_example.make_variant())
-
 
 if __name__ == '__main__':
   absltest.main()

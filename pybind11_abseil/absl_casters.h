@@ -667,9 +667,6 @@ template <typename... Ts>
 struct type_caster<absl::variant<Ts...>>
     : variant_caster<absl::variant<Ts...>> {};
 
-template <>
-struct type_caster<absl::monostate>
-    : void_caster<absl::monostate> {};
 #endif
 
 }  // namespace detail

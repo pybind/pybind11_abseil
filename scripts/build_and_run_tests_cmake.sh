@@ -54,11 +54,11 @@ if [[ $is_in_virtual_env == "false" ]]; then
   if ! [ -d "$VENV_DIR" ]; then
     echo "Installing..."
     echo -e "\e[33mInstalling a virtualenv to $VENV_DIR. The setup is long the first time, please wait.\e[0m"
-    virtualenv -p "$PYBIN" "$VENV_DIR"
+    virtualenv -p $PYBIN $VENV_DIR
   else
     echo -e "\e[33mReusing virtualenv from $VENV_DIR.\e[0m"
   fi
-  source "${VENV_DIR}/bin/activate"
+  source $VENV_DIR/bin/activate
 fi
 
 # We only exit the virtualenv if we created one.
@@ -75,10 +75,8 @@ pip3 install --upgrade -r $(python3 -c 'import sys; print("./pybind11_abseil/req
 
 echo "Building and testing in $PWD using 'python' (version $PYVERSION)."
 
-PYTHON_BIN_PATH="$(which python3)"
-export PYTHON_BIN_PATH
-PYTHON_LIB_PATH=$(python3 -c "import sysconfig; print(sysconfig.get_path('include'))")
-export PYTHON_LIB_PATH
+export PYTHON_BIN_PATH=`which python3`
+export PYTHON_LIB_PATH=`python3 -c "import sysconfig; print(sysconfig.get_path('include'))"`
 echo "Using PYTHON_BIN_PATH: $PYTHON_BIN_PATH"
 echo "Using PYTHON_LIB_PATH: $PYTHON_LIB_PATH"
 
