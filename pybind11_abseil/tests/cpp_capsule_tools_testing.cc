@@ -3,6 +3,7 @@
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+#include <string>
 #if true  // go/pybind11_include_order
 #include <pybind11/pybind11.h>
 #endif
@@ -19,11 +20,16 @@ PYBIND11_MODULE(cpp_capsule_tools_testing, m) {
   namespace cpp_capsule_tools = pybind11_abseil::cpp_capsule_tools;
 
   m.def("make_bad_capsule", [](bool pass_name) {
-    // https://docs.python.org/3/c-api/capsule.html:
-    // The pointer argument may not be NULL.
+  // https://docs.python.org/3/c-api/capsule.html:
+  // The pointer argument may not be NULL.
+#if (defined(_WIN64) || defined(_WIN32))
+    // see C2466 cannot allocate an array of constant size 0
+    int* dummy_pointee = nullptr;
+#else
     int dummy_pointee[] = {};  // This will become a dangling pointer when this
     // function returns: We don't want the pointer to be used. Hopefully if it
     // is used unintentionally, one of the sanitizers will flag it.
+#endif
     return py::capsule(static_cast<void*>(dummy_pointee),
                        pass_name ? "NotGood" : nullptr);
   });

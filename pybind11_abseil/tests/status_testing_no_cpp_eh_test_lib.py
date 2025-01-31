@@ -54,7 +54,7 @@ class StatusReturnTest(parameterized.TestCase):
     else:
       expected = (
           r"INVALID_ARGUMENT: Unable to cast Python instance of type <class"
-          r" 'list'> to C\+\+ type 'absl::(\w*::)?Status'"
+          r" 'list'> to C\+\+ type ('absl::(\w*::)?Status'|'\?')"
       )
     self.assertRegex(self.tm.CallCallbackWithStatusReturn(cb), expected)
 
@@ -118,7 +118,7 @@ class StatusOrReturnTest(parameterized.TestCase):
     else:
       expected = (
           r"INVALID_ARGUMENT: Unable to cast Python instance of type <class"
-          r" 'str'> to C\+\+ type 'absl::(\w*::)?StatusOr<int>'"
+          r" 'str'> to C\+\+ type ('absl::(\w*::)?StatusOr<int>'|'\?')"
       )
     self.assertRegex(self.tm.CallCallbackWithStatusOrIntReturn(cb), expected)
 

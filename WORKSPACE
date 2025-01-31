@@ -1,12 +1,5 @@
-workspace(name = "com_google_pybind11_abseil")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-# To update a PINNED dependency to a new revision,
-# a) update URL and strip_prefix to the new git commit hash
-# b) get the sha256 hash of the commit by running:
-#    curl -L https://github.com/<...>.tar.gz | sha256sum
-#    On Mac, run curl -L https://github.com/<...>.tar.gz | shasum -a 256
-#    and update the sha256 with the result.
+workspace(name = "pybind11_abseil")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
 ################################################################################
 #
@@ -15,39 +8,65 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 #
 ################################################################################
 
-## `bazel_skylib` (PINNED)
+## `bazel_skylib`
 # Needed for Abseil.
-http_archive(
-    name = "bazel_skylib",  # 2023-05-31T19:24:07Z
-    sha256 = "08c0386f45821ce246bbbf77503c973246ed6ee5c3463e41efc197fa9bc3a7f4",
-    strip_prefix = "bazel-skylib-288731ef9f7f688932bd50e704a91a45ec185f9b",
-    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/288731ef9f7f688932bd50e704a91a45ec185f9b.zip"],
+git_repository(
+    name = "bazel_skylib",
+    commit = "27d429d8d036af3d010be837cc5924de1ca8d163",
+    #tag = "1.7.1",
+    remote = "https://github.com/bazelbuild/bazel-skylib.git",
+)
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+bazel_skylib_workspace()
+
+## Bazel rules...
+git_repository(
+    name = "platforms",
+    commit = "05ec3a3df23fde62471f8288e344cc021dd87bab",
+    #tag = "0.0.10",
+    remote = "https://github.com/bazelbuild/platforms.git",
 )
 
-## `abseil-cpp` (PINNED)
+git_repository(
+    name = "rules_java",
+    commit = "767e4410850453a10ccf89aa1cededf9de05c72e",
+    #tag = "8.6.3",
+    remote = "https://github.com/bazelbuild/rules_java.git",
+)
+
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+rules_java_dependencies()
+
+# note that the following line is what is minimally required from protobuf for the java rules
+# consider using the protobuf_deps() public API from @com_google_protobuf//:protobuf_deps.bzl
+load("@com_google_protobuf//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
+proto_bazel_features(name = "proto_bazel_features")
+
+# register toolchains
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+rules_java_toolchains()
+
+## abseil-cpp
 # https://github.com/abseil/abseil-cpp
-http_archive(
+## Abseil-cpp
+git_repository(
     name = "com_google_absl",
-    sha256 = "59d2976af9d6ecf001a81a35749a6e551a335b949d34918cfade07737b9d93c5",  # SHARED_ABSL_SHA
-    strip_prefix = "abseil-cpp-20230802.0",
-    urls = [
-        "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz"
-    ],
+    commit = "4447c7562e3bc702ade25105912dce503f0c4010",
+    #tag = "20240722.0",
+    remote = "https://github.com/abseil/abseil-cpp.git",
 )
 
-http_archive(
+git_repository(
     name = "rules_python",
-    sha256 = "c68bdc4fbec25de5b5493b8819cfc877c4ea299c0dcb15c244c5a00208cde311",
-    strip_prefix = "rules_python-0.31.0",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.31.0/rules_python-0.31.0.tar.gz",
+    commit = "1944874f6ba507f70d8c5e70df84622e0c783254",
+    #tag = "0.40.0",
+    remote = "https://github.com/bazelbuild/rules_python.git",
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_multi_toolchains")
-
 py_repositories()
 
 load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
-
 pip_install_dependencies()
 
 DEFAULT_PYTHON = "3.11"
@@ -86,33 +105,23 @@ multi_pip_parse(
 )
 
 load("@pypi//:requirements.bzl", "install_deps")
-
 install_deps()
 
-
-## `pybind11_bazel` (PINNED)
+## `pybind11_bazel`
 # https://github.com/pybind/pybind11_bazel
-http_archive(
-  name = "pybind11_bazel",
-  strip_prefix = "pybind11_bazel-2.11.1.bzl.2",
-  sha256 = "e2ba5f81f3bf6a3fc0417448d49389cc7950bebe48c42c33dfeb4dd59859b9a4",
-  urls = ["https://github.com/pybind/pybind11_bazel/releases/download/v2.11.1.bzl.2/pybind11_bazel-2.11.1.bzl.2.tar.gz"],
+git_repository(
+    name = "pybind11_bazel",
+    commit = "2b6082a4d9d163a52299718113fa41e4b7978db5",
+    #tag = "v2.13.6", # 2024/10/21
+    remote = "https://github.com/pybind/pybind11_bazel.git",
 )
 
-## `pybind11` (FLOATING)
+## `pybind11`
 # https://github.com/pybind/pybind11
-http_archive(
-  name = "pybind11",
-  build_file = "@pybind11_bazel//:pybind11.BUILD",
-  strip_prefix = "pybind11-master",
-  urls = ["https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz"],
-  # For easy local testing with pybind11 releases:
-  #   * Comment out the 2 lines above.
-  #   * Uncomment and update the 3 lines below.
-  #   * To compute the sha256 string:
-  #       * Download the .tar.gz file (e.g. curl or wget).
-  #       * sha256sum v2.10.4.tar.gz
-  # strip_prefix = "pybind11-2.10.4",
-  # sha256 = "832e2f309c57da9c1e6d4542dedd34b24e4192ecb4d62f6f4866a737454c9970",
-  # urls = ["https://github.com/pybind/pybind11/archive/refs/tags/v2.10.4.tar.gz"],
+new_git_repository(
+    name = "pybind11",
+    build_file = "@pybind11_bazel//:pybind11-BUILD.bazel",
+    commit = "a2e59f0e7065404b44dfe92a28aca47ba1378dc4",
+    #tag = "v2.13.6",
+    remote = "https://github.com/pybind/pybind11.git",
 )

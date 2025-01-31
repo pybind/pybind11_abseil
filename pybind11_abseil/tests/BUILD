@@ -130,6 +130,7 @@ pybind_extension(
     srcs = ["status_example.cc"],
     deps = [
         "//pybind11_abseil:status_casters",
+        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
     ],

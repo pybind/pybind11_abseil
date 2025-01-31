@@ -1,8 +1,30 @@
 # Pybind11 bindings for the Abseil C++ Common Libraries
 
-![build_and_test](https://github.com/pybind/pybind11_abseil/workflows/build_and_test/badge.svg)
+Github-CI:
+| OS \ Build system | Bazel | CMake |
+|:------- | :---: | :---: |
+| Linux (`amd64`) | [![Build Status][amd64_linux_bazel_status]][amd64_linux_bazel_link] | [![Build Status][amd64_linux_cmake_status]][amd64_linux_cmake_link] |
+| MacOS (`amd64`) | [![Build Status][amd64_macos_bazel_status]][amd64_macos_bazel_link] | [![Build Status][amd64_macos_cmake_status]][amd64_macos_cmake_link] |
+| MacOS (`arm64`)     | [![Build Status][arm64_macos_bazel_status]][arm64_macos_bazel_link] | [![Build Status][arm64_macos_cmake_status]][arm64_macos_cmake_link] |
+| Windows (`amd64`) | [![Build Status][amd64_windows_bazel_status]][amd64_windows_bazel_link] | [![Build Status][amd64_windows_cmake_status]][amd64_windows_cmake_link] |
 
-[TOC]
+[amd64_linux_bazel_status]: ./../../actions/workflows/amd64_linux_bazel.yml/badge.svg
+[amd64_linux_bazel_link]: ./../../actions/workflows/amd64_linux_bazel.yml
+[amd64_macos_bazel_status]: ./../../actions/workflows/amd64_macos_bazel.yml/badge.svg
+[amd64_macos_bazel_link]: ./../../actions/workflows/amd64_macos_bazel.yml
+[arm64_macos_bazel_status]: ./../../actions/workflows/arm64_macos_bazel.yml/badge.svg
+[arm64_macos_bazel_link]: ./../../actions/workflows/arm64_macos_bazel.yml
+[amd64_windows_bazel_status]: ./../../actions/workflows/amd64_windows_bazel.yml/badge.svg
+[amd64_windows_bazel_link]: ./../../actions/workflows/amd64_windows_bazel.yml
+
+[amd64_linux_cmake_status]: ./../../actions/workflows/amd64_linux_cmake.yml/badge.svg
+[amd64_linux_cmake_link]: ./../../actions/workflows/amd64_linux_cmake.yml
+[amd64_macos_cmake_status]: ./../../actions/workflows/amd64_macos_cmake.yml/badge.svg
+[amd64_macos_cmake_link]: ./../../actions/workflows/amd64_macos_cmake.yml
+[arm64_macos_cmake_status]: ./../../actions/workflows/arm64_macos_cmake.yml/badge.svg
+[arm64_macos_cmake_link]: ./../../actions/workflows/arm64_macos_cmake.yml
+[amd64_windows_cmake_status]: ./../../actions/workflows/amd64_windows_cmake.yml/badge.svg
+[amd64_windows_cmake_link]: ./../../actions/workflows/amd64_windows_cmake.yml
 
 ## Overview
 
@@ -13,7 +35,7 @@ g3doc/third_party/pybind11/google3_utils/README.md.
 To use the converters listed below, just include the header
 in the .cc file with your bindings:
 
-```
+```cpp
 #include "pybind11_abseil/absl_casters.h"
 ```
 
@@ -25,24 +47,27 @@ pybind11_abseil can be built with Bazel or CMake. Instructions for both are belo
 
 In your BUILD file:
 
-```
+```bzl
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 ```
 
 #### Bzlmod
 
-You can depend on the Bazel module and dependencies via one of the following commands in your MODULE.bazel:
+You can depend on the Bazel module and dependencies via one of the following
+commands in your MODULE.bazel:
 
 To depend on a release:
-```
+
+```bzl
 bazel_dep(
     name = "pybind11_abseil",
     version = "<selected_version>",
 )
 ```
 
-To depend on floating master:
-```
+To depend on floating `master`:
+
+```bzl
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -63,7 +88,6 @@ http_archive(
   strip_prefix = "pybind11_abseil-master",
   urls = ["https://github.com/pybind/pybind11_abseil/archive/refs/heads/master.tar.gz"],
 )
-
 ```
 
 #### WORKSPACE
@@ -72,9 +96,9 @@ Bazel workspace support is deprecated and will be removed at a later date.
 
 You will need to depend on `pybind11`, `pybind11_bazel`(see
 [doc](https://github.com/pybind/pybind11_bazel#installation), and on
-`pybind11_abseil`, e.g.
+`pybind11_abseil`), e.g.
 
-```
+```bzl
 http_archive(
   name = "pybind11_bazel",
   strip_prefix = "pybind11_bazel-master",
@@ -97,12 +121,13 @@ http_archive(
 
 ### CMake
 
-In your project, add a FetchContent for pybind11_abseil. This will also fetch the
-appropriate versions of Abseil and pybind11 which your project can use
+In your project, add a FetchContent for pybind11_abseil. This will also fetch
+the appropriate versions of Abseil and pybind11 which your project can use
 (eliminating the need for submoduling Abseil or using find_package).
 
 Add the following to your CMakeLists.txt:
-```
+
+```cmake
 include(FetchContent)
 FetchContent_Declare {
   pybind11_abseil
@@ -133,6 +158,7 @@ Python time objects are not supported because `absl::Time` would implicitly
 assume a year, which could be confusing.
 
 ### Time zones
+
 Python `datetime` objects include timezone information, while
 `absl::Time` does not. When converting from Python to C++, if a timezone is
 specified then it will be used to determine the `absl::Time` instant. If no
@@ -146,6 +172,7 @@ in a different timezone to the one they passed in. To handle this safely, the
 caller should take care to check the `tzinfo` of any returned `datetime`s.
 
 ## absl::CivilTime
+
 `absl::CivilTime` objects are converted to/from Python datetime.datetime
 objects. Fractional Python datetime components are truncated when converting to
 less granular C++ types, and time zone information is ignored.
@@ -205,9 +232,9 @@ Note: These failure conditions only apply to *converted* python types.
 ### Casting
 
 Spans are cast (C++->Python) with the standard list caster, which always
-converts the list. This could be changed in the future (eg, using [buffer protocol](
-https://pybind11.readthedocs.io/en/stable/advanced/pycpp/numpy.html#buffer-protocol))
-but generally using spans as return values is not recommended.
+converts the list. This could be changed in the future (eg, using
+[buffer protocol](https://pybind11.readthedocs.io/en/stable/advanced/pycpp/numpy.html#buffer-protocol)
+) but generally using spans as return values is not recommended.
 
 ## absl::string_view
 
@@ -250,9 +277,9 @@ references and pointers to `absl::Status` objects too.
 It isn't possible to specify separate return value policies for a `StatusOr`
 object and its payload. Since `StatusOr` is processed and not ever actually
 represented in Python, the return value policy applies to the payload. E.g., if
-you return a StatusOr<MyObject*> (note the * is inside the `StatusOr`) with a
-take_ownership return val policy and the status is OK (i.e., it has a payload),
-Python will take ownership of that payload and free it when it is garbage
+you return a `StatusOr<MyObject*>` (note the `*` is inside the `StatusOr`) with
+a take_ownership return val policy and the status is OK (i.e., it has a payload)
+, Python will take ownership of that payload and free it when it is garbage
 collected.
 
 However, if you return a `StatusOr<MyObject>*` (note: the `*` is outside the
@@ -308,13 +335,13 @@ except status.StatusNotOk as e:
 
 `absl::StatusOr` objects behave exactly like `absl::Status` objects, except:
 
-- There is no support for passing StatusOr objects. You can only return them.
+- There is no support for passing `StatusOr` objects. You can only return them.
 - Instead of returning None or a wrapped status with OK, this casts and
   returns the payload when there is no error.
 
 As with `absl::Status`, the default behavior is to throw an error when casting
-a non-ok status. You may pass a StatusOr object or StatusOr returning function
-to `pybind11::google::DoNotThrowStatus` in exactly the same way as with
+a non-ok status. You may pass a `StatusOr` object or `StatusOr` returning
+function to `pybind11::google::DoNotThrowStatus` in exactly the same way as with
 `absl::Status` to change this behavior.
 
 `absl::StatusOr` objects must be returned by value (not reference or pointer).
@@ -343,8 +370,8 @@ These use python constant style, e.g. `status.StatusCode.OK`,
 `status.StatusCode.CANCELLED`, etc.
 
 Warning: Pybind enums are their own type, and will never compare equally to
-integers due to being a different type, regardless of their value. In particular,
-note that the [status proto](http://google3/util/task/status.proto)
+integers due to being a different type, regardless of their value. In particular
+, note that the [status proto](http://google3/util/task/status.proto)
 `code` field is an integer, so it will never directly compare as equal to a
 `StatusCode`. To fix this, convert an integer to a `StatusCode` or vice-versa.
 

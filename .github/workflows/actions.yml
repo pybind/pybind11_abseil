@@ -1,21 +1,14 @@
+# ref: https://github.com/actions/runner-images
 name: build_and_test
 
 # Controls when the action will run.
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 env:
   PIP_BREAK_SYSTEM_PACKAGES: 1
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-
   unix:
     strategy:
       fail-fast: false
@@ -23,34 +16,27 @@ jobs:
         runs-on: [ubuntu-latest]
         build_tool: [bazel, cmake]
 
-    name: "${{matrix.runs-on}} ${{matrix.build_tool}}"
+    name: "script ${{matrix.build_tool}}"
     runs-on: ${{matrix.runs-on}}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Show env
         run: env
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Install bazel
+      - name: Setup bazel
         if: matrix.build_tool == 'bazel'
-        # Install Bazel, see https://docs.bazel.build/versions/master/install-ubuntu.html#step-1-install-required-packages
-        run: |
-          sudo apt install curl gnupg
-          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
-          sudo mv bazel.gpg /etc/apt/trusted.gpg.d/
-          echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-          sudo apt update && sudo apt install bazel -y
+        uses: bazel-contrib/setup-bazel@0.8.4
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
 
       - name: Show bazel version
         if: matrix.build_tool == 'bazel'
         run: bazel --version
-
-      - name: Update cmake
-        if: matrix.build_tool == 'cmake'
-        uses: jwlawson/actions-setup-cmake@v1.14
 
       - name: Show cmake version
         if: matrix.build_tool == 'cmake'

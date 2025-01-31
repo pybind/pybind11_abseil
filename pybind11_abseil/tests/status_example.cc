@@ -1,5 +1,10 @@
 #include <pybind11/pybind11.h>
 
+#include <memory>
+#include <string>
+#include <utility>
+
+#include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "pybind11_abseil/status_casters.h"
@@ -88,7 +93,7 @@ absl::StatusOr<std::unique_ptr<IntValue>> ReturnUniquePtrStatusOr(int value) {
 
 class IntGetter {
  public:
-  virtual ~IntGetter() { }
+  virtual ~IntGetter() {}
   virtual absl::StatusOr<int> Get(int i) const = 0;
 };
 
@@ -134,11 +139,16 @@ PYBIND11_MODULE(status_example, m) {
   });
 
   m.def("make_bad_capsule", [](bool pass_name) {
-    // https://docs.python.org/3/c-api/capsule.html:
-    // The pointer argument may not be NULL.
+  // https://docs.python.org/3/c-api/capsule.html:
+  // The pointer argument may not be NULL.
+#if (defined(_WIN64) || defined(_WIN32))
+    // see C2466 cannot allocate an array of constant size 0
+    int* dummy_pointee = nullptr;
+#else
     int dummy_pointee[] = {};  // This will become a dangling pointer when this
     // function returns: We don't want the pointer to be used. Hopefully if it
     // is used unintentionally, one of the sanitizers will flag it.
+#endif
     return capsule(static_cast<void*>(dummy_pointee),
                    pass_name ? "NotGood" : nullptr);
   });
@@ -200,8 +210,8 @@ PYBIND11_MODULE(status_example, m) {
   class_<IntGetter, PyIntGetter>(m, "IntGetter")
       .def(init())
       .def("Get", &IntGetter::Get);
-  m.def("call_get_redirect_to_python", &CallGetRedirectToPython,
-        arg("ptr"), arg("i"));
+  m.def("call_get_redirect_to_python", &CallGetRedirectToPython, arg("ptr"),
+        arg("i"));
 
   // Needed to exercise raw_code() != code().
   m.def("status_from_int_code", [](int code, const std::string& msg) {

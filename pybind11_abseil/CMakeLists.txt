@@ -42,13 +42,17 @@ target_link_libraries(ok_status_singleton_pyinit_google3
 
 # ok_status_singleton =======================================================
 
-add_library(ok_status_singleton SHARED ok_status_singleton_py_extension_stub.cc)
+pybind11_add_module(ok_status_singleton MODULE
+                    ok_status_singleton_py_extension_stub.cc)
 add_library(pybind11_abseil::ok_status_singleton ALIAS ok_status_singleton)
+
+# note: macOS is APPLE and also UNIX !
+if(APPLE)
+  set_target_properties(ok_status_singleton PROPERTIES SUFFIX ".so")
+endif()
 
 target_include_directories(ok_status_singleton
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
-
-set_target_properties(ok_status_singleton PROPERTIES PREFIX "")
 
 target_link_libraries(ok_status_singleton
                       PUBLIC ok_status_singleton_pyinit_google3)
@@ -150,14 +154,29 @@ target_link_libraries(status_pyinit_google3 PUBLIC register_status_bindings)
 
 # status ====================================================================
 
-add_library(status SHARED status_py_extension_stub.cc)
-add_library(pybind11_abseil::status ALIAS status)
+pybind11_add_module(status_py_extension_stub MODULE status_py_extension_stub.cc)
+set_target_properties(status_py_extension_stub PROPERTIES LIBRARY_OUTPUT_NAME
+                                                          "status")
 
-target_include_directories(status INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
+# note: macOS is APPLE and also UNIX !
+if(APPLE)
+  set_target_properties(
+    status_py_extension_stub
+    PROPERTIES SUFFIX ".so" INSTALL_RPATH "@loader_path;@loader_path/../.libs")
+elseif(UNIX)
+  set_target_properties(status_py_extension_stub
+                        PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/../.libs")
+endif()
 
-set_target_properties(status PROPERTIES PREFIX "")
+add_library(pybind11_abseil::status ALIAS status_py_extension_stub)
 
-target_link_libraries(status PUBLIC status_pyinit_google3 absl::status)
+target_include_directories(status_py_extension_stub
+                           INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
+
+set_target_properties(status_py_extension_stub PROPERTIES PREFIX "")
+
+target_link_libraries(status_py_extension_stub PUBLIC status_pyinit_google3
+                                                      absl::status)
 
 # import_status_module =========================================================
 
@@ -167,7 +186,7 @@ add_library(pybind11_abseil::import_status_module ALIAS import_status_module)
 target_include_directories(import_status_module
                            INTERFACE $<BUILD_INTERFACE:${TOP_LEVEL_DIR}>)
 
-target_link_libraries(import_status_module PUBLIC status)
+add_dependencies(import_status_module status_py_extension_stub)
 
 # status_casters ===============================================================
 
@@ -180,23 +199,24 @@ target_include_directories(status_casters
 target_link_libraries(status_casters INTERFACE import_status_module
                                                status_caster statusor_caster)
 
-add_subdirectory(tests)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 if(CMAKE_INSTALL_PYDIR)
   # Copying to two target directories for simplicity. It is currently unknown
   # how to determine here which copy is actually being used.
   install(
-    TARGETS status ok_status_singleton
+    TARGETS status_py_extension_stub ok_status_singleton
     EXPORT pybind11_abseilTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil
     RUNTIME DESTINATION ${CMAKE_INSTALL_PYDIR}/pybind11_abseil)
 
   install(
-    TARGETS status ok_status_singleton
+    TARGETS status_py_extension_stub ok_status_singleton
     EXPORT pybind11_abseil_cppTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
 endif()

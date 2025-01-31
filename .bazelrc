@@ -1,0 +1,29 @@
+# Enable logging rc options.
+common --announce_rc
+
+# Enable verbose failures for testing only.
+build --verbose_failures
+
+# Set the default Apple platform to macOS.
+build --apple_platform_type=macos
+
+# Abseil requires C++14 at minimum.
+build --enable_platform_specific_config
+build:linux --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build:macos --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build:macos --cxxopt=-mmacos-version-min=10.15 --host_cxxopt=-mmacos-version-min=10.15
+build:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
+
+# Enable the runfiles symlink tree on Windows. This makes it possible to build
+# the pip package on Windows without an intermediate data-file archive, as the
+# build_pip_package script in its current form (as of Aug 2023) uses the
+# runfiles symlink tree to decide what to put into the Python wheel.
+startup --windows_enable_symlinks
+build:windows --enable_runfiles
+
+# Enable logging error output.
+test --test_output=errors
+test --test_summary=detailed
+
+# https://bazel.build/configure/best-practices#bazelrc-file
+try-import %workspace%/user.bazelrc
