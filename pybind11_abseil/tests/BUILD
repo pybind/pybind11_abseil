@@ -20,8 +20,6 @@ py_test(
     name = "cpp_capsule_tools_testing_test",
     srcs = ["cpp_capsule_tools_testing_test.py"],
     data = [":cpp_capsule_tools_testing.so"],
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = [requirement("absl_py")],
 )
 
@@ -57,8 +55,6 @@ py_test(
     name = "status_testing_no_cpp_eh_test",
     srcs = ["status_testing_no_cpp_eh_test.py"],
     data = [":status_testing_no_cpp_eh_pybind.so"],
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = [":status_testing_no_cpp_eh_test_lib"],
 )
 
@@ -80,8 +76,6 @@ py_test(
     name = "absl_test",
     srcs = ["absl_test.py"],
     data = [":absl_example.so"],
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = [
         requirement("absl_py"),
         requirement("numpy"),
@@ -92,8 +86,6 @@ py_test(
     name = "ok_status_singleton_test",
     srcs = ["ok_status_singleton_test.py"],
     data = ["//pybind11_abseil:ok_status_singleton.so"],
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = [requirement("absl_py")],
 )
 
@@ -112,16 +104,12 @@ py_test(
     name = "missing_import_test",
     srcs = ["missing_import_test.py"],
     data = [":missing_import.so"],
-    python_version = "PY3",
-    srcs_version = "PY3",
 )
 
 py_test(
     name = "status_test",
     srcs = ["status_test.py"],
     data = ["//pybind11_abseil:status.so"],
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = [requirement("absl_py")],
 )
 
@@ -143,7 +131,5 @@ py_test(
         ":status_example.so",
         "//pybind11_abseil:status.so",
     ],
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = [requirement("absl_py")],
 )
