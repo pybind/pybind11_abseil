@@ -32,7 +32,6 @@
 #ifndef PYBIND11_ABSEIL_ABSL_CASTERS_H_
 #define PYBIND11_ABSEIL_ABSL_CASTERS_H_
 
-#include <Python.h>
 #include <pybind11/cast.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -46,7 +45,6 @@
 #include <cstring>
 #include <tuple>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "absl/cleanup/cleanup.h"
@@ -620,39 +618,10 @@ struct type_caster<absl::Cord> {
 
   // Conversion part 1 (Python->C++)
   bool load(handle src, bool convert) {
-    // If the source is a bytes/string object, we can avoid a copy by using
-    // absl::MakeCordFromExternal.
-    absl::optional<absl::string_view> view;
-    if (PyUnicode_Check(src.ptr())) {
-      Py_ssize_t size = 0;
-      const char* data = PyUnicode_AsUTF8AndSize(src.ptr(), &size);
-      if (data) {
-        view = absl::string_view(data, size);
-      } else {
-        PyErr_Clear();
-      }
-    } else if (PyBytes_Check(src.ptr())) {
-      view = absl::string_view(PyBytes_AS_STRING(src.ptr()),
-                               PyBytes_GET_SIZE(src.ptr()));
-    }
-    if (view.has_value()) {
-      if (!view->empty()) {
-        // Bypass StringViewCaster life support as absl::Cord may outlive the
-        // handle.
-        src.inc_ref();
-        value = absl::MakeCordFromExternal(*view, [src] {
-          PyGILState_STATE gstate = PyGILState_Ensure();
-          src.dec_ref();
-          PyGILState_Release(gstate);
-        });
-      } else {
-        value.Clear();
-      }
-      return true;
-    }
     auto caster = StringViewCaster();
     if (caster.load(src, convert)) {
-      value = absl::Cord(cast_op<absl::string_view>(std::move(caster)));
+      absl::string_view view = cast_op<absl::string_view>(std::move(caster));
+      value = view;
       return true;
     }
     return false;
