@@ -19,6 +19,7 @@ endif()
 
 option(USE_SYSTEM_ABSEIL "Force usage of system provided abseil-cpp" OFF)
 option(USE_SYSTEM_PYBIND "Force usage of system provided pybind11" OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 # ============================================================================
 # Testing
