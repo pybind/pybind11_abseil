@@ -1,6 +1,7 @@
 # Pybind11 bindings for the Abseil C++ Common Libraries
 
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 package(
     default_visibility = ["//visibility:public"],
