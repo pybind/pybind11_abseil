@@ -16,6 +16,7 @@ PyObject* this_module_init() noexcept {
     return m.ptr();
   }
   PYBIND11_CATCH_INIT_EXCEPTIONS
+  return nullptr;
 }
 
 }  // namespace
