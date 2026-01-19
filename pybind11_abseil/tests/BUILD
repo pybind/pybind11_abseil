@@ -133,3 +133,23 @@ py_test(
     ],
     deps = [requirement("absl_py")],
 )
+
+pybind_extension(
+    name = "status_from_cpp_exc_test_lib",
+    testonly = 1,
+    srcs = ["status_from_cpp_exc_test_lib.cc"],
+    deps = [
+        "//pybind11_abseil/compat:status_from_cpp_exc",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+py_test(
+    name = "status_from_cpp_exc_test",
+    srcs = ["status_from_cpp_exc_test.py"],
+    deps = [
+        ":status_from_cpp_exc_test_lib",
+        "//testing/pybase",
+    ],
+)
