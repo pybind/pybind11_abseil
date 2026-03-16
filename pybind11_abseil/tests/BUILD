@@ -3,6 +3,8 @@
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 load("@pypi//:requirements.bzl", "requirement")
 
+package(default_applicable_licenses = ["//pybind11_abseil:license"])
+
 licenses(["notice"])
 
 pybind_extension(
