@@ -1,17 +1,41 @@
 # Enable logging rc options.
 common --announce_rc
 
-# Enable verbose failures for testing only.
-build --verbose_failures
+###############################################################################
+# Global options for building Pybind11_Abseil.
+###############################################################################
 
-# Set the default Apple platform to macOS.
-build --apple_platform_type=macos
+# Fix the python version
+build --@rules_python//python/config_settings:python_version=3.12
 
-# Abseil requires C++14 at minimum.
+###############################################################################
+# Per plaform options
+###############################################################################
+
+# By default, build with various extra flags per platform.
 build --enable_platform_specific_config
+
+###############################################################################
+# Options for Linux.
+###############################################################################
+
 build:linux --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+
+###############################################################################
+# Options for macOS.
+###############################################################################
+
+# Sets the default Apple platform to macOS.
+build --apple_platform_type=macos
+build:macos --features=-supports_dynamic_linker
 build:macos --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+# build:macos --cxxopt=-Wno-dangling-field --host_cxxopt=-Wno-dangling-field
 build:macos --cxxopt=-mmacos-version-min=10.15 --host_cxxopt=-mmacos-version-min=10.15
+
+###############################################################################
+# Options for Windows.
+###############################################################################
+
 build:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
 
 # Enable the runfiles symlink tree on Windows. This makes it possible to build
@@ -21,9 +45,32 @@ build:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
 startup --windows_enable_symlinks
 build:windows --enable_runfiles
 
-# Enable logging error output.
-test --test_output=errors
-test --test_summary=detailed
+###############################################################################
+# Options for continuous integration.
+###############################################################################
 
-# https://bazel.build/configure/best-practices#bazelrc-file
+# All build options also apply to test as described by the "Option precedence"
+# section in https://bazel.build/run/bazelrc#bazelrc-syntax-semantics.
+
+# Note for anybody considering using --compilation_mode=opt in CI, it builds
+# most files twice, one PIC version for shared libraries in tests, and one
+# non-PIC version for binaries.
+build:ci --copt=-O1
+
+# Show as many errors as possible.
+build:ci --keep_going
+
+# Show test errors.
+test:ci --test_output=errors
+
+# Skip tests that are too large to run on CI.
+test:ci --test_tag_filters=-noci
+
+# Print information only about tests executed
+test:ci --test_summary=short
+
+###############################################################################
+# Put user-specific options in user.bazelrc
+# See https://bazel.build/configure/best-practices#bazelrc-file
+################################################################################
 try-import %workspace%/user.bazelrc
