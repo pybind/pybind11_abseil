@@ -4,6 +4,8 @@
 // This file exists to simplify adding C++ source location to python StatusNotOk
 // traces. See: b/266066084 for details.
 
+#include <type_traits>
+
 #include "absl/status/status.h"
 #include "util/task/status_builder.h"
 
@@ -23,24 +25,26 @@ util::StatusBuilder DisplaySourceLocationInPython(util::StatusBuilder sb);
 util::StatusBuilder DoNotDisplaySourceLocationInPython(util::StatusBuilder sb);
 
 // Annotate the StatusOr<T> to display the c++ SourceLocation in python.
-template<typename StatusOrT>
-StatusOrT DisplaySourceLocationInPython(StatusOrT&& s_or_t) {
+// The argument is a reference type and the return value is a value type.
+// This avoids returning a reference to a stack variable.
+template <typename StatusOrT>
+std::decay_t<StatusOrT> DisplaySourceLocationInPython(StatusOrT&& s_or_t) {
   if (s_or_t.ok()) {
     return s_or_t;
   }
   absl::Status status_with_payload = DisplaySourceLocationInPython(
       s_or_t.status());
-  return StatusOrT{status_with_payload};
+  return std::decay_t<StatusOrT>{status_with_payload};
 }
 
-template<typename StatusOrT>
-StatusOrT DoNotDisplaySourceLocationInPython(StatusOrT&& s_or_t) {
+template <typename StatusOrT>
+std::decay_t<StatusOrT> DoNotDisplaySourceLocationInPython(StatusOrT&& s_or_t) {
   if (s_or_t.ok()) {
     return s_or_t;
   }
   absl::Status status_with_payload = DoNotDisplaySourceLocationInPython(
       s_or_t.status());
-  return StatusOrT{status_with_payload};
+  return std::decay_t<StatusOrT>{status_with_payload};
 }
 
 }  // namespace google
