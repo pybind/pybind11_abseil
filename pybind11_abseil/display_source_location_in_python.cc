@@ -35,11 +35,11 @@ absl::Status DoNotDisplaySourceLocationInPython(absl::Status s) {
   return s;
 }
 
-util::StatusBuilder DisplaySourceLocationInPython(util::StatusBuilder sb) {
+absl::StatusBuilder DisplaySourceLocationInPython(absl::StatusBuilder sb) {
   return sb.SetPayload(kDisplaySourceLocationInPython, absl::Cord(kDisplay));
 }
 
-util::StatusBuilder DoNotDisplaySourceLocationInPython(util::StatusBuilder sb) {
+absl::StatusBuilder DoNotDisplaySourceLocationInPython(absl::StatusBuilder sb) {
   return sb.SetPayload(kDisplaySourceLocationInPython,
                        absl::Cord(kDoNotDisplay));
 }
