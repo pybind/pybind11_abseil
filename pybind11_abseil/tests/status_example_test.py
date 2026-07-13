@@ -179,7 +179,7 @@ class StatusTest(parameterized.TestCase):
   def test_init_from_capsule_correct_method_bad_capsule(self, pass_name,
                                                         quoted_name):
     with self.assertRaises(ValueError) as ctx:
-      status.Status(status.InitFromTag.capsule, BadCapsule(pass_name))
+      status.Status(status.InitFromTag.capsule, BadCapsule(pass_name))  # pyrefly: ignore[no-matching-overload]
     self.assertEqual(
         str(ctx.exception),
         f'BadCapsule.as_absl_Status() returned a capsule with name'

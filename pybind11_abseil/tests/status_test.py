@@ -26,7 +26,7 @@ class StatusCodeTest(absltest.TestCase):
         str(ctx.exception), 'code_int=9876 is not a valid absl::StatusCode')
 
   def test_status_code_as_int(self):
-    self.assertEqual(status.StatusCodeAsInt(status.StatusCode.UNAVAILABLE), 14)
+    self.assertEqual(status.StatusCodeAsInt(status.StatusCode.UNAVAILABLE), 14)  # pyrefly: ignore[bad-argument-type]
 
   def test_repr(self):
     self.assertEqual(
@@ -180,24 +180,24 @@ class StatusTest(parameterized.TestCase):
     with self.assertRaisesRegex(
         ValueError, r'Unexpected len\(state\) == 4'
         r' \[.*register_status_bindings\.cc:[0-9]+\]'):
-      status.Status(status.InitFromTag.serialized, (0, 0, 0, 0))
+      status.Status(status.InitFromTag.serialized, (0, 0, 0, 0))  # pyrefly: ignore[no-matching-overload]
 
   def test_init_from_serialized_exception_unexpected_len_ap_item_tup(self):
     with self.assertRaisesRegex(
         ValueError,
         r'Unexpected len\(tuple\) == 3 where \(type_url, payload\) is expected'
         r' \[.*register_status_bindings\.cc:[0-9]+\]'):
-      status.Status(status.InitFromTag.serialized,
+      status.Status(status.InitFromTag.serialized,  # pyrefly: ignore[no-matching-overload]
                     (status.StatusCode.CANCELLED, '', ((0, 0, 0),)))
 
   def test_init_from_capsule_direct_ok(self):
     orig = status.Status(status.StatusCode.CANCELLED, 'Direct.')
-    from_cap = status.Status(status.InitFromTag.capsule, orig.as_absl_Status())
+    from_cap = status.Status(status.InitFromTag.capsule, orig.as_absl_Status())  # pyrefly: ignore[no-matching-overload]
     self.assertEqual(from_cap, orig)
 
   def test_init_from_capsule_as_capsule_method_ok(self):
     orig = status.Status(status.StatusCode.CANCELLED, 'AsCapsuleMethod.')
-    from_cap = status.Status(status.InitFromTag.capsule, orig)
+    from_cap = status.Status(status.InitFromTag.capsule, orig)  # pyrefly: ignore[no-matching-overload]
     self.assertEqual(from_cap, orig)
 
   @parameterized.parameters(None, '', 0)
@@ -220,7 +220,7 @@ class StatusTest(parameterized.TestCase):
   @parameterized.parameters(None, '', 0)
   def test_init_from_capsule_correct_method_not_a_capsule(self, not_a_capsule):
     with self.assertRaises(ValueError) as ctx:
-      status.Status(status.InitFromTag.capsule, NotACapsule(not_a_capsule))
+      status.Status(status.InitFromTag.capsule, NotACapsule(not_a_capsule))  # pyrefly: ignore[no-matching-overload]
     nm = not_a_capsule.__class__.__name__
     self.assertEqual(
         str(ctx.exception),
@@ -231,7 +231,7 @@ class StatusTest(parameterized.TestCase):
 class StatusNotOkTest(absltest.TestCase):
 
   def test_build_status_not_ok_enum(self):
-    e = status.BuildStatusNotOk(status.StatusCode.INVALID_ARGUMENT, 'Msg enum.')
+    e = status.BuildStatusNotOk(status.StatusCode.INVALID_ARGUMENT, 'Msg enum.')  # pyrefly: ignore[bad-argument-type]
     self.assertEqual(e.status.code(), status.StatusCode.INVALID_ARGUMENT)
     self.assertEqual(e.code, int(status.StatusCode.INVALID_ARGUMENT))
     self.assertEqual(e.message, 'Msg enum.')
@@ -242,9 +242,9 @@ class StatusNotOkTest(absltest.TestCase):
     self.assertIn('incompatible function arguments', str(cm.exception))
 
   def test_eq(self):
-    sa1 = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sa')
-    sa2 = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sa')
-    sb = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sb')
+    sa1 = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sa')  # pyrefly: ignore[bad-argument-type]
+    sa2 = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sa')  # pyrefly: ignore[bad-argument-type]
+    sb = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'sb')  # pyrefly: ignore[bad-argument-type]
     self.assertTrue(bool(sa1 == sa1))  # pylint: disable=comparison-with-itself
     self.assertTrue(bool(sa1 == sa2))
     self.assertFalse(bool(sa1 == sb))
@@ -252,7 +252,7 @@ class StatusNotOkTest(absltest.TestCase):
     self.assertFalse(bool('x' == sa1))
 
   def test_pickle(self):
-    orig = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'Cabbage')
+    orig = status.BuildStatusNotOk(status.StatusCode.UNKNOWN, 'Cabbage')  # pyrefly: ignore[bad-argument-type]
     ser = pickle.dumps(orig)
     deser = pickle.loads(ser)
     self.assertEqual(deser.message, 'Cabbage')
