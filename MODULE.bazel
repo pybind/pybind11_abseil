@@ -16,12 +16,11 @@ bazel_dep(name = "pybind11_bazel", version = "3.0.0")
 #### DEV ONLY DEPENDENCIES BELOW HERE ####
 
 SUPPORTED_PYTHON_VERSIONS = [
+    "3.14",
     "3.13",
     "3.12",
     "3.11",
     "3.10",
-    "3.9",
-    "3.8",
 ]
 
 DEFAULT_PYTHON = "3.12"
