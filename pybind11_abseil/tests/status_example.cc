@@ -88,7 +88,7 @@ absl::StatusOr<const IntValue*> ReturnPtrStatusOr(int value) {
 }
 
 absl::StatusOr<std::unique_ptr<IntValue>> ReturnUniquePtrStatusOr(int value) {
-  return absl::make_unique<IntValue>(value);
+  return std::make_unique<IntValue>(value);
 }
 
 class IntGetter {
