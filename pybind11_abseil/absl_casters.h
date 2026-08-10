@@ -22,6 +22,7 @@
 // - absl::flat_hash_map- converts to/from python dict.
 // - absl::flat_hash_set- converst to/from python set.
 // - absl::btree_map- converts to/from python dict.
+// - absl::InlinedVector- converts to/from python list.
 //
 // For details, see the README.md.
 //
@@ -51,6 +52,7 @@
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/container/inlined_vector.h"
 #include "absl/container/node_hash_map.h"
 #include "absl/container/node_hash_set.h"
 #include "absl/strings/cord.h"
@@ -597,6 +599,11 @@ struct type_caster<absl::btree_map<Key, Value, Compare, Alloc>>
 template <typename Key, typename Hash, typename Equal, typename Alloc>
 struct type_caster<absl::node_hash_set<Key, Hash, Equal, Alloc>>
     : set_caster<absl::node_hash_set<Key, Hash, Equal, Alloc>, Key> {};
+
+// Convert between absl::InlinedVector and python list.
+template <typename T, size_t N, typename A>
+struct type_caster<absl::InlinedVector<T, N, A>>
+    : list_caster<absl::InlinedVector<T, N, A>, T> {};
 
 // Convert between absl::string_view and python.
 //
