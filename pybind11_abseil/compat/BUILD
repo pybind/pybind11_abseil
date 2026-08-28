@@ -44,3 +44,13 @@ pybind_library(
         "@com_google_absl//absl/status",
     ],
 )
+
+pybind_library(
+    name = "status_from_cpp_exc",
+    hdrs = ["status_from_cpp_exc.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":status_from_py_exc",
+        "@com_google_absl//absl/log:check",
+    ],
+)
