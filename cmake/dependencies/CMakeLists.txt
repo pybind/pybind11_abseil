@@ -1,5 +1,4 @@
 include(FetchContent)
-set(BUILD_SHARED_LIBS ON)
 set(BUILD_TESTING OFF)
 
 message(CHECK_START "Checking for external dependencies")
