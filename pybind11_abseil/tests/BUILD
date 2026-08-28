@@ -1,7 +1,8 @@
 # Tests and examples for pybind11_abseil.
-
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 load("@pypi//:requirements.bzl", "requirement")
+load("@rules_python//python:py_library.bzl", "py_library")
+load("@rules_python//python:py_test.bzl", "py_test")
 
 package(default_applicable_licenses = ["//pybind11_abseil:license"])
 
