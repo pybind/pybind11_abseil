@@ -42,12 +42,12 @@ class StatusTest(parameterized.TestCase):
 
   def test_status_nok_ok_str(self):
     with self.assertRaises(AttributeError) as cm:
-      status.StatusNotOk('')  # pytype: disable=wrong-arg-types
+      status.StatusNotOk('')  # pyrefly: ignore[bad-argument-type]
     self.assertEqual(str(cm.exception), "'str' object has no attribute 'ok'")
 
   def test_status_nok_ok_none(self):
     with self.assertRaises(AssertionError) as cm:
-      status.StatusNotOk(None)  # pytype: disable=wrong-arg-types
+      status.StatusNotOk(None)  # pyrefly: ignore[bad-argument-type]
     self.assertEqual(str(cm.exception), '')
 
   def test_canonical_error(self):
@@ -238,7 +238,7 @@ class StatusNotOkTest(absltest.TestCase):
 
   def test_build_status_not_ok_int(self):
     with self.assertRaises(TypeError) as cm:
-      status.BuildStatusNotOk(1, 'Msg int.')  # pytype: disable=wrong-arg-types
+      status.BuildStatusNotOk(1, 'Msg int.')  # pyrefly: ignore[bad-argument-type]
     self.assertIn('incompatible function arguments', str(cm.exception))
 
   def test_eq(self):

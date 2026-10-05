@@ -27,7 +27,7 @@ class StatusReturnTest(parameterized.TestCase):
 
   def setUp(self):
     super().setUp()
-    self.tm = self.getTestModule()  # pytype: disable=attribute-error
+    self.tm = self.getTestModule()  # pyrefly: ignore[missing-attribute]
 
   def testStatusOk(self):  # pylint: disable=invalid-name
     def cb():
@@ -92,7 +92,7 @@ class StatusOrReturnTest(parameterized.TestCase):
 
   def setUp(self):
     super().setUp()
-    self.tm = self.getTestModule()  # pytype: disable=attribute-error
+    self.tm = self.getTestModule()  # pyrefly: ignore[missing-attribute]
 
   def testStatusOrIntOk(self):  # pylint: disable=invalid-name
     def cb():
@@ -127,7 +127,7 @@ class StatusOrPyObjectPtrTest(absltest.TestCase):
 
   def setUp(self):
     super().setUp()
-    self.tm = self.getTestModule()  # pytype: disable=attribute-error
+    self.tm = self.getTestModule()  # pyrefly: ignore[missing-attribute]
 
   def testStatusOrObject(self):  # pylint: disable=invalid-name
     while True:
