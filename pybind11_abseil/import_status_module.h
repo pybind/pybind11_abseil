@@ -12,6 +12,12 @@
   pybind11_abseil.status
 #endif
 
+#if defined(__GNUC__)
+#define PYBIND11_ABSEIL_DEFAULT_VISIBILITY __attribute__((visibility("default")))
+#else
+#define PYBIND11_ABSEIL_DEFAULT_VISIBILITY
+#endif
+
 namespace pybind11 {
 namespace google {
 
@@ -20,6 +26,7 @@ namespace google {
 // this function (enforced).
 // TODO(b/225205409): Remove bypass_regular_import.
 // bypass_regular_import is deprecated and can only be false (enforced).
+PYBIND11_ABSEIL_DEFAULT_VISIBILITY
 module_ ImportStatusModule(bool bypass_regular_import = false);
 
 }  // namespace google
