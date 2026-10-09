@@ -15,7 +15,8 @@ PyObject* this_module_init() noexcept {
     pybind11::google::internal::RegisterStatusBindings(m);
     return m.ptr();
   }
-  PYBIND11_CATCH_INIT_EXCEPTIONS
+  PYBIND11_CATCH_INIT_EXCEPTIONS;
+  return nullptr;
 }
 
 }  // namespace
