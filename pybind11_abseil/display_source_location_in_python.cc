@@ -1,6 +1,6 @@
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
-#include "util/task/status_builder.h"
+#include "third_party/gloop/util/status/status_builder.h"
 
 namespace pybind11 {
 namespace google {
