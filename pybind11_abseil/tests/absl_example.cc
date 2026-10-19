@@ -324,7 +324,7 @@ struct A {
 struct B {
   int b;
 };
-typedef absl::variant<A, B> AOrB;
+typedef std::variant<A, B> AOrB;
 
 int VariantToInt(AOrB value) {
   if (absl::holds_alternative<A>(value)) {
@@ -339,13 +339,13 @@ int VariantToInt(AOrB value) {
 std::vector<AOrB> IdentityWithCopy(const std::vector<AOrB>& value) {
   return value;
 }
-std::vector<absl::variant<A*, B*>> Identity(
-    const std::vector<absl::variant<A*, B*>>& value) {
+std::vector<std::variant<A*, B*>> Identity(
+    const std::vector<std::variant<A*, B*>>& value) {
   return value;
 }
 
-bool CheckVariant(const absl::variant<absl::monostate, int> variant,
-                  bool given, int value) {
+bool CheckVariant(const std::variant<absl::monostate, int> variant, bool given,
+                  int value) {
   if (!given && !absl::holds_alternative<int>(variant)) return true;
   if (given && absl::holds_alternative<int>(variant) &&
       absl::get<int>(variant) == value)
@@ -353,8 +353,8 @@ bool CheckVariant(const absl::variant<absl::monostate, int> variant,
   return false;
 }
 
-absl::variant<absl::monostate, int> MakeVariant() { return {}; }
-absl::variant<absl::monostate, int> MakeVariant(int value) { return value; }
+std::variant<absl::monostate, int> MakeVariant() { return {}; }
+std::variant<absl::monostate, int> MakeVariant(int value) { return value; }
 
 }  // namespace test
 }  // namespace pybind11
@@ -501,12 +501,11 @@ PYBIND11_MODULE(absl_example, m) {
   m.def("IdentityWithCopy", &IdentityWithCopy);
 
   m.def("check_variant", &CheckVariant,
-        arg("variant") = absl::variant<absl::monostate, int>{},
+        arg("variant") = std::variant<absl::monostate, int>{},
         arg("given") = false, arg("value") = 0);
+  m.def("make_variant", (std::variant<absl::monostate, int> (*)())&MakeVariant);
   m.def("make_variant",
-        (absl::variant<absl::monostate, int> (*)())&MakeVariant);
-  m.def("make_variant",
-        (absl::variant<absl::monostate, int> (*)(int))&MakeVariant,
+        (std::variant<absl::monostate, int> (*)(int))&MakeVariant,
         arg("value"));
 }
 
