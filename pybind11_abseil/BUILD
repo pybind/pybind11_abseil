@@ -154,6 +154,7 @@ pybind_library(
     srcs = ["import_status_module.cc"],
     hdrs = ["import_status_module.h"],
     data = ["status.so"],
+    tags = ["freethreading_compatible"],
 )
 
 pybind_library(
