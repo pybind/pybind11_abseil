@@ -38,13 +38,10 @@ jobs:
       - uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
-          disk-cache: ${{ github.workflow }}
+          disk-cache: ${{github.workflow}}
           repository-cache: true
       - name: Check Bazel
         run: bazel version
-
-      - name: Check Java
-        run: java -version
       - name: Setup Python
         uses: actions/setup-python@v7
         with:
