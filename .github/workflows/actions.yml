@@ -24,11 +24,11 @@ jobs:
       - name: Show env
         run: env
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup bazel
         if: matrix.build_tool == 'bazel'
-        uses: bazel-contrib/setup-bazel@0.8.4
+        uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
           disk-cache: ${{ github.workflow }}
