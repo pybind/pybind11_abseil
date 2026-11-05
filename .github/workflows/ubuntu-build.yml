@@ -12,7 +12,11 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{github.workflow}}-${{ github.ref }}
+  # Each run on master gets its own group, so that master runs are never
+  # cancelled and every commit gets a CI result. Setting
+  # cancel-in-progress to false would not suffice: a new run still cancels
+  # a pending run in the same group.
+  group: ci-${{github.workflow}}-${{github.ref == 'refs/heads/master' && github.run_id || github.ref}}
   cancel-in-progress: true
 
 jobs:
