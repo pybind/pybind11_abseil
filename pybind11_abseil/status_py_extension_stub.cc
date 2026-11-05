@@ -1,4 +1,4 @@
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
 extern "C" PyObject*
 GooglePyInit_google3_third__party_pybind11__abseil_status();

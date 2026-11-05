@@ -1,8 +1,8 @@
 #include "pybind11_abseil/compat/status_from_core_py_exc.h"
 
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
-#include <string>
+#include <string>  // NOLINT(build/include_order)
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"

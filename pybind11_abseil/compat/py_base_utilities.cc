@@ -1,8 +1,8 @@
 #include "pybind11_abseil/compat/py_base_utilities.h"
 
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
-#include <string>
+#include <string>  // NOLINT(build/include_order)
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"

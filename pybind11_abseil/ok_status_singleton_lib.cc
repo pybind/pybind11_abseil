@@ -1,6 +1,6 @@
 #include "pybind11_abseil/ok_status_singleton_lib.h"
 
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
 #include "absl/status/status.h"
 

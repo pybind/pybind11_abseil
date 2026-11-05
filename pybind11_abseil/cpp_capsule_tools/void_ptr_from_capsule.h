@@ -2,9 +2,9 @@
 #define PYBIND11_ABSEIL_CPP_CAPSULE_TOOLS_VOID_PTR_FROM_CAPSULE_H_
 
 // Must be first include (https://docs.python.org/3/c-api/intro.html).
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
-#include <utility>
+#include <utility>  // NOLINT(build/include_order)
 
 #include "absl/status/statusor.h"
 
