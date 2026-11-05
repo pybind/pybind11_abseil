@@ -8,6 +8,7 @@ import array
 import contextlib
 import datetime
 import os
+import sys
 import threading
 import time
 from typing import Iterator
@@ -154,6 +155,10 @@ class AbslTimeTest(parameterized.TestCase):
         )
       self.assertEqual(absl_example.roundtrip_time(time_utc), time_utc)
 
+  @unittest.skipIf(
+      sys.platform == 'win32',
+      'datetime.timestamp() fails for naive datetimes before 1970 on Windows',
+  )
   def test_pass_datetime_pre_unix_epoch(self):
     dt = datetime.datetime(1969, 7, 16, 10, 56, 7, microsecond=140)
     secs = dt.timestamp()
