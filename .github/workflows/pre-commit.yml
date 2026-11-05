@@ -4,6 +4,14 @@ name: pre-commit
 # Controls when the action will run.
 on: [push, pull_request, workflow_dispatch]
 
+concurrency:
+  # Each run on master gets its own group, so that master runs are never
+  # cancelled and every commit gets a CI result. Setting
+  # cancel-in-progress to false would not suffice: a new run still cancels
+  # a pending run in the same group.
+  group: ${{github.workflow}}-${{github.ref == 'refs/heads/master' && github.run_id || github.ref}}
+  cancel-in-progress: true
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest

@@ -4,8 +4,13 @@ name: build_and_test
 # Controls when the action will run.
 on: [push, pull_request, workflow_dispatch]
 
-env:
-  PIP_BREAK_SYSTEM_PACKAGES: 1
+concurrency:
+  # Each run on master gets its own group, so that master runs are never
+  # cancelled and every commit gets a CI result. Setting
+  # cancel-in-progress to false would not suffice: a new run still cancels
+  # a pending run in the same group.
+  group: ${{github.workflow}}-${{github.ref == 'refs/heads/master' && github.run_id || github.ref}}
+  cancel-in-progress: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -42,13 +47,19 @@ jobs:
         if: matrix.build_tool == 'cmake'
         run: cmake --version
 
+      # The runner's system Python is managed by Debian (pip cannot replace its
+      # packages) and may be newer than the versions with requirements lock
+      # files, so use a Python from actions/setup-python instead.
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
       - name: Show platform info
         run: python -m platform
 
       - name: Install virtualenv
-        run: |
-          sudo apt-get install python3-pip -y
-          sudo pip3 install virtualenv
+        run: python -m pip install virtualenv
 
       - name: Show nproc
         run: echo nproc=$(nproc)
