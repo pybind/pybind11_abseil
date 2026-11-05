@@ -157,7 +157,7 @@ pybind_library(
     name = "import_status_module",
     srcs = ["import_status_module.cc"],
     hdrs = ["import_status_module.h"],
-    data = ["status.so"],
+    data = [":status"],
 )
 
 pybind_library(
