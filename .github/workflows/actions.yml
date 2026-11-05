@@ -2,7 +2,14 @@
 name: build_and_test
 
 # Controls when the action will run.
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
 
 env:
   PIP_BREAK_SYSTEM_PACKAGES: 1
