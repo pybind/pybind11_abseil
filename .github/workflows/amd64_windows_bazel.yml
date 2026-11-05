@@ -17,7 +17,6 @@ jobs:
           {compilation_mode: dbg},
         ]
         cpp: [
-          {version: 14, flags: "/std:c++14"},
           {version: 17, flags: "/std:c++17"},
           #{version: 20, flags: "/std:c++20"},
         ]
@@ -29,8 +28,6 @@ jobs:
             cpp: {version: 20}
           # only test -c dbg with VS 2022 version 17 to save compute time
           - runner: windows-2019
-            bazel: {compilation_mode: dbg}
-          - cpp: {version: 14}
             bazel: {compilation_mode: dbg}
           - cpp: {version: 20}
             bazel: {compilation_mode: dbg}

@@ -35,7 +35,6 @@ jobs:
     strategy:
       matrix:
         options: [
-          {version: 14, flags: "-std=c++14"},
           {version: 17, flags: "-std=c++17"},
           {version: 20, flags: "-std=c++20"},
         ]
