@@ -11,6 +11,7 @@ import os
 import threading
 import time
 from typing import Iterator
+import unittest
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -24,6 +25,10 @@ _TZ_LOCK = threading.Lock()
 
 @contextlib.contextmanager
 def override_local_timezone(tzname: str) -> Iterator[None]:  # pylint: disable=invalid-name
+  # time.tzset() is Unix-only, and some Python builds (e.g. the hermetic
+  # Python that rules_python uses on x86_64 macOS) do not have it either.
+  if not hasattr(time, 'tzset'):
+    raise unittest.SkipTest('time.tzset() is not available')
   with _TZ_LOCK:
     orig_tz = os.environ.get('TZ', None)
     try:
