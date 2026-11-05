@@ -7,6 +7,18 @@
 
 #include "absl/status/status.h"
 
+// pybind11 builds extension modules with hidden symbol visibility. If the
+// type_info of an exception class is hidden, an exception thrown in one
+// extension module may not match a `catch` for the same class in another (seen
+// on macOS), so `StatusNotOk` thrown by a binding would not reach the
+// exception translator registered by the status module.
+#if defined(__GNUC__) || defined(__clang__)
+#define PYBIND11_ABSEIL_EXPORT_EXCEPTION \
+  __attribute__((visibility("default")))
+#else
+#define PYBIND11_ABSEIL_EXPORT_EXCEPTION
+#endif
+
 namespace pybind11 {
 namespace google {
 
@@ -14,7 +26,8 @@ namespace google {
 //
 // This is in the pybind::google namespace because it was originally created to
 // use with pybind11, but it does NOT depend on the pybind11 library.
-class StatusNotOk : public std::exception {
+class PYBIND11_ABSEIL_EXPORT_EXCEPTION StatusNotOk
+    : public std::exception {
  public:
   StatusNotOk(absl::Status&& status)
       : status_(std::move(status)),
