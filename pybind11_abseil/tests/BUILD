@@ -15,14 +15,14 @@ pybind_extension(
         "//pybind11_abseil/cpp_capsule_tools:make_shared_ptr_capsule",
         "//pybind11_abseil/cpp_capsule_tools:raw_ptr_from_capsule",
         "//pybind11_abseil/cpp_capsule_tools:shared_ptr_from_capsule",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
 py_test(
     name = "cpp_capsule_tools_testing_test",
     srcs = ["cpp_capsule_tools_testing_test.py"],
-    data = [":cpp_capsule_tools_testing.so"],
+    data = [":cpp_capsule_tools_testing"],
     deps = [requirement("absl_py")],
 )
 
@@ -30,9 +30,10 @@ pybind_library(
     name = "status_testing_no_cpp_eh_lib",
     hdrs = ["status_testing_no_cpp_eh_lib.h"],
     deps = [
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "//pybind11_abseil:include_python_h",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -50,14 +51,14 @@ pybind_extension(
 py_library(
     name = "status_testing_no_cpp_eh_test_lib",
     srcs = ["status_testing_no_cpp_eh_test_lib.py"],
-    data = ["//pybind11_abseil:status.so"],
+    data = ["//pybind11_abseil:status"],
     deps = [requirement("absl_py")],
 )
 
 py_test(
     name = "status_testing_no_cpp_eh_test",
     srcs = ["status_testing_no_cpp_eh_test.py"],
-    data = [":status_testing_no_cpp_eh_pybind.so"],
+    data = [":status_testing_no_cpp_eh_pybind"],
     deps = [":status_testing_no_cpp_eh_test_lib"],
 )
 
@@ -66,19 +67,19 @@ pybind_extension(
     srcs = ["absl_example.cc"],
     deps = [
         "//pybind11_abseil:absl_casters",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/time",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_absl//absl/types:span",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
 py_test(
     name = "absl_test",
     srcs = ["absl_test.py"],
-    data = [":absl_example.so"],
+    data = [":absl_example"],
     deps = [
         requirement("absl_py"),
         requirement("numpy"),
@@ -88,7 +89,7 @@ py_test(
 py_test(
     name = "ok_status_singleton_test",
     srcs = ["ok_status_singleton_test.py"],
-    data = ["//pybind11_abseil:ok_status_singleton.so"],
+    data = ["//pybind11_abseil:ok_status_singleton"],
     deps = [requirement("absl_py")],
 )
 
@@ -98,21 +99,21 @@ pybind_extension(
     copts = ["-UNDEBUG"],
     deps = [
         "//pybind11_abseil:status_casters",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
 py_test(
     name = "missing_import_test",
     srcs = ["missing_import_test.py"],
-    data = [":missing_import.so"],
+    data = [":missing_import"],
 )
 
 py_test(
     name = "status_test",
     srcs = ["status_test.py"],
-    data = ["//pybind11_abseil:status.so"],
+    data = ["//pybind11_abseil:status"],
     deps = [requirement("absl_py")],
 )
 
@@ -121,9 +122,9 @@ pybind_extension(
     srcs = ["status_example.cc"],
     deps = [
         "//pybind11_abseil:status_casters",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -131,8 +132,8 @@ py_test(
     name = "status_example_test",
     srcs = ["status_example_test.py"],
     data = [
-        ":status_example.so",
-        "//pybind11_abseil:status.so",
+        ":status_example",
+        "//pybind11_abseil:status",
     ],
     deps = [requirement("absl_py")],
 )

@@ -90,35 +90,6 @@ http_archive(
 )
 ```
 
-#### WORKSPACE
-
-Bazel workspace support is deprecated and will be removed at a later date.
-
-You will need to depend on `pybind11`, `pybind11_bazel`(see
-[doc](https://github.com/pybind/pybind11_bazel#installation), and on
-`pybind11_abseil`), e.g.
-
-```bzl
-http_archive(
-  name = "pybind11_bazel",
-  strip_prefix = "pybind11_bazel-master",
-  urls = ["https://github.com/pybind/pybind11_bazel/archive/refs/heads/master.tar.gz"],
-)
-
-http_archive(
-  name = "pybind11",
-  build_file = "@pybind11_bazel//:pybind11-BUILD.bazel",
-  strip_prefix = "pybind11-master",
-  urls = ["https://github.com/pybind/pybind11/archive/refs/heads/master.tar.gz"],
-)
-
-http_archive(
-  name = "pybind11_abseil",
-  strip_prefix = "pybind11_abseil-master",
-  urls = ["https://github.com/pybind/pybind11_abseil/archive/refs/heads/master.tar.gz"],
-)
-```
-
 ### CMake
 
 In your project, add a FetchContent for pybind11_abseil. This will also fetch

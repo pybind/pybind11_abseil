@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.18)
+# The minimum CMake version and C++ standard follow Google's Foundational C++
+# Support matrix; keep them in sync with it:
+# https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+cmake_minimum_required(VERSION 3.22)
 project(pybind11_abseil LANGUAGES CXX)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
@@ -34,4 +37,28 @@ add_subdirectory(cmake/dependencies dependencies)
 
 set(TOP_LEVEL_DIR ${CMAKE_CURRENT_LIST_DIR})
 include_directories(${TOP_LEVEL_DIR} ${pybind11_INCLUDE_DIRS})
+# Makes extension module `target` importable from the build tree:
+#
+# * Multi-config generators (e.g. Visual Studio) put build outputs in a
+#   per-configuration subdirectory, outside the Python package directory. A
+#   generator expression in the output directory disables that subdirectory.
+# * On Windows, Python loads the DLLs an extension module depends on from the
+#   module's directory, but not from PATH, so copy them there. There are none if
+#   Abseil is linked statically, and `copy_if_different` fails without files, so
+#   run `cmake -E true` instead then.
+function(pybind11_abseil_build_tree_module target)
+  set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY
+                                             "$<1:${CMAKE_CURRENT_BINARY_DIR}>")
+  if(WIN32)
+    add_custom_command(
+      TARGET ${target}
+      POST_BUILD
+      COMMAND
+        ${CMAKE_COMMAND} -E
+        $<IF:$<BOOL:$<TARGET_RUNTIME_DLLS:${target}>>,copy_if_different,true>
+        $<TARGET_RUNTIME_DLLS:${target}> $<TARGET_FILE_DIR:${target}>
+      COMMAND_EXPAND_LISTS)
+  endif()
+endfunction()
+
 add_subdirectory(pybind11_abseil)

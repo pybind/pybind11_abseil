@@ -1,7 +1,7 @@
 #ifndef PYBIND11_ABSEIL_OK_STATUS_SINGLETON_LIB_H_
 #define PYBIND11_ABSEIL_OK_STATUS_SINGLETON_LIB_H_
 
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
 #include "absl/status/status.h"
 

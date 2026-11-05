@@ -21,7 +21,7 @@ if(NOT TARGET absl::base)
     FetchContent_Declare(
       absl
       GIT_REPOSITORY "https://github.com/abseil/abseil-cpp.git"
-      GIT_TAG "20240722.0"
+      GIT_TAG "20260817.0"
       GIT_SHALLOW TRUE)
     FetchContent_MakeAvailable(absl)
     list(POP_BACK CMAKE_MESSAGE_INDENT)

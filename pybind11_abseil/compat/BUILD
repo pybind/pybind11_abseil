@@ -12,9 +12,10 @@ pybind_library(
     hdrs = ["py_base_utilities.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
+        "//pybind11_abseil:include_python_h",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -25,8 +26,9 @@ pybind_library(
     visibility = ["//visibility:public"],
     deps = [
         ":py_base_utilities",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/status",
+        "//pybind11_abseil:include_python_h",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/status",
     ],
 )
 
@@ -38,9 +40,10 @@ pybind_library(
     deps = [
         ":py_base_utilities",
         ":status_from_core_py_exc",
+        "//pybind11_abseil:include_python_h",
         "//pybind11_abseil/cpp_capsule_tools:raw_ptr_from_capsule",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/status",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
     ],
 )

@@ -2,10 +2,10 @@
 #define PYBIND11_ABSEIL_CPP_CAPSULE_TOOLS_MAKE_SHARED_PTR_CAPSULE_H_
 
 // Must be first include (https://docs.python.org/3/c-api/intro.html).
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
-#include <cassert>
-#include <memory>
+#include <cassert>  // NOLINT(build/include_order)
+#include <memory>  // NOLINT(build/include_order)
 
 namespace pybind11_abseil {
 namespace cpp_capsule_tools {

@@ -44,6 +44,7 @@ target_link_libraries(ok_status_singleton_pyinit_google3
 
 pybind11_add_module(ok_status_singleton MODULE
                     ok_status_singleton_py_extension_stub.cc)
+pybind11_abseil_build_tree_module(ok_status_singleton)
 add_library(pybind11_abseil::ok_status_singleton ALIAS ok_status_singleton)
 
 # note: macOS is APPLE and also UNIX !
@@ -155,6 +156,7 @@ target_link_libraries(status_pyinit_google3 PUBLIC register_status_bindings)
 # status ====================================================================
 
 pybind11_add_module(status_py_extension_stub MODULE status_py_extension_stub.cc)
+pybind11_abseil_build_tree_module(status_py_extension_stub)
 set_target_properties(status_py_extension_stub PROPERTIES LIBRARY_OUTPUT_NAME
                                                           "status")
 

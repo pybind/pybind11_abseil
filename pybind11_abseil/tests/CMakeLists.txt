@@ -2,6 +2,7 @@
 
 pybind11_add_module(cpp_capsule_tools_testing MODULE
                     cpp_capsule_tools_testing.cc)
+pybind11_abseil_build_tree_module(cpp_capsule_tools_testing)
 
 target_link_libraries(
   cpp_capsule_tools_testing PUBLIC make_shared_ptr_capsule raw_ptr_from_capsule
@@ -19,14 +20,14 @@ endif()
 add_test(
   NAME cpp_capsule_tools_testing_test
   COMMAND
-    ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-    ${Python_EXECUTABLE}
+    ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_BINARY_DIR} ${Python_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp_capsule_tools_testing_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # absl_example =================================================================
 
 pybind11_add_module(absl_example MODULE absl_example.cc)
+pybind11_abseil_build_tree_module(absl_example)
 
 target_link_libraries(
   absl_example
@@ -42,7 +43,7 @@ target_link_libraries(
 
 add_test(
   NAME absl_test
-  COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_BINARY_DIR}
           ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/absl_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -51,13 +52,14 @@ add_test(
 add_test(
   NAME ok_status_singleton_test
   COMMAND
-    ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-    ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ok_status_singleton_test.py
+    ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_BINARY_DIR} ${Python_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/ok_status_singleton_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # missing_import ===============================================================
 
 pybind11_add_module(missing_import MODULE missing_import.cc)
+pybind11_abseil_build_tree_module(missing_import)
 
 target_compile_options(missing_import PUBLIC -UNDEBUG)
 
@@ -69,21 +71,22 @@ target_link_libraries(missing_import PRIVATE status_casters absl::status
 add_test(
   NAME missing_import_test
   COMMAND
-    ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-    ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/missing_import_test.py
+    ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_BINARY_DIR} ${Python_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/missing_import_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # status_test ==================================================================
 
 add_test(
   NAME status_test
-  COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_BINARY_DIR}
           ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/status_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # status_example ===============================================================
 
 pybind11_add_module(status_example MODULE status_example.cc)
+pybind11_abseil_build_tree_module(status_example)
 
 target_link_libraries(status_example PRIVATE status_casters absl::status
                                              absl::statusor)
@@ -92,8 +95,8 @@ target_link_libraries(status_example PRIVATE status_casters absl::status
 add_test(
   NAME status_example_test
   COMMAND
-    ${CMAKE_COMMAND} -E env PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR}
-    ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/status_example_test.py
+    ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_BINARY_DIR} ${Python_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/status_example_test.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # OMITTED (help appreciated): status_testing_no_cpp_eh_test

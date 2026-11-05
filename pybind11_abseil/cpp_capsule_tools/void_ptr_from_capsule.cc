@@ -1,9 +1,9 @@
 #include "pybind11_abseil/cpp_capsule_tools/void_ptr_from_capsule.h"
 
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
-#include <string>
-#include <utility>
+#include <string>  // NOLINT(build/include_order)
+#include <utility>  // NOLINT(build/include_order)
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"

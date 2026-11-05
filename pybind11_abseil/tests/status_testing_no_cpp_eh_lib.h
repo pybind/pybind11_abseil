@@ -5,10 +5,10 @@
 #ifndef PYBIND11_ABSEIL_TESTS_STATUS_TESTING_NO_CPP_EH_LIB_H_
 #define PYBIND11_ABSEIL_TESTS_STATUS_TESTING_NO_CPP_EH_LIB_H_
 
-#include <Python.h>
+#include "pybind11_abseil/include_python_h.h"
 
-#include <functional>
-#include <string>
+#include <functional>  // NOLINT(build/include_order)
+#include <string>  // NOLINT(build/include_order)
 
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
