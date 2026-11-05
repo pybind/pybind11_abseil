@@ -50,6 +50,7 @@ jobs:
       - name: Build
         run: >
           bazel build
+          --config=ci
           -c ${{ matrix.bazel.compilation_mode }}
           --cxxopt=${{ matrix.cpp.flags }} --host_cxxopt=${{ matrix.cpp.flags }}
           --subcommands=pretty_print
@@ -58,6 +59,7 @@ jobs:
       - name: Test
         run: >
           bazel test
+          --config=ci
           -c ${{ matrix.bazel.compilation_mode }}
           --cxxopt=${{ matrix.cpp.flags }} --host_cxxopt=${{ matrix.cpp.flags }}
           --subcommands=pretty_print

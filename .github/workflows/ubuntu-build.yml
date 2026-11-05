@@ -62,6 +62,7 @@ jobs:
         shell: bash
         run: >
           bazel build
+          --config=ci
           --cxxopt=${{ matrix.options.flags }} --host_cxxopt=${{ matrix.options.flags }}
           --subcommands=pretty_print
           --enable_bzlmod
@@ -70,6 +71,7 @@ jobs:
         shell: bash
         run: >
           bazel test
+          --config=ci
           --cxxopt=${{ matrix.options.flags }} --host_cxxopt=${{ matrix.options.flags }}
           --subcommands=pretty_print
           --enable_bzlmod
