@@ -61,6 +61,10 @@ jobs:
           # (by key prefix), so they pay only for what they change, and the
           # repository's 10 GB cache storage is not filled with per-PR copies.
           cache-save: ${{github.ref == 'refs/heads/master'}}
+          # Bazel 9 also keeps extracted repositories (e.g. Python toolchains)
+          # in the repository cache, which grew the saved cache from about
+          # 0.4 GB to 1.6 GB; restoring that takes longer than re-extracting.
+          bazelrc: common --repo_contents_cache=
       - name: Check Bazel
         run: bazel version
       - name: Setup Python
