@@ -31,14 +31,14 @@ endif()
 
 if(NOT TARGET pybind11::pybind11_headers)
   if(USE_SYSTEM_PYBIND)
-    find_package(pybind11 3.0.0 REQUIRED)
+    find_package(pybind11 3.0.3 REQUIRED)
   else()
     message(CHECK_START "Fetching pybind11")
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
     FetchContent_Declare(
       pybind11
       GIT_REPOSITORY "https://github.com/pybind/pybind11.git"
-      GIT_TAG "v3.0.0"
+      GIT_TAG "v3.0.3"
       GIT_SHALLOW TRUE)
     FetchContent_MakeAvailable(pybind11)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
