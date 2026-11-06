@@ -39,6 +39,16 @@ in the .cc file with your bindings:
 #include "pybind11_abseil/absl_casters.h"
 ```
 
+## Supported platforms
+
+pybind11_abseil follows Google's
+[Foundational C++ Support Policy](https://opensource.google/documentation/policies/cplusplus-support):
+see its
+[support matrix](https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md)
+for the supported operating systems, compilers, C++ standards, and Bazel and
+CMake versions. The supported Python versions are listed in
+`SUPPORTED_PYTHON_VERSIONS` in [MODULE.bazel](MODULE.bazel).
+
 ## Installation
 
 pybind11_abseil can be built with Bazel or CMake. Instructions for both are below.
