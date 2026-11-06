@@ -57,8 +57,8 @@ rules_java_toolchains()
 ## Abseil-cpp
 git_repository(
     name = "com_google_absl",
-    commit = "4447c7562e3bc702ade25105912dce503f0c4010",
-    #tag = "20240722.0",
+    commit = "3cb205c6ec976b465c532beb748da41c87db75d2",
+    #tag = "20250127.2",
     remote = "https://github.com/abseil/abseil-cpp.git",
 )
 
