@@ -68,6 +68,10 @@ jobs:
           bazelisk-cache: true
           disk-cache: ${{ github.workflow }}
           repository-cache: true
+          # Only master saves caches; pull requests restore master's caches
+          # (by key prefix), so they pay only for what they change, and the
+          # repository's 10 GB cache storage is not filled with per-PR copies.
+          cache-save: ${{github.ref == 'refs/heads/master'}}
       - name: Show Bazel version
         run: bazel --version
       - name: Bazel Build

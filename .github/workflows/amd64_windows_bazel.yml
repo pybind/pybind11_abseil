@@ -60,6 +60,15 @@ jobs:
         run: |
           python --version
           python -m platform
+      - uses: bazel-contrib/setup-bazel@0.19.1
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{github.workflow}}
+          repository-cache: true
+          # Only master saves caches; pull requests restore master's caches
+          # (by key prefix), so they pay only for what they change, and the
+          # repository's 10 GB cache storage is not filled with per-PR copies.
+          cache-save: ${{github.ref == 'refs/heads/master'}}
       - name: Install Bazel
         run: choco install bazel
       - name: Check Bazel
