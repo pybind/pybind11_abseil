@@ -24,32 +24,44 @@ jobs:
   native:
     strategy:
       matrix:
-        python: [
-          {version: '3.10'},
-          {version: '3.11'},
-          {version: '3.12'},
-          #{version: '3.13'},
-        ]
-        cmake: [
-          {generator: "Unix Makefiles", config: "Release"},
-          {generator: "Ninja", config: "Release"},
-          #{generator: "Ninja Multi-Config", config: "Release"},
-        ]
+        # A sparse matrix, as described in
+        # https://opensource.google/documentation/policies/cplusplus-support:
+        # every supported C++ and Python version, the oldest and newest
+        # default compilers of the supported Ubuntu LTS releases, and the
+        # oldest supported CMake are tested in at least one job, rather than
+        # all combinations.
+        include:
+          # Oldest supported Ubuntu LTS: GCC 11, Clang 14, and CMake 3.22,
+          # which the runner image doesn't have, so it is installed with pip.
+          - {runner: ubuntu-22.04, cc: gcc, cxx: g++, cmake_version: '3.22.*', generator: Unix Makefiles, config: Release, cpp: 17, python: '3.10'}
+          - {runner: ubuntu-22.04, cc: clang-14, cxx: clang++-14, generator: Ninja, config: Debug, cpp: 17, python: '3.11'}
+          # GCC 13.
+          - {runner: ubuntu-24.04, cc: gcc, cxx: g++, generator: Ninja, config: Release, cpp: 17, python: '3.12'}
+          - {runner: ubuntu-24.04, cc: gcc, cxx: g++, generator: Unix Makefiles, config: Debug, cpp: 20, python: '3.13'}
+          # Newest Ubuntu LTS: GCC 15, Clang 22.
+          - {runner: ubuntu-26.04, cc: gcc, cxx: g++, generator: Ninja, config: Release, cpp: 20, python: '3.14'}
+          - {runner: ubuntu-26.04, cc: clang-22, cxx: clang++-22, generator: Unix Makefiles, config: Release, cpp: 20, python: '3.15'}
       fail-fast: false
-    name: Linux•CMake(${{ matrix.cmake.generator }})•Python${{ matrix.python.version }}
-    runs-on: ubuntu-latest
+    name: ${{matrix.runner}}•${{matrix.cc}}•CMake(${{matrix.generator}},${{matrix.config}})•C++${{matrix.cpp}}•Py${{matrix.python}}
+    runs-on: ${{matrix.runner}}
+    env:
+      CC: ${{matrix.cc}}
+      CXX: ${{matrix.cxx}}
     steps:
       - uses: actions/checkout@v7
       - name: Setup Python
         uses: actions/setup-python@v7
         with:
-          python-version: ${{ matrix.python.version }}
+          python-version: ${{matrix.python}}
       - name: Check Python
         run: |
           python --version
           python -m platform
       - name: Install Python requirements
         run: python -m pip install --upgrade -r $(python -c 'import sys; print("./pybind11_abseil/requirements/requirements_lock_%d_%d.txt" % (sys.version_info[:2]))')
+      - name: Install CMake ${{matrix.cmake_version}}
+        if: matrix.cmake_version
+        run: python -m pip install "cmake==${{matrix.cmake_version}}"
       - name: Install Ninja
         run: |
           sudo apt-get update
@@ -59,26 +71,27 @@ jobs:
       - name: Configure
         run: >
           cmake -S. -Bbuild
-          -G "${{ matrix.cmake.generator }}"
-          -DCMAKE_BUILD_TYPE=${{ matrix.cmake.config }}
+          -G "${{matrix.generator}}"
+          -DCMAKE_BUILD_TYPE=${{matrix.config}}
+          -DCMAKE_CXX_STANDARD=${{matrix.cpp}}
           -DCMAKE_INSTALL_PREFIX=install
       - name: Build
         run: >
           cmake --build build
-          --config ${{ matrix.cmake.config }}
+          --config ${{matrix.config}}
           --target all
           -v -j2
       - name: Test
         run: >
           CTEST_OUTPUT_ON_FAILURE=1
           cmake --build build
-          --config ${{ matrix.cmake.config }}
+          --config ${{matrix.config}}
           --target test
           -v
       - name: Install
         run: >
           cmake --build build
-          --config ${{ matrix.cmake.config }}
+          --config ${{matrix.config}}
           --target install
           -v
 
