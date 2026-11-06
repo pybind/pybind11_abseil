@@ -63,7 +63,9 @@ jobs:
       - uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
-          disk-cache: ${{github.workflow}}
+          # One disk cache per configuration: a cache is written once per key,
+          # and the configurations do not share compile actions.
+          disk-cache: ${{github.workflow}}-${{matrix.runner}}-${{matrix.bazel.compilation_mode}}-cxx${{matrix.cpp.version}}-py${{matrix.python.version}}
           repository-cache: true
           # Only master saves caches; pull requests restore master's caches
           # (by key prefix), so they pay only for what they change, and the

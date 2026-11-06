@@ -66,7 +66,9 @@ jobs:
       - uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
-          disk-cache: ${{ github.workflow }}
+          # One disk cache per C++ standard: a cache is written once per key,
+          # and C++17 and C++20 builds do not share compile actions.
+          disk-cache: ${{ github.workflow }}-cxx${{ matrix.options.version }}
           repository-cache: true
           # Only master saves caches; pull requests restore master's caches
           # (by key prefix), so they pay only for what they change, and the
