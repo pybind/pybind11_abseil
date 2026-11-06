@@ -12,9 +12,9 @@ pybind_library(
     hdrs = ["void_ptr_from_capsule.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -24,7 +24,7 @@ pybind_library(
     visibility = ["//visibility:public"],
     deps = [
         ":void_ptr_from_capsule",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -40,6 +40,6 @@ pybind_library(
     visibility = ["//visibility:public"],
     deps = [
         ":void_ptr_from_capsule",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
