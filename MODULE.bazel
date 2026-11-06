@@ -8,13 +8,23 @@ module(
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_cc", version = "0.2.17")
-bazel_dep(name = "rules_python", version = "1.7.0")
+bazel_dep(name = "rules_python", version = "2.4.6")
 bazel_dep(name = "abseil-cpp", version = "20260107.1")
 bazel_dep(name = "pybind11_bazel", version = "3.0.0")
 
 #### DEV ONLY DEPENDENCIES BELOW HERE ####
 
+# At least the Python versions in Google's Foundational Python Support matrix,
+# up to the newest Python release:
+# https://github.com/google/oss-policies-info/blob/main/foundational-python-support-matrix.md
+# A version past its end of life stays until pybind11_abseil uses an Abseil LTS
+# released after that end of life, so that the last pybind11_abseil release
+# based on an older Abseil LTS still supports it.
+# When changing this list, also update the targets and lock files in
+# pybind11_abseil/requirements/ and the Python versions in the GitHub
+# workflows.
 SUPPORTED_PYTHON_VERSIONS = [
+    "3.15",
     "3.14",
     "3.13",
     "3.12",
