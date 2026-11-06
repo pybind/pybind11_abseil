@@ -22,7 +22,7 @@ pybind_extension(
 py_test(
     name = "cpp_capsule_tools_testing_test",
     srcs = ["cpp_capsule_tools_testing_test.py"],
-    data = [":cpp_capsule_tools_testing.so"],
+    data = [":cpp_capsule_tools_testing"],
     deps = [requirement("absl_py")],
 )
 
@@ -50,14 +50,14 @@ pybind_extension(
 py_library(
     name = "status_testing_no_cpp_eh_test_lib",
     srcs = ["status_testing_no_cpp_eh_test_lib.py"],
-    data = ["//pybind11_abseil:status.so"],
+    data = ["//pybind11_abseil:status"],
     deps = [requirement("absl_py")],
 )
 
 py_test(
     name = "status_testing_no_cpp_eh_test",
     srcs = ["status_testing_no_cpp_eh_test.py"],
-    data = [":status_testing_no_cpp_eh_pybind.so"],
+    data = [":status_testing_no_cpp_eh_pybind"],
     deps = [":status_testing_no_cpp_eh_test_lib"],
 )
 
@@ -78,7 +78,7 @@ pybind_extension(
 py_test(
     name = "absl_test",
     srcs = ["absl_test.py"],
-    data = [":absl_example.so"],
+    data = [":absl_example"],
     deps = [
         requirement("absl_py"),
         requirement("numpy"),
@@ -88,7 +88,7 @@ py_test(
 py_test(
     name = "ok_status_singleton_test",
     srcs = ["ok_status_singleton_test.py"],
-    data = ["//pybind11_abseil:ok_status_singleton.so"],
+    data = ["//pybind11_abseil:ok_status_singleton"],
     deps = [requirement("absl_py")],
 )
 
@@ -106,13 +106,13 @@ pybind_extension(
 py_test(
     name = "missing_import_test",
     srcs = ["missing_import_test.py"],
-    data = [":missing_import.so"],
+    data = [":missing_import"],
 )
 
 py_test(
     name = "status_test",
     srcs = ["status_test.py"],
-    data = ["//pybind11_abseil:status.so"],
+    data = ["//pybind11_abseil:status"],
     deps = [requirement("absl_py")],
 )
 
@@ -131,8 +131,8 @@ py_test(
     name = "status_example_test",
     srcs = ["status_example_test.py"],
     data = [
-        ":status_example.so",
-        "//pybind11_abseil:status.so",
+        ":status_example",
+        "//pybind11_abseil:status",
     ],
     deps = [requirement("absl_py")],
 )
