@@ -7,6 +7,7 @@
 #include <exception>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "absl/status/status.h"
@@ -322,12 +323,7 @@ void RegisterStatusBindings(module m) {
              // Payload is ignored intentionally to minimize runtime.
              return boost_hash_combine(
                  std::hash<int>{}(self.raw_code()),
-#if defined(ABSL_USES_STD_STRING_VIEW)
-                 std::hash<std::string_view>{}(self.message())
-#else
-                 std::hash<std::string>{}(std::string(self.message()))
-#endif
-             );
+                 std::hash<std::string_view>{}(self.message()));
            })
       .def(
           "__reduce_ex__",
