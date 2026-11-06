@@ -22,30 +22,30 @@ concurrency:
 # Building using the github runner environement directly.
 jobs:
   native:
-    name: Linux•Bzl${{matrix.bazel.version}}•C++${{matrix.cpp.version}}•Py${{matrix.python.version}}
-    runs-on: ubuntu-latest
+    name: ${{matrix.runner}}•${{matrix.cc}}•Bzl${{matrix.bazel}}•C++${{matrix.cpp}}•Py${{matrix.python}}
+    runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
       matrix:
-        bazel: [
-          #{version: "7.x"},
-          {version: "8.x"},
-          {version: "9.x"},
-        ]
-        cpp: [
-          {version: 17, flags: "-std=c++17"},
-          #{version: 20, flags: "-std=c++20"},
-        ]
-        python: [
-          {version: '3.10'},
-          #{version: '3.11'},
-          {version: '3.12'},
-          #{version: '3.13'},
-          {version: '3.14'},
-          {version: '3.15'},
-        ]
+        # A sparse matrix, as described in
+        # https://opensource.google/documentation/policies/cplusplus-support:
+        # every supported Bazel, C++ and Python version, and the oldest and
+        # newest default compilers of the supported Ubuntu LTS releases, are
+        # tested in at least one job, rather than all combinations.
+        include:
+          # Oldest supported Ubuntu LTS: GCC 11, Clang 14.
+          - {runner: ubuntu-22.04, cc: gcc, bazel: 8.x, cpp: 17, python: '3.10'}
+          - {runner: ubuntu-22.04, cc: clang-14, bazel: 9.x, cpp: 17, python: '3.11'}
+          # GCC 13.
+          - {runner: ubuntu-24.04, cc: gcc, bazel: 9.x, cpp: 17, python: '3.12'}
+          - {runner: ubuntu-24.04, cc: gcc, bazel: 8.x, cpp: 20, python: '3.13'}
+          # Newest Ubuntu LTS: GCC 15, Clang 22.
+          - {runner: ubuntu-26.04, cc: gcc, bazel: 9.x, cpp: 20, python: '3.14'}
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 8.x, cpp: 20, python: '3.15'}
     env:
-      USE_BAZEL_VERSION: ${{matrix.bazel.version}}
+      # Bazel's C++ toolchain autoconfiguration uses $CC.
+      CC: ${{matrix.cc}}
+      USE_BAZEL_VERSION: ${{matrix.bazel}}
     steps:
       - uses: actions/checkout@v7
       - uses: bazel-contrib/setup-bazel@0.19.1
@@ -55,7 +55,7 @@ jobs:
           # and the configurations' compile actions mostly differ (Bazel 8 jobs
           # get almost no hits from Bazel 9 results), so a shared cache mainly
           # helps the configuration that saved it.
-          disk-cache: ${{github.workflow}}-bzl${{matrix.bazel.version}}-py${{matrix.python.version}}
+          disk-cache: ${{github.workflow}}-${{matrix.runner}}-${{matrix.cc}}-bzl${{matrix.bazel}}-cxx${{matrix.cpp}}-py${{matrix.python}}
           repository-cache: true
           # Only master saves caches; pull requests restore master's caches
           # (by key prefix), so they pay only for what they change, and the
@@ -70,7 +70,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v7
         with:
-          python-version: ${{matrix.python.version}}
+          python-version: ${{matrix.python}}
       - name: Check Python
         run: |
           python --version
@@ -79,16 +79,16 @@ jobs:
         run: >
           bazel build
           --config=ci
-          --@rules_python//python/config_settings:python_version=${{matrix.python.version}}
-          --cxxopt=${{matrix.cpp.flags}} --host_cxxopt=${{ matrix.cpp.flags }}
+          --@rules_python//python/config_settings:python_version=${{matrix.python}}
+          --cxxopt=-std=c++${{matrix.cpp}} --host_cxxopt=-std=c++${{matrix.cpp}}
           --subcommands=pretty_print
           //...
       - name: Test
         run: >
           bazel test
           --config=ci
-          --@rules_python//python/config_settings:python_version=${{matrix.python.version}}
-          --cxxopt=${{matrix.cpp.flags}} --host_cxxopt=${{ matrix.cpp.flags }}
+          --@rules_python//python/config_settings:python_version=${{matrix.python}}
+          --cxxopt=-std=c++${{matrix.cpp}} --host_cxxopt=-std=c++${{matrix.cpp}}
           --subcommands=pretty_print
           //...
 
