@@ -15,7 +15,7 @@ pybind_extension(
         "//pybind11_abseil/cpp_capsule_tools:make_shared_ptr_capsule",
         "//pybind11_abseil/cpp_capsule_tools:raw_ptr_from_capsule",
         "//pybind11_abseil/cpp_capsule_tools:shared_ptr_from_capsule",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -30,9 +30,9 @@ pybind_library(
     name = "status_testing_no_cpp_eh_lib",
     hdrs = ["status_testing_no_cpp_eh_lib.h"],
     deps = [
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -66,12 +66,12 @@ pybind_extension(
     srcs = ["absl_example.cc"],
     deps = [
         "//pybind11_abseil:absl_casters",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/time",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_absl//absl/types:span",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
@@ -98,8 +98,8 @@ pybind_extension(
     copts = ["-UNDEBUG"],
     deps = [
         "//pybind11_abseil:status_casters",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -121,9 +121,9 @@ pybind_extension(
     srcs = ["status_example.cc"],
     deps = [
         "//pybind11_abseil:status_casters",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 

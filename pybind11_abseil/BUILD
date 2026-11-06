@@ -15,17 +15,17 @@ pybind_library(
     name = "absl_casters",
     hdrs = ["absl_casters.h"],
     deps = [
-        "@com_google_absl//absl/cleanup",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/container:node_hash_map",
-        "@com_google_absl//absl/container:node_hash_set",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:cord",
-        "@com_google_absl//absl/time",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_absl//absl/types:span",
+        "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/container:node_hash_map",
+        "@abseil-cpp//absl/container:node_hash_set",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
@@ -35,7 +35,7 @@ pybind_library(
     hdrs = ["ok_status_singleton_lib.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "@com_google_absl//absl/status",
+        "@abseil-cpp//absl/status",
     ],
 )
 
@@ -62,7 +62,7 @@ pybind_library(
 pybind_library(
     name = "status_not_ok_exception",
     hdrs = ["status_not_ok_exception.h"],
-    deps = ["@com_google_absl//absl/status"],
+    deps = ["@abseil-cpp//absl/status"],
 )
 
 pybind_library(
@@ -70,7 +70,7 @@ pybind_library(
     hdrs = ["check_status_module_imported.h"],
     visibility = ["//visibility:private"],
     deps = [
-        "@com_google_absl//absl/status",
+        "@abseil-cpp//absl/status",
     ],
 )
 
@@ -84,8 +84,8 @@ pybind_library(
         ":status_not_ok_exception",
         "//pybind11_abseil/compat:status_from_py_exc",
         "//pybind11_abseil/cpp_capsule_tools:raw_ptr_from_capsule",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -97,8 +97,8 @@ pybind_library(
         ":no_throw_status",
         ":status_caster",
         "//pybind11_abseil/compat:status_from_py_exc",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -114,7 +114,7 @@ pybind_library(
     hdrs = ["utils_pybind11_absl.h"],
     visibility = ["//visibility:private"],
     deps = [
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -132,9 +132,9 @@ pybind_library(
         ":status_not_ok_exception",
         ":utils_pybind11_absl",
         "//pybind11_abseil/cpp_capsule_tools:raw_ptr_from_capsule",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

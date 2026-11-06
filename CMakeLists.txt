@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.21)
+# The minimum CMake version and C++ standard follow Google's Foundational C++
+# Support matrix; keep them in sync with it:
+# https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+cmake_minimum_required(VERSION 3.22)
 project(pybind11_abseil LANGUAGES CXX)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
