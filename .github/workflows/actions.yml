@@ -30,6 +30,11 @@ jobs:
 
     name: "script ${{matrix.build_tool}}"
     runs-on: ${{matrix.runs-on}}
+    env:
+      # build_and_run_tests_bazel.sh also builds with WORKSPACE, which Bazel 9
+      # removed: Bazel 9 ignores --enable_workspace and uses Bzlmod instead.
+      # The other Bazel workflows cover Bzlmod with Bazel 9.
+      USE_BAZEL_VERSION: 8.x
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

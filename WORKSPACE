@@ -29,13 +29,19 @@ git_repository(
 
 git_repository(
     name = "rules_java",
-    commit = "767e4410850453a10ccf89aa1cededf9de05c72e",
-    #tag = "8.6.3",
+    commit = "6915f89962442c5def663f559b75a4a8c2377b1b",
+    #tag = "8.12.0",
     remote = "https://github.com/bazelbuild/rules_java.git",
 )
 
 load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
 rules_java_dependencies()
+
+# rules_java_dependencies() only declares @bazel_features; its own
+# dependencies (e.g. @bazel_features_version) are declared here, before
+# anything below loads @bazel_features//:features.bzl.
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+bazel_features_deps()
 
 # note that the following line is what is minimally required from protobuf for the java rules
 # consider using the protobuf_deps() public API from @com_google_protobuf//:protobuf_deps.bzl
@@ -58,28 +64,25 @@ git_repository(
 
 git_repository(
     name = "rules_python",
-    commit = "1944874f6ba507f70d8c5e70df84622e0c783254",
-    #tag = "0.40.0",
+    commit = "38f2679fcc6c23a72e4c6309b7fdecb4eafcccf0",
+    #tag = "1.6.3",
     remote = "https://github.com/bazelbuild/rules_python.git",
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_multi_toolchains")
 py_repositories()
 
-load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
-pip_install_dependencies()
-
-DEFAULT_PYTHON = "3.11"
+DEFAULT_PYTHON = "3.12"
 
 python_register_multi_toolchains(
     name = "python",
     default_version = DEFAULT_PYTHON,
     python_versions = [
+      "3.14",
+      "3.13",
       "3.12",
       "3.11",
       "3.10",
-      "3.9",
-      "3.8"
     ],
 )
 
@@ -89,18 +92,18 @@ multi_pip_parse(
     name = "pypi",
     default_version = DEFAULT_PYTHON,
     python_interpreter_target = {
+        "3.14": "@python_3_14_host//:python",
+        "3.13": "@python_3_13_host//:python",
         "3.12": "@python_3_12_host//:python",
         "3.11": "@python_3_11_host//:python",
         "3.10": "@python_3_10_host//:python",
-        "3.9": "@python_3_9_host//:python",
-        "3.8": "@python_3_8_host//:python",
     },
     requirements_lock = {
+        "3.14": "//pybind11_abseil/requirements:requirements_lock_3_14.txt",
+        "3.13": "//pybind11_abseil/requirements:requirements_lock_3_13.txt",
         "3.12": "//pybind11_abseil/requirements:requirements_lock_3_12.txt",
         "3.11": "//pybind11_abseil/requirements:requirements_lock_3_11.txt",
         "3.10": "//pybind11_abseil/requirements:requirements_lock_3_10.txt",
-        "3.9": "//pybind11_abseil/requirements:requirements_lock_3_9.txt",
-        "3.8": "//pybind11_abseil/requirements:requirements_lock_3_8.txt",
     },
 )
 
