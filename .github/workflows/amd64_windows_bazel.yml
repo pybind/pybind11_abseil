@@ -69,6 +69,7 @@ jobs:
           bazel build
           --config=ci
           -c ${{ matrix.bazel.compilation_mode }}
+          --@rules_python//python/config_settings:python_version=${{ matrix.python.version }}
           --cxxopt=${{ matrix.cpp.flags }} --host_cxxopt=${{ matrix.cpp.flags }}
           --subcommands=pretty_print
           --enable_bzlmod
@@ -78,6 +79,7 @@ jobs:
           bazel test
           --config=ci
           -c ${{ matrix.bazel.compilation_mode }}
+          --@rules_python//python/config_settings:python_version=${{ matrix.python.version }}
           --cxxopt=${{ matrix.cpp.flags }} --host_cxxopt=${{ matrix.cpp.flags }}
           --subcommands=pretty_print
           --enable_bzlmod

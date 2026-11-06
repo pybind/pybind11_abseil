@@ -59,15 +59,12 @@ jobs:
           python -m platform
       - name: Check Bazel
         run: bazel version
-      - name: Change Python in MODULE.bazel
-        run: |
-          sed -i '' -e 's/\(DEFAULT_PYTHON =\) "3.[0-9]*"/\1 "${{ matrix.python.version }}"/g' MODULE.bazel
-          cat MODULE.bazel
       - name: Build
         run: >
           bazel build
           --config=ci
           -c ${{ matrix.bazel.compilation_mode }}
+          --@rules_python//python/config_settings:python_version=${{ matrix.python.version }}
           --cxxopt=${{ matrix.cpp.flags }} --host_cxxopt=${{ matrix.cpp.flags }}
           --subcommands=pretty_print
           --enable_bzlmod
@@ -77,6 +74,7 @@ jobs:
           bazel test
           --config=ci
           -c ${{ matrix.bazel.compilation_mode }}
+          --@rules_python//python/config_settings:python_version=${{ matrix.python.version }}
           --cxxopt=${{ matrix.cpp.flags }} --host_cxxopt=${{ matrix.cpp.flags }}
           --subcommands=pretty_print
           --enable_bzlmod
