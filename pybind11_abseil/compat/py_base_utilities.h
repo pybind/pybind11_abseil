@@ -2,7 +2,7 @@
 #define PYBIND11_ABSEIL_COMPAT_PY_BASE_UTILITIES_H_
 
 #define PY_SSIZE_T_CLEAN
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 
 #include <string>
 

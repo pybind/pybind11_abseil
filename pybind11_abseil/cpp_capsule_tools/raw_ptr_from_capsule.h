@@ -2,7 +2,7 @@
 #define PYBIND11_ABSEIL_CPP_CAPSULE_TOOLS_RAW_PTR_FROM_CAPSULE_H_
 
 // Must be first include (https://docs.python.org/3/c-api/intro.html).
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 
 #include "absl/status/statusor.h"
 #include "pybind11_abseil/cpp_capsule_tools/void_ptr_from_capsule.h"

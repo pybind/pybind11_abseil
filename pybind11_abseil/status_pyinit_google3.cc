@@ -1,4 +1,4 @@
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 #include <pybind11/pybind11.h>
 
 #include "pybind11_abseil/register_status_bindings.h"

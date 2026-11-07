@@ -5,7 +5,7 @@
 #ifndef PYBIND11_ABSEIL_TESTS_STATUS_TESTING_NO_CPP_EH_LIB_H_
 #define PYBIND11_ABSEIL_TESTS_STATUS_TESTING_NO_CPP_EH_LIB_H_
 
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 
 #include <functional>
 #include <string>

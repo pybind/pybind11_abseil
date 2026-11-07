@@ -1,6 +1,6 @@
 #include "pybind11_abseil/cpp_capsule_tools/void_ptr_from_capsule.h"
 
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 
 #include <string>
 #include <utility>

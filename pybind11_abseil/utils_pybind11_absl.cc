@@ -1,6 +1,6 @@
 #include "pybind11_abseil/utils_pybind11_absl.h"
 
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 #include <pybind11/pybind11.h>
 
 #include "absl/strings/string_view.h"

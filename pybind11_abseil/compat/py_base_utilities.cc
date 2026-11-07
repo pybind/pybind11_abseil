@@ -1,6 +1,6 @@
 #include "pybind11_abseil/compat/py_base_utilities.h"
 
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 
 #include <string>
 

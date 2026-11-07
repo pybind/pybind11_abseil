@@ -2,7 +2,7 @@
 #define PYBIND11_ABSEIL_CPP_CAPSULE_TOOLS_MAKE_SHARED_PTR_CAPSULE_H_
 
 // Must be first include (https://docs.python.org/3/c-api/intro.html).
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 
 #include <cassert>
 #include <memory>

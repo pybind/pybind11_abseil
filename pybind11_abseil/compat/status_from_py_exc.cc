@@ -1,6 +1,6 @@
 #include "pybind11_abseil/compat/status_from_py_exc.h"
 
-#include <Python.h>
+#include <pybind11/conduit/wrap_include_python_h.h>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
