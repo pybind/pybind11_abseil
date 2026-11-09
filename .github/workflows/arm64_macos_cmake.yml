@@ -24,31 +24,34 @@ jobs:
   native:
     strategy:
       matrix:
-        python: [
-          {version: '3.10'},
-          {version: '3.11'},
-          {version: '3.12'},
-          #{version: '3.13'},
-        ]
-        cmake: [
-          #{generator: "Xcode", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: install},
-          {generator: "Unix Makefiles", config: Release, build_target: all, test_target: test, install_target: install},
-        ]
+        # Kept in addition to arm64_macos_bazel.yml and amd64_linux_cmake.yml
+        # because our CMake build has APPLE- and Xcode-specific logic that
+        # neither of those workflows exercises:
+        # * CMakeLists.txt sets SUFFIX ".so" and @loader_path INSTALL_RPATH in
+        #   if(APPLE) blocks, and builds pybind11 modules as MODULE bundles.
+        # * Xcode is a multi-config generator, testing Apple Clang with CMake
+        #   and verifying that LIBRARY_OUTPUT_DIRECTORY
+        #   "$<1:${CMAKE_CURRENT_BINARY_DIR}>" suppresses the per-config
+        #   Release/ subdirectory for CTest.
+        include:
+          - {runner: macos-latest, generator: Xcode, config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: install, cpp: 17, python: '3.12'}
       fail-fast: false
-    name: MacOS•CMake(${{ matrix.cmake.generator }})•Python${{ matrix.python.version }}
-    runs-on: macos-latest
+    name: ${{matrix.runner}}•CMake(${{matrix.generator}},${{matrix.config}})•C++${{matrix.cpp}}•Py${{matrix.python}}
+    runs-on: ${{matrix.runner}}
     steps:
       - uses: actions/checkout@v7
       - name: Setup Python
         uses: actions/setup-python@v7
         with:
-          python-version: ${{ matrix.python.version }}
+          python-version: ${{matrix.python}}
       - name: Update Path
         run: |
-          echo "$HOME/Library/Python/${{ matrix.python.version }}/bin" >> $GITHUB_PATH
+          echo "$HOME/Library/Python/${{matrix.python}}/bin" >> $GITHUB_PATH
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Check Python
-        run: python --version
+        run: |
+          python --version
+          python -m platform
       - name: Install Python requirements
         run: python -m pip install --upgrade -r $(python -c 'import sys; print("./pybind11_abseil/requirements/requirements_lock_%d_%d.txt" % (sys.version_info[:2]))')
       - name: Check CMake
@@ -56,27 +59,28 @@ jobs:
       - name: Configure
         run: >
           cmake -S. -Bbuild
-          -G "${{ matrix.cmake.generator }}"
-          -DCMAKE_BUILD_TYPE=${{ matrix.cmake.config }}
+          -G "${{matrix.generator}}"
+          -DCMAKE_CONFIGURATION_TYPES=${{matrix.config}}
+          -DCMAKE_CXX_STANDARD=${{matrix.cpp}}
           -DCMAKE_INSTALL_PREFIX=install
       - name: Build
         run: >
           cmake --build build
-          --config ${{ matrix.cmake.config }}
-          --target ${{ matrix.cmake.build_target }}
+          --config ${{matrix.config}}
+          --target ${{matrix.build_target}}
           -v -j2
       - name: Test
         run: >
           CTEST_OUTPUT_ON_FAILURE=1
           cmake --build build
-          --config ${{ matrix.cmake.config }}
-          --target ${{ matrix.cmake.test_target }}
+          --config ${{matrix.config}}
+          --target ${{matrix.test_target}}
           -v
       - name: Install
         run: >
           cmake --build build
-          --config ${{ matrix.cmake.config }}
-          --target ${{ matrix.cmake.install_target }}
+          --config ${{matrix.config}}
+          --target ${{matrix.install_target}}
           -v
 
   arm64_macos_cmake:

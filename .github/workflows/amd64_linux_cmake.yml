@@ -24,25 +24,19 @@ jobs:
   native:
     strategy:
       matrix:
-        # A sparse matrix, as described in
-        # https://opensource.google/documentation/policies/cplusplus-support:
-        # every supported C++ and Python version, the oldest and newest
-        # default compilers of the supported Ubuntu LTS releases, and the
-        # oldest supported CMake are tested in at least one job, rather than
-        # all combinations.
+        # Varies the build system from the origin in amd64_linux_bazel.yml
+        # (ubuntu-26.04, clang-22, C++17, Python 3.12). Compiler, C++ standard,
+        # and Python version variations are already tested there, so this
+        # workflow only varies CMake-specific settings: CMake version,
+        # generator, and build type.
         include:
-          # Oldest supported Ubuntu LTS: GCC 11, Clang 14, and CMake 3.22,
-          # which the runner image doesn't have, so it is installed with pip.
-          - {runner: ubuntu-22.04, cc: gcc, cxx: g++, cmake_version: '3.22.*', generator: Unix Makefiles, config: Release, cpp: 17, python: '3.10'}
-          - {runner: ubuntu-22.04, cc: clang-14, cxx: clang++-14, generator: Ninja, config: Debug, cpp: 17, python: '3.11'}
-          # GCC 13.
-          - {runner: ubuntu-24.04, cc: gcc, cxx: g++, generator: Ninja, config: Release, cpp: 17, python: '3.12'}
-          - {runner: ubuntu-24.04, cc: gcc, cxx: g++, generator: Unix Makefiles, config: Debug, cpp: 20, python: '3.13'}
-          # Newest Ubuntu LTS: GCC 15, Clang 22.
-          - {runner: ubuntu-26.04, cc: gcc, cxx: g++, generator: Ninja, config: Release, cpp: 20, python: '3.14'}
-          - {runner: ubuntu-26.04, cc: clang-22, cxx: clang++-22, generator: Unix Makefiles, config: Release, cpp: 20, python: '3.15'}
+          - {runner: ubuntu-26.04, cc: clang-22, cxx: clang++-22, generator: Ninja, config: Release, cpp: 17, python: '3.12'}
+          # Oldest supported CMake, installed via pip since the runner image
+          # ships a newer CMake, and Unix Makefiles generator.
+          - {runner: ubuntu-26.04, cc: clang-22, cxx: clang++-22, cmake_version: '3.22.*', generator: Unix Makefiles, config: Release, cpp: 17, python: '3.12'}
+          - {runner: ubuntu-26.04, cc: clang-22, cxx: clang++-22, generator: Ninja, config: Debug, cpp: 17, python: '3.12'}
       fail-fast: false
-    name: ${{matrix.runner}}•${{matrix.cc}}•CMake(${{matrix.generator}},${{matrix.config}})•C++${{matrix.cpp}}•Py${{matrix.python}}
+    name: ${{matrix.runner}}•${{matrix.cc}}•CMake${{matrix.cmake_version && format(' {0}', matrix.cmake_version) || ''}}(${{matrix.generator}},${{matrix.config}})•C++${{matrix.cpp}}•Py${{matrix.python}}
     runs-on: ${{matrix.runner}}
     env:
       CC: ${{matrix.cc}}
@@ -63,6 +57,7 @@ jobs:
         if: matrix.cmake_version
         run: python -m pip install "cmake==${{matrix.cmake_version}}"
       - name: Install Ninja
+        if: matrix.generator == 'Ninja'
         run: |
           sudo apt-get update
           sudo apt-get install ninja-build

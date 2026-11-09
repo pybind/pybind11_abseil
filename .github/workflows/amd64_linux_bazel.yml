@@ -22,26 +22,42 @@ concurrency:
 # Building using the github runner environement directly.
 jobs:
   native:
-    name: ${{matrix.runner}}•${{matrix.cc}}•Bzl${{matrix.bazel}}•C++${{matrix.cpp}}•Py${{matrix.python}}
+    name: ${{matrix.runner}}•${{matrix.cc}}•Bzl${{matrix.bazel}}(${{matrix.mode}})•C++${{matrix.cpp}}•Py${{matrix.python}}
     runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
       matrix:
         # A sparse matrix, as described in
         # https://opensource.google/documentation/policies/cplusplus-support:
-        # every supported Bazel, C++ and Python version, and the oldest and
-        # newest default compilers of the supported Ubuntu LTS releases, are
-        # tested in at least one job, rather than all combinations.
+        # start from one origin configuration and vary one dimension at a time
+        # across the supported Ubuntu LTS releases and their compilers, Bazel
+        # versions, compilation modes, C++ standards, and Python versions.
+        #
+        # Other workflows vary the build system (amd64_linux_cmake.yml, plus
+        # arm64_macos_cmake.yml and amd64_windows_cmake.yml for platform- and
+        # multi-config-specific CMake logic) and operating system /
+        # architecture (arm64_macos_bazel.yml and amd64_windows_bazel.yml).
         include:
-          # Oldest supported Ubuntu LTS: GCC 11, Clang 14.
-          - {runner: ubuntu-22.04, cc: gcc, bazel: 8.x, cpp: 17, python: '3.10'}
-          - {runner: ubuntu-22.04, cc: clang-14, bazel: 9.x, cpp: 17, python: '3.11'}
-          # GCC 13.
-          - {runner: ubuntu-24.04, cc: gcc, bazel: 9.x, cpp: 17, python: '3.12'}
-          - {runner: ubuntu-24.04, cc: gcc, bazel: 8.x, cpp: 20, python: '3.13'}
-          # Newest Ubuntu LTS: GCC 15, Clang 22.
-          - {runner: ubuntu-26.04, cc: gcc, bazel: 9.x, cpp: 20, python: '3.14'}
-          - {runner: ubuntu-26.04, cc: clang-22, bazel: 8.x, cpp: 20, python: '3.15'}
+          # Origin: newest Ubuntu LTS, newest Clang, Bazel 9, fastbuild, C++17,
+          # default Python.
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.12'}
+          # Compiler and Ubuntu LTS variations (GCC 15, GCC 13, GCC 11, Clang 14).
+          - {runner: ubuntu-26.04, cc: gcc, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.12'}
+          - {runner: ubuntu-24.04, cc: gcc, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.12'}
+          - {runner: ubuntu-22.04, cc: gcc, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.12'}
+          - {runner: ubuntu-22.04, cc: clang-14, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.12'}
+          # Bazel version variation.
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 8.x, mode: fastbuild, cpp: 17, python: '3.12'}
+          # Compilation mode variation.
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 9.x, mode: dbg, cpp: 17, python: '3.12'}
+          # C++ standard variation.
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 9.x, mode: fastbuild, cpp: 20, python: '3.12'}
+          # Python version variations.
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.10'}
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.11'}
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.13'}
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.14'}
+          - {runner: ubuntu-26.04, cc: clang-22, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.15'}
     env:
       # Bazel's C++ toolchain autoconfiguration uses $CC.
       CC: ${{matrix.cc}}
@@ -52,10 +68,8 @@ jobs:
         with:
           bazelisk-cache: true
           # One disk cache per configuration: a cache is written once per key,
-          # and the configurations' compile actions mostly differ (Bazel 8 jobs
-          # get almost no hits from Bazel 9 results), so a shared cache mainly
-          # helps the configuration that saved it.
-          disk-cache: ${{github.workflow}}-${{matrix.runner}}-${{matrix.cc}}-bzl${{matrix.bazel}}-cxx${{matrix.cpp}}-py${{matrix.python}}
+          # so a shared cache mainly helps the configuration that saved it.
+          disk-cache: ${{github.workflow}}-${{matrix.runner}}-${{matrix.cc}}-bzl${{matrix.bazel}}-${{matrix.mode}}-cxx${{matrix.cpp}}-py${{matrix.python}}
           repository-cache: true
           # Only master saves caches; pull requests restore master's caches
           # (by key prefix), so they pay only for what they change, and the
@@ -79,6 +93,7 @@ jobs:
         run: >
           bazel build
           --config=ci
+          -c ${{matrix.mode}}
           --@rules_python//python/config_settings:python_version=${{matrix.python}}
           --cxxopt=-std=c++${{matrix.cpp}} --host_cxxopt=-std=c++${{matrix.cpp}}
           --subcommands=pretty_print
@@ -87,6 +102,7 @@ jobs:
         run: >
           bazel test
           --config=ci
+          -c ${{matrix.mode}}
           --@rules_python//python/config_settings:python_version=${{matrix.python}}
           --cxxopt=-std=c++${{matrix.cpp}} --host_cxxopt=-std=c++${{matrix.cpp}}
           --subcommands=pretty_print

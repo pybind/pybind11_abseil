@@ -24,29 +24,28 @@ jobs:
   native:
     strategy:
       matrix:
+        # Varies the operating system (Windows) from the origin in
+        # amd64_linux_bazel.yml (Bazel 9, fastbuild, C++17, Python 3.12), plus
+        # two Windows-specific variations:
+        # * windows-2022 tests the older supported Windows Server / MSVC (2022).
+        # * -c dbg on Windows defines _DEBUG, which makes unwrapped <Python.h>
+        #   pragma-link python312_d.lib (not shipped in standard Windows Python
+        #   installs); Linux -c dbg does not exercise this.
         include:
-          - runner: windows-2022
-            bazel: {compilation_mode: opt}
-            cpp: {version: 17, flags: "/std:c++17"}
-            python: {version: '3.11'}
-          - runner: windows-2022
-            bazel: {compilation_mode: dbg}
-            cpp: {version: 17, flags: "/std:c++17"}
-            python: {version: '3.11'}
-          # The newest Windows Server and MSVC (2026), with C++20.
-          - runner: windows-2025
-            bazel: {compilation_mode: opt}
-            cpp: {version: 20, flags: "/std:c++20"}
-            python: {version: '3.11'}
-      fail-fast: false # Don't cancel all jobs if one fails.
-    name: ${{ matrix.runner }}•Bazel(${{ matrix.bazel.compilation_mode }})•C++${{ matrix.cpp.version }}•Python${{ matrix.python.version }}
-    runs-on: ${{ matrix.runner }}
+          - {runner: windows-2025, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.12'}
+          - {runner: windows-2022, bazel: 9.x, mode: fastbuild, cpp: 17, python: '3.12'}
+          - {runner: windows-2025, bazel: 9.x, mode: dbg, cpp: 17, python: '3.12'}
+      fail-fast: false
+    name: ${{matrix.runner}}•Bazel(${{matrix.mode}})•C++${{matrix.cpp}}•Py${{matrix.python}}
+    runs-on: ${{matrix.runner}}
+    env:
+      USE_BAZEL_VERSION: ${{matrix.bazel}}
     steps:
       - uses: actions/checkout@v7
       - name: Setup Python
         uses: actions/setup-python@v7
         with:
-          python-version: ${{ matrix.python.version }}
+          python-version: ${{matrix.python}}
       - name: Check Python
         run: |
           python --version
@@ -56,7 +55,7 @@ jobs:
           bazelisk-cache: true
           # One disk cache per configuration: a cache is written once per key,
           # and the configurations do not share compile actions.
-          disk-cache: ${{github.workflow}}-${{matrix.runner}}-${{matrix.bazel.compilation_mode}}-cxx${{matrix.cpp.version}}-py${{matrix.python.version}}
+          disk-cache: ${{github.workflow}}-${{matrix.runner}}-${{matrix.mode}}-cxx${{matrix.cpp}}-py${{matrix.python}}
           repository-cache: true
           # Only master saves caches; pull requests restore master's caches
           # (by key prefix), so they pay only for what they change, and the
@@ -74,9 +73,9 @@ jobs:
         run: >
           bazel build
           --config=ci
-          -c ${{ matrix.bazel.compilation_mode }}
-          --@rules_python//python/config_settings:python_version=${{ matrix.python.version }}
-          --cxxopt=${{ matrix.cpp.flags }} --host_cxxopt=${{ matrix.cpp.flags }}
+          -c ${{matrix.mode}}
+          --@rules_python//python/config_settings:python_version=${{matrix.python}}
+          --cxxopt=/std:c++${{matrix.cpp}} --host_cxxopt=/std:c++${{matrix.cpp}}
           --subcommands=pretty_print
           --enable_bzlmod
           //...
@@ -84,9 +83,9 @@ jobs:
         run: >
           bazel test
           --config=ci
-          -c ${{ matrix.bazel.compilation_mode }}
-          --@rules_python//python/config_settings:python_version=${{ matrix.python.version }}
-          --cxxopt=${{ matrix.cpp.flags }} --host_cxxopt=${{ matrix.cpp.flags }}
+          -c ${{matrix.mode}}
+          --@rules_python//python/config_settings:python_version=${{matrix.python}}
+          --cxxopt=/std:c++${{matrix.cpp}} --host_cxxopt=/std:c++${{matrix.cpp}}
           --subcommands=pretty_print
           --enable_bzlmod
           //...
