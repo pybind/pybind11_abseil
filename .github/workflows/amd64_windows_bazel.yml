@@ -50,7 +50,7 @@ jobs:
         run: |
           python --version
           python -m platform
-      - uses: bazel-contrib/setup-bazel@0.19.1
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
           # One disk cache per configuration: a cache is written once per key,
